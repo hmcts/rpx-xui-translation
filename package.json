@@ -8,9 +8,12 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
-    "test": "ng test",
+    "build:library": "ng build rpx-translation",
+    "package": "cat dist/rpx-translation/{runtime,polyfills,scripts,main}.js | gzip > elements.js.gz",
+    "start": "ng serve -o",
+    "start:no-open": "ng serve",
+    "build": "ng build rpx-translation",
+    "test": "ng test rpx-translation",
     "lint": "ng lint",
     "e2e": "ng e2e"
   },

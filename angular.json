@@ -45,6 +45,127 @@
           }
         }
       }
+    },
+    "rpx-translation-demo": {
+      "projectType": "application",
+      "schematics": {
+        "@schematics/angular:component": {
+          "style": "scss"
+        }
+      },
+      "root": "projects/rpx-translation-demo",
+      "sourceRoot": "projects/rpx-translation-demo/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/rpx-translation-demo",
+            "index": "projects/rpx-translation-demo/src/index.html",
+            "main": "projects/rpx-translation-demo/src/main.ts",
+            "polyfills": "projects/rpx-translation-demo/src/polyfills.ts",
+            "tsConfig": "projects/rpx-translation-demo/tsconfig.app.json",
+            "aot": true,
+            "assets": [
+              "projects/rpx-translation-demo/src/favicon.ico",
+              "projects/rpx-translation-demo/src/assets"
+            ],
+            "styles": [
+              "projects/rpx-translation-demo/src/styles.scss"
+            ],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/rpx-translation-demo/src/environments/environment.ts",
+                  "with": "projects/rpx-translation-demo/src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "rpx-translation-demo:build"
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "rpx-translation-demo:build:production"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "rpx-translation-demo:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/rpx-translation-demo/src/test.ts",
+            "polyfills": "projects/rpx-translation-demo/src/polyfills.ts",
+            "tsConfig": "projects/rpx-translation-demo/tsconfig.spec.json",
+            "karmaConfig": "projects/rpx-translation-demo/karma.conf.js",
+            "assets": [
+              "projects/rpx-translation-demo/src/favicon.ico",
+              "projects/rpx-translation-demo/src/assets"
+            ],
+            "styles": [
+              "projects/rpx-translation-demo/src/styles.scss"
+            ],
+            "scripts": []
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/rpx-translation-demo/tsconfig.app.json",
+              "projects/rpx-translation-demo/tsconfig.spec.json",
+              "projects/rpx-translation-demo/e2e/tsconfig.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        },
+        "e2e": {
+          "builder": "@angular-devkit/build-angular:protractor",
+          "options": {
+            "protractorConfig": "projects/rpx-translation-demo/e2e/protractor.conf.js",
+            "devServerTarget": "rpx-translation-demo:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "rpx-translation-demo:serve:production"
+            }
+          }
+        }
+      }
     }},
   "defaultProject": "rpx-translation"
 }

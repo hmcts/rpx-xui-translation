@@ -1,4 +1,1 @@
-export enum RpxLanguage {
-    en = "en",
-    cy = "cy"
-}
+export type RpxLanguage = 'en' | 'cy';

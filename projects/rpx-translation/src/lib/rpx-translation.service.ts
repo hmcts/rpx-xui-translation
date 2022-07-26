@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { liveQuery } from 'dexie';
 import { DateTime } from 'luxon';
 import { BehaviorSubject, from, Observable, of, Subscription, timer } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap, tap } from 'rxjs/operators';
 import { db, Translation } from './db';
 import { RpxLanguage } from './rpx-language.enum';
 import { RpxTranslationConfig } from './rpx-translation.config';
@@ -15,14 +15,18 @@ interface TranslationsDTO {
 @Injectable()
 export class RpxTranslationService {
 
-  private _currentLanguage: RpxLanguage = RpxLanguage.en
+  private _currentLanguage: RpxLanguage = 'en'
 
-  private _phrases: { [phraseLang: string]: BehaviorSubject<string>} = {};
+  private _phrases: { [phrase: string]: BehaviorSubject<string>} = {};
+  private _observables: { [phrase: string]: Observable<string>} = {};
   private _requesting: { [lang: string]: string[] } = {};
   private _requestTimerSubscription: Subscription | null;
 
   public set language(lang: RpxLanguage) {
-    this._currentLanguage = lang;
+    if (lang !== this._currentLanguage) {
+      this._currentLanguage = lang;
+      Object.keys(this._phrases).forEach(phrase => this.translate(phrase));
+    }
   }
 
   public get language(): RpxLanguage {
@@ -35,54 +39,69 @@ export class RpxTranslationService {
   ) { }
 
   public translate(phrase: string): Observable<string> {
-    if (this.language === RpxLanguage.en) {
-      return of(phrase);
+    if (!this._phrases.hasOwnProperty(phrase)) {
+      this._phrases[phrase] = new BehaviorSubject<string>(phrase);
+      this._observables[phrase] = this._phrases[phrase].asObservable();
     }
-    return from(liveQuery(() => db.translations.where('[phrase+lang]').equals([phrase, this._currentLanguage]).first())).pipe(
-      switchMap(t => {
-        if (t && !t.isExpired()) {
-          return of(t.translation);
-        } else {
-          if (t) {
-            // is expired, so clean up DB
-            db.translations.delete(t.id!);
+
+    if (this.language === 'en') {
+      this._phrases[phrase].next(phrase);
+    } else {
+      from(liveQuery(() => db.translations.where('[phrase+lang]').equals([phrase, this.language]).first())).pipe(
+        tap(t => {
+          if (t && !t.isExpired()) {
+            this._phrases[phrase].next(t.translation);
+          } else {
+            if (t) {
+              // expired, clean up DB
+              db.translations.delete(t.id!);
+            }
+            this._phrases[phrase].next(`${phrase} [Translation in progress]`);
+            this.load(phrase, this.language);
           }
-          return this.load(phrase, this._currentLanguage);
-        }
-      })
-    );
+        })
+      ).subscribe(() => {});
+    }
+
+    return this._observables[phrase];
   }
 
-  private load(phrase: string, lang: RpxLanguage): Observable<string> {
-    const key = `$phrase-$lang`;
-    if (!this._phrases.hasOwnProperty(key)) {
-      this._phrases[key] = new BehaviorSubject(phrase);
-      if (!this._requesting.hasOwnProperty(lang)) {
-        this._requesting[lang] = [];
-      }
-      this._requesting[lang].push(phrase);
-      if (this._requestTimerSubscription) {
-        // cancel the current subscription and create a new one to restart the timer before we make the request (debouncing)
-        this._requestTimerSubscription.unsubscribe();
-      }
-      this._requestTimerSubscription = timer(this._config.debounceTimeMs).subscribe(() => {
-        const url = this._config.baseUrl + `/$lang`;
-        const s = this._http.post<TranslationsDTO>(url, { phrases: this._requesting[lang] }).pipe(
-          map(t => t.translations)
-        ).subscribe(translations => {
-          let toAdd: Translation[] = [];
-          Object.keys(translations).forEach(phrase => {
-            toAdd.push(Translation.create(phrase, lang, translations[phrase], DateTime.now().plus(this._config.validity).toISO()));
-            this._phrases[key].next(translations[phrase]);
-          });
-          db.translations.bulkAdd(toAdd);
-          this._requesting[lang] = [];
-          this._requestTimerSubscription!.unsubscribe();
-          this._requestTimerSubscription = null;
-          s.unsubscribe();
-        });
-      });
+  private load(phrase: string, lang: RpxLanguage): void {
+    if (!this._requesting.hasOwnProperty(lang)) {
+      this._requesting[lang] = [];
     }
-    return this._phrases[key].asObservable();
+
+    if (this._requesting[lang].indexOf(phrase) !== -1) {
+      return;
+    }
+
+    this._requesting[lang].push(phrase);
+
+    if (this._requestTimerSubscription) {
+      this._requestTimerSubscription.unsubscribe();
+    }
+
+    this._requestTimerSubscription = timer(this._config.debounceTimeMs).subscribe(() => {
+      const url = this._config.baseUrl + `/${lang}`;
+      const s = this._http.post<TranslationsDTO>(url, { phrases: this._requesting[lang] }).pipe(
+        map(t => t.translations),
+        catchError(() => {
+          let translations: { [from: string]: string } = {};
+          this._requesting[lang].forEach(phrase => translations[phrase] = phrase);
+          return of(translations);
+        })
+      ).subscribe(translations => {
+        let toAdd: Translation[] = [];
+        Object.keys(translations).forEach(phrase => {
+          toAdd.push(Translation.create(phrase, lang, translations[phrase], DateTime.now().plus(this._config.validity).toISO()));
+          this._phrases[phrase].next(translations[phrase]);
+        });
+        db.translations.bulkAdd(toAdd);
+        this._requesting[lang] = [];
+        this._requestTimerSubscription!.unsubscribe();
+        this._requestTimerSubscription = null;
+        s.unsubscribe();
+      })
+    });
   }
 }

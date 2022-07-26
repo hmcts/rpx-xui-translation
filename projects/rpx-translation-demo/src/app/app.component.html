@@ -1,0 +1,11 @@
+<h1>Translation Demo App</h1>`
+
+<p>Current language: {{currentLang}}</p>
+
+<p>Untranslated text</p>
+
+<p>{{'Translated Text' | rpxTranslate}}</p>
+
+
+<button (click)="toggleLanguage('cy')" *ngIf="currentLang == 'en'">Newid i'r Gymraeg</button>
+<button (click)="toggleLanguage('en')" *ngIf="currentLang == 'cy'">Change to English</button>

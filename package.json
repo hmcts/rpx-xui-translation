@@ -8,11 +8,11 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
-    "build:library": "ng build rpx-translation",
+    "build:library": "ng build rpx-translation --prod",
     "package": "cat dist/rpx-translation/{runtime,polyfills,scripts,main}.js | gzip > elements.js.gz",
     "start": "ng serve -o",
     "start:no-open": "ng serve",
-    "build": "ng build rpx-translation",
+    "build": "ng build rpx-translation --prod",
     "test": "ng test rpx-translation",
     "lint": "ng lint",
     "e2e": "ng e2e"

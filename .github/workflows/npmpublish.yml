@@ -21,7 +21,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 12
-      - run: yarn install
+      - run: yarn run install-all
       - run: yarn lint
       - run: yarn build:library
       - run: yarn test
@@ -37,7 +37,7 @@ jobs:
         with:
           node-version: 12
           registry-url: https://registry.npmjs.org/
-      - run:  yarn install && yarn build:library && cd dist/rpx-translation && yarn publish
+      - run:  yarn install-all && yarn build:library && cd dist/rpx-translation && yarn publish
         if: startsWith(github.ref, 'refs/tags')
         env:
           NODE_AUTH_TOKEN: ${{ secrets.npm_token }}
@@ -54,7 +54,7 @@ jobs:
           node-version: 12
           registry-url: https://npm.pkg.github.com/
           scope: '@hmcts'
-      - run: yarn install && yarn build:library && cd dist/rpx-translation && yarn publish
+      - run: yarn install-all && yarn build:library && cd dist/rpx-translation && yarn publish
         if: startsWith(github.ref, 'refs/tags')
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

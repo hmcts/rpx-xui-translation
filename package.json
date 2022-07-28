@@ -15,7 +15,8 @@
     "build": "ng build rpx-translation --prod",
     "test": "ng test rpx-translation",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "install-all": "yarn install && cd projects/rpx-translation && yarn install && cd ../.."
   },
   "private": true,
   "dependencies": {

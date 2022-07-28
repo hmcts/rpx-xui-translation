@@ -3,5 +3,10 @@
   "dest": "../../dist/rpx-translation",
   "lib": {
     "entryFile": "src/public-api.ts"
-  }
+  },
+  "whitelistedNonPeerDependencies": [
+    "tslib",
+    "dexie",
+    "luxon"
+  ]
 }

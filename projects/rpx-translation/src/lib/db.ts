@@ -9,17 +9,17 @@ export class Translation {
     translation: string;
     validity: string;
 
-    isExpired(): boolean {
-        return DateTime.fromISO(this.validity) < DateTime.now()
-    }
-
     public static create(phrase: string, lang: RpxLanguage, translation: string, validity: string): Translation {
-        let t = new Translation();
+        const t = new Translation();
         t.phrase = phrase;
         t.lang = lang;
         t.translation = translation;
         t.validity = validity;
         return t;
+    }
+
+    isExpired(): boolean {
+        return DateTime.fromISO(this.validity) < DateTime.now();
     }
 }
 
@@ -27,7 +27,7 @@ export class TranslationDB extends Dexie {
     translations: Table<Translation, number>;
 
     constructor() {
-        super("RpxTranslations");
+        super('RpxTranslations');
         this.version(1).stores({
             translations: '++id, [phrase+lang]'
         });

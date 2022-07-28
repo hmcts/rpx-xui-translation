@@ -22,9 +22,10 @@ export class RpxTranslatePipe extends AsyncPipe implements PipeTransform  {
   transform<T = string>(value: T): T|null;
   transform<T = string>(value: T): T|null {
     if (typeof value === 'string') {
-      // lot of casting needed to move from the interface provided by async to the interface we need. We know value is always a string, but due to overloading the async interface we can't specify that.
-      let o = this.translationService.translate(value as unknown as string) as unknown as Observable<T>;
-      var ret = super.transform<T>(o);
+      // lot of casting needed to move from the interface provided by async to the interface we need. We know value is always a string,
+      // but due to overloading the async interface we can't specify that.
+      const o = this.translationService.translate(value as unknown as string) as unknown as Observable<T>;
+      const ret = super.transform<T>(o);
       return ret;
     }
     return null;

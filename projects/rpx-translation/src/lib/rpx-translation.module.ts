@@ -1,4 +1,4 @@
-import { HttpClientModule } from '@angular/common/http'
+import { HttpClientModule } from '@angular/common/http';
 import { ModuleWithProviders, NgModule } from '@angular/core';
 import { RpxTranslatePipe } from './rpx-translate.pipe';
 import { RpxTranslationConfig } from './rpx-translation.config';

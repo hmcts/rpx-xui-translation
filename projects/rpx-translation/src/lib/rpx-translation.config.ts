@@ -14,5 +14,5 @@ export class RpxTranslationConfig {
     validity: ValidityDurationSpec;
     baseUrl: string;
 
-    debounceTimeMs: number = 300;
+    debounceTimeMs = 300;
 }

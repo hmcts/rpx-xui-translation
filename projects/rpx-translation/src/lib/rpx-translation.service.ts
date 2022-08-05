@@ -87,7 +87,7 @@ export class RpxTranslationService {
         map(t => t.translations),
         catchError(() => {
           const translations: { [from: string]: string } = {};
-          this.requesting[lang].forEach(p => translations[p] = p);
+          this.requesting[lang].forEach(p => translations[p] = this.config.testMode ?  `[Test translation for ${p}]` : p);
           return of(translations);
         })
       ).subscribe(translations => {

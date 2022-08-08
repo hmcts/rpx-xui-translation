@@ -22,8 +22,8 @@
     ],
     "paths": {
       "rpx-translation": [
-        "dist/rpx-translation/rpx-translation",
-        "dist/rpx-translation"
+        "dist/rpx-xui-translation/rpx-xui-translation",
+        "dist/rpx-xui-translation"
       ]
     }
   },

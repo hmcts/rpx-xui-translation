@@ -2,7 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
 import { AppComponent } from './app.component';
-import { RpxTranslationModule } from 'projects/rpx-translation/src/public-api';
+import { RpxTranslationModule } from 'projects/rpx-xui-translation/src/public-api';
 
 @NgModule({
   declarations: [

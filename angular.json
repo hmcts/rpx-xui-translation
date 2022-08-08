@@ -6,38 +6,38 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "rpx-translation": {
+    "rpx-xui-translation": {
       "projectType": "library",
-      "root": "projects/rpx-translation",
-      "sourceRoot": "projects/rpx-translation/src",
+      "root": "projects/rpx-xui-translation",
+      "sourceRoot": "projects/rpx-xui-translation/src",
       "prefix": "rpx",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-ng-packagr:build",
           "options": {
-            "tsConfig": "projects/rpx-translation/tsconfig.lib.json",
-            "project": "projects/rpx-translation/ng-package.json"
+            "tsConfig": "projects/rpx-xui-translation/tsconfig.lib.json",
+            "project": "projects/rpx-xui-translation/ng-package.json"
           },
           "configurations": {
             "production": {
-              "tsConfig": "projects/rpx-translation/tsconfig.lib.prod.json"
+              "tsConfig": "projects/rpx-xui-translation/tsconfig.lib.prod.json"
             }
           }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/rpx-translation/src/test.ts",
-            "tsConfig": "projects/rpx-translation/tsconfig.spec.json",
-            "karmaConfig": "projects/rpx-translation/karma.conf.js"
+            "main": "projects/rpx-xui-translation/src/test.ts",
+            "tsConfig": "projects/rpx-xui-translation/tsconfig.spec.json",
+            "karmaConfig": "projects/rpx-xui-translation/karma.conf.js"
           }
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "projects/rpx-translation/tsconfig.lib.json",
-              "projects/rpx-translation/tsconfig.spec.json"
+              "projects/rpx-xui-translation/tsconfig.lib.json",
+              "projects/rpx-xui-translation/tsconfig.spec.json"
             ],
             "exclude": [
               "**/node_modules/**"
@@ -46,32 +46,32 @@
         }
       }
     },
-    "rpx-translation-demo": {
+    "rpx-xui-translation-demo": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
           "style": "scss"
         }
       },
-      "root": "projects/rpx-translation-demo",
-      "sourceRoot": "projects/rpx-translation-demo/src",
+      "root": "projects/rpx-xui-translation-demo",
+      "sourceRoot": "projects/rpx-xui-translation-demo/src",
       "prefix": "app",
       "architect": {
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/rpx-translation-demo",
-            "index": "projects/rpx-translation-demo/src/index.html",
-            "main": "projects/rpx-translation-demo/src/main.ts",
-            "polyfills": "projects/rpx-translation-demo/src/polyfills.ts",
-            "tsConfig": "projects/rpx-translation-demo/tsconfig.app.json",
+            "outputPath": "dist/rpx-xui-translation-demo",
+            "index": "projects/rpx-xui-translation-demo/src/index.html",
+            "main": "projects/rpx-xui-translation-demo/src/main.ts",
+            "polyfills": "projects/rpx-xui-translation-demo/src/polyfills.ts",
+            "tsConfig": "projects/rpx-xui-translation-demo/tsconfig.app.json",
             "aot": true,
             "assets": [
-              "projects/rpx-translation-demo/src/favicon.ico",
-              "projects/rpx-translation-demo/src/assets"
+              "projects/rpx-xui-translation-demo/src/favicon.ico",
+              "projects/rpx-xui-translation-demo/src/assets"
             ],
             "styles": [
-              "projects/rpx-translation-demo/src/styles.scss"
+              "projects/rpx-xui-translation-demo/src/styles.scss"
             ],
             "scripts": []
           },
@@ -79,8 +79,8 @@
             "production": {
               "fileReplacements": [
                 {
-                  "replace": "projects/rpx-translation-demo/src/environments/environment.ts",
-                  "with": "projects/rpx-translation-demo/src/environments/environment.prod.ts"
+                  "replace": "projects/rpx-xui-translation-demo/src/environments/environment.ts",
+                  "with": "projects/rpx-xui-translation-demo/src/environments/environment.prod.ts"
                 }
               ],
               "optimization": true,
@@ -109,33 +109,33 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "rpx-translation-demo:build"
+            "browserTarget": "rpx-xui-translation-demo:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "rpx-translation-demo:build:production"
+              "browserTarget": "rpx-xui-translation-demo:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "rpx-translation-demo:build"
+            "browserTarget": "rpx-xui-translation-demo:build"
           }
         },
         "test": {
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
-            "main": "projects/rpx-translation-demo/src/test.ts",
-            "polyfills": "projects/rpx-translation-demo/src/polyfills.ts",
-            "tsConfig": "projects/rpx-translation-demo/tsconfig.spec.json",
-            "karmaConfig": "projects/rpx-translation-demo/karma.conf.js",
+            "main": "projects/rpx-xui-translation-demo/src/test.ts",
+            "polyfills": "projects/rpx-xui-translation-demo/src/polyfills.ts",
+            "tsConfig": "projects/rpx-xui-translation-demo/tsconfig.spec.json",
+            "karmaConfig": "projects/rpx-xui-translation-demo/karma.conf.js",
             "assets": [
-              "projects/rpx-translation-demo/src/favicon.ico",
-              "projects/rpx-translation-demo/src/assets"
+              "projects/rpx-xui-translation-demo/src/favicon.ico",
+              "projects/rpx-xui-translation-demo/src/assets"
             ],
             "styles": [
-              "projects/rpx-translation-demo/src/styles.scss"
+              "projects/rpx-xui-translation-demo/src/styles.scss"
             ],
             "scripts": []
           }
@@ -144,9 +144,9 @@
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": [
-              "projects/rpx-translation-demo/tsconfig.app.json",
-              "projects/rpx-translation-demo/tsconfig.spec.json",
-              "projects/rpx-translation-demo/e2e/tsconfig.json"
+              "projects/rpx-xui-translation-demo/tsconfig.app.json",
+              "projects/rpx-xui-translation-demo/tsconfig.spec.json",
+              "projects/rpx-xui-translation-demo/e2e/tsconfig.json"
             ],
             "exclude": [
               "**/node_modules/**"
@@ -156,16 +156,16 @@
         "e2e": {
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
-            "protractorConfig": "projects/rpx-translation-demo/e2e/protractor.conf.js",
-            "devServerTarget": "rpx-translation-demo:serve"
+            "protractorConfig": "projects/rpx-xui-translation-demo/e2e/protractor.conf.js",
+            "devServerTarget": "rpx-xui-translation-demo:serve"
           },
           "configurations": {
             "production": {
-              "devServerTarget": "rpx-translation-demo:serve:production"
+              "devServerTarget": "rpx-xui-translation-demo:serve:production"
             }
           }
         }
       }
     }},
-  "defaultProject": "rpx-translation"
+  "defaultProject": "rpx-xui-translation"
 }

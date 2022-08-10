@@ -18,7 +18,7 @@
     "e2e": "ng e2e",
     "install-all": "yarn install && cd projects/rpx-xui-translation && yarn install && cd ../.."
   },
-  "private": true,
+  "private": false,
   "dependencies": {
     "@angular/animations": "~9.1.13",
     "@angular/common": "~9.1.13",

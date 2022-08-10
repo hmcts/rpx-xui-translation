@@ -1,6 +1,7 @@
 {
   "name": "rpx-xui-translation",
   "version": "0.0.2",
+  "private": false,
   "peerDependencies": {
     "@angular/common": "^9.1.13",
     "@angular/core": "^9.1.13"

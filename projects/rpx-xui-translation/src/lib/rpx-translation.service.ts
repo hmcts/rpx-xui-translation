@@ -39,15 +39,16 @@ export class RpxTranslationService {
   ) { }
 
   public translate(phrase: string): Observable<string> {
+    const lang = this.language;
     if (!this.phrases.hasOwnProperty(phrase)) {
       this.phrases[phrase] = new BehaviorSubject<string>(phrase);
       this.observables[phrase] = this.phrases[phrase].asObservable();
     }
 
-    if (this.language === 'en') {
+    if (lang === 'en') {
       this.phrases[phrase].next(phrase);
     } else {
-      from(liveQuery(() => db.translations.where('[phrase+lang]').equals([phrase, this.language]).first())).pipe(
+      from(liveQuery(() => db.translations.where('[phrase+lang]').equals([phrase, lang]).first())).pipe(
         tap(t => {
           if (t && !t.isExpired()) {
             this.phrases[phrase].next(t.translation);
@@ -57,7 +58,7 @@ export class RpxTranslationService {
               db.translations.delete(t.id!);
             }
             this.phrases[phrase].next(`${phrase} [Translation in progress]`);
-            this.load(phrase, this.language);
+            this.load(phrase, lang);
           }
         })
       ).subscribe(() => {});
@@ -67,6 +68,11 @@ export class RpxTranslationService {
   }
 
   private load(phrase: string, lang: RpxLanguage): void {
+    if (lang === 'en') {
+      this.phrases[phrase].next(phrase);
+      return;
+    }
+
     if (!this.requesting.hasOwnProperty(lang)) {
       this.requesting[lang] = [];
     }

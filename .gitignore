@@ -46,4 +46,4 @@ testem.log
 Thumbs.db
 
 #lib specific
-projects/rpx-translation/node_modules
+projects/rpx-xui-translation/node_modules

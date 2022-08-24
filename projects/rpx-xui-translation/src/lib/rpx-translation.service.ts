@@ -38,6 +38,14 @@ export class RpxTranslationService {
     private http: HttpClient
   ) { }
 
+  public getTranslation(phrase: string): Observable<string> {
+    if (this.observables.hasOwnProperty(phrase)) {
+      return this.observables[phrase];
+    }
+
+    return this.translate(phrase);
+  }
+
   public translate(phrase: string): Observable<string> {
     const lang = this.language;
     if (!this.phrases.hasOwnProperty(phrase)) {

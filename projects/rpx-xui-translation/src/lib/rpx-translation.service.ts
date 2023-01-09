@@ -16,6 +16,7 @@ interface TranslationsDTO {
 export class RpxTranslationService {
 
   private currentLanguage: RpxLanguage = 'en';
+  private languageKey = 'exui-preferred-language';
 
   private phrases: { [phrase: string]: BehaviorSubject<string>} = {};
   private observables: { [phrase: string]: Observable<string>} = {};
@@ -25,6 +26,7 @@ export class RpxTranslationService {
   public set language(lang: RpxLanguage) {
     if (lang !== this.currentLanguage) {
       this.currentLanguage = lang;
+      this.persistLanguage();
       Object.keys(this.phrases).forEach(phrase => this.translate(phrase));
     }
   }
@@ -36,7 +38,15 @@ export class RpxTranslationService {
   constructor(
     private config: RpxTranslationConfig,
     private http: HttpClient
-  ) { }
+  ) {
+    const persistedLanguage = this.getPersistedLanguage();
+    if (persistedLanguage) {
+      this.language = persistedLanguage;
+    } else {
+      // no language persisted yet, save default
+      this.persistLanguage();
+    }
+  }
 
   public getTranslation(phrase: string): Observable<string> {
     if (this.observables.hasOwnProperty(phrase)) {
@@ -117,5 +127,17 @@ export class RpxTranslationService {
         s.unsubscribe();
       });
     });
+  }
+
+  private persistLanguage(): void {
+    try {
+      window.sessionStorage.setItem(this.languageKey, this.currentLanguage);
+    } catch (e) {
+      // swallow exception as sessionStorage is unavailable
+    }
+  }
+
+  private getPersistedLanguage(): RpxLanguage {
+    return window.sessionStorage.getItem(this.languageKey) as RpxLanguage;
   }
 }

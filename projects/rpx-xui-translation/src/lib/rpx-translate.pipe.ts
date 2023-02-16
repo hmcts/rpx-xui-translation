@@ -29,7 +29,7 @@ export class RpxTranslatePipe extends AsyncPipe implements PipeTransform  {
         o = this.translationService.getTranslation(value);
       }
       const ret = super.transform<string>(o);
-      return ret as T;
+      return ret as unknown as T;
     }
     return null;
   }

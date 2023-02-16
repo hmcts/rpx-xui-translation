@@ -130,14 +130,10 @@ export class RpxTranslationService {
   }
 
   private persistLanguage(): void {
-    try {
-      window.sessionStorage.setItem(this.languageKey, this.currentLanguage);
-    } catch (e) {
-      // swallow exception as sessionStorage is unavailable
-    }
+    document.cookie = `${this.languageKey}=${this.currentLanguage};`;
   }
 
   private getPersistedLanguage(): RpxLanguage {
-    return window.sessionStorage.getItem(this.languageKey) as RpxLanguage;
+    return document.cookie.split(';').find(cookie => cookie.trim().startsWith(this.languageKey + '='))?.split('=')[1].trim() as RpxLanguage;
   }
 }

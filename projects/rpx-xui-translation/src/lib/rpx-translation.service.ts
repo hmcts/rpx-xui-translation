@@ -96,7 +96,7 @@ export class RpxTranslationService {
   public replacePlaceholders(input: string, replacements: Replacements): string {
     Object.keys(replacements).forEach(key => {
       // Ideally use replaceAll here, but that isn't fully compatible with targeted browsers and packaging yet
-      let search = `%${key}%`;
+      const search = `%${key}%`;
       while (input.indexOf(search) !== -1) {
         input = input.replace(search, replacements[key]);
       }

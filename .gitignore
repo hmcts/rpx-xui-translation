@@ -47,3 +47,12 @@ Thumbs.db
 
 #lib specific
 projects/rpx-xui-translation/node_modules
+
+# Yarn
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions

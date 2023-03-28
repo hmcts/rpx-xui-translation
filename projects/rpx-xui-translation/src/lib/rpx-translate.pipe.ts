@@ -1,7 +1,7 @@
 import { AsyncPipe } from '@angular/common';
 import { ChangeDetectorRef, Pipe, PipeTransform } from '@angular/core';
 import { Observable, Subscribable } from 'rxjs';
-import { RpxTranslationService } from './rpx-translation.service';
+import { RpxTranslationService, Replacements } from './rpx-translation.service';
 
 @Pipe({
   name: 'rpxTranslate',
@@ -20,13 +20,16 @@ export class RpxTranslatePipe extends AsyncPipe implements PipeTransform  {
   transform<T>(obj: null|undefined): null;
   transform<T>(obj: Observable<T>|Subscribable<T>|Promise<T>|null|undefined): T|null;
   transform<T = string>(value: T): T|null;
-  transform<T = string>(value: T): T|null {
+  transform<T = string>(value: T, replacements?: Replacements | null): T|null {
     if (typeof value === 'string') {
-      // lot of casting needed to move from the interface provided by async to the interface we need. We know value is always a string,
-      // but due to overloading the async interface we can't specify that.
-      const o = this.translationService.getTranslation(value as unknown as string) as unknown as Observable<T>;
-      const ret = super.transform<T>(o);
-      return ret;
+      let o: Observable<string>;
+      if (replacements) {
+        o = this.translationService.getTranslationWithReplacements(value, replacements);
+      } else {
+        o = this.translationService.getTranslation(value);
+      }
+      const ret = super.transform<string>(o);
+      return ret as unknown as T;
     }
     return null;
   }

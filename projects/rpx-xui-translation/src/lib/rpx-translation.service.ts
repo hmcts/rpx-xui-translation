@@ -22,17 +22,23 @@ export class RpxTranslationService {
   private observables: { [phrase: string]: Observable<string>} = {};
   private requesting: { [lang: string]: string[] } = {};
   private requestTimerSubscription: Subscription | null;
+  private languageSource: BehaviorSubject<RpxLanguage> =  new BehaviorSubject<RpxLanguage>(this.currentLanguage);
 
   public set language(lang: RpxLanguage) {
     if (lang !== this.currentLanguage) {
       this.currentLanguage = lang;
       this.persistLanguage();
+      this.languageSource.next(lang);
       Object.keys(this.phrases).forEach(phrase => this.translate(phrase));
     }
   }
 
   public get language(): RpxLanguage {
     return this.currentLanguage;
+  }
+
+  public get language$(): Observable<RpxLanguage> {
+    return this.languageSource.asObservable();
   }
 
   constructor(

@@ -12,6 +12,8 @@ interface TranslationsDTO {
   translations: { [from: string]: string };
 }
 
+export type Replacements = { [key: string]: string };
+
 @Injectable()
 export class RpxTranslationService {
 
@@ -62,6 +64,12 @@ export class RpxTranslationService {
     return this.translate(phrase);
   }
 
+  public getTranslationWithReplacements(phrase: string, replacements: Replacements): Observable<string> {
+    return this.getTranslation(phrase).pipe(
+      map(translation => this.replacePlaceholders(translation, replacements))
+    );
+  }
+
   public translate(phrase: string): Observable<string> {
     const lang = this.language;
     if (!this.phrases.hasOwnProperty(phrase)) {
@@ -89,6 +97,17 @@ export class RpxTranslationService {
     }
 
     return this.observables[phrase];
+  }
+
+  public replacePlaceholders(input: string, replacements: Replacements): string {
+    Object.keys(replacements).forEach(key => {
+      // Ideally use replaceAll here, but that isn't fully compatible with targeted browsers and packaging yet
+      const search = `%${key}%`;
+      while (input.indexOf(search) !== -1) {
+        input = input.replace(search, replacements[key]);
+      }
+    });
+    return input;
   }
 
   private load(phrase: string, lang: RpxLanguage): void {

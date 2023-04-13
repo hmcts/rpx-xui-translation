@@ -66,7 +66,7 @@ export class RpxTranslationService {
 
   public getTranslationWithReplacements(phrase: string, replacements: Replacements): Observable<string> {
     return this.getTranslation(phrase).pipe(
-      map(translation => this.replacePlaceholders(translation, replacements))
+      map((translation: string) => this.replacePlaceholders(translation, replacements))
     );
   }
 
@@ -81,7 +81,7 @@ export class RpxTranslationService {
       this.phrases[phrase].next(phrase);
     } else {
       from(liveQuery(() => db.translations.where('[phrase+lang]').equals([phrase, lang]).first())).pipe(
-        tap(t => {
+        tap((t: Translation) => {
           if (t && !t.isExpired()) {
             this.phrases[phrase].next(t.translation);
           } else {

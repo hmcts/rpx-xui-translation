@@ -24,7 +24,8 @@ export class RpxTranslationService {
   private observables: { [phrase: string]: Observable<string>} = {};
   private requesting: { [lang: string]: string[] } = {};
   private requestTimerSubscription: Subscription | null;
-  private languageSource: BehaviorSubject<RpxLanguage> =  new BehaviorSubject<RpxLanguage>(this.currentLanguage);
+  private languageSource: BehaviorSubject<RpxLanguage>;
+  public language$: Observable<RpxLanguage>;
 
   public set language(lang: RpxLanguage) {
     if (lang !== this.currentLanguage) {
@@ -39,10 +40,6 @@ export class RpxTranslationService {
     return this.currentLanguage;
   }
 
-  public get language$(): Observable<RpxLanguage> {
-    return this.languageSource.asObservable();
-  }
-
   constructor(
     private config: RpxTranslationConfig,
     private http: HttpClient
@@ -54,6 +51,8 @@ export class RpxTranslationService {
       // no language persisted yet, save default
       this.persistLanguage();
     }
+    this.languageSource = new BehaviorSubject<RpxLanguage>(this.currentLanguage);
+    this.language$ = this.languageSource.asObservable();
   }
 
   public getTranslation(phrase: string): Observable<string> {

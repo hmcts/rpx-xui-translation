@@ -1,6 +1,6 @@
 {
   "name": "rpx-xui-translation",
-  "version": "0.2.2-yes-or-no",
+  "version": "0.2.2-yes-or-no-translation",
   "description": "Facilitate translations in Reform programme applications in Angular",
   "main": "index.js",
   "repository": "git@github.com:hmcts/rpx-xui-translation.git",

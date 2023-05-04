@@ -17,10 +17,6 @@ export class RpxTranslatePipe extends AsyncPipe implements PipeTransform {
     super(ref);
   }
 
-  transform<T>(obj: Observable<T> | Subscribable<T> | Promise<T>): T | null;
-  transform<T>(obj: null | undefined): null;
-  transform<T>(obj: Observable<T> | Subscribable<T> | Promise<T> | null | undefined): T | null;
-  transform<T = string>(value: T): T | null;
   transform<T = string>(value: T, replacements?: Replacements | null, yesOrNo?: string): T | null {
     if (typeof value === 'string') {
       let o: Observable<string>;

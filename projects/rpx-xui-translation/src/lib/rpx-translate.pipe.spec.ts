@@ -1,7 +1,7 @@
-import { RpxTranslatePipe } from './rpx-translate.pipe';
-import { RpxTranslationService } from './rpx-translation.service';
 import { ChangeDetectorRef } from '@angular/core';
 import { of } from 'rxjs';
+import { RpxTranslatePipe } from './rpx-translate.pipe';
+import { RpxTranslationService } from './rpx-translation.service';
 
 describe('RpxTranslatePipe', () => {
   let translationServiceMock: jasmine.SpyObj<RpxTranslationService>;

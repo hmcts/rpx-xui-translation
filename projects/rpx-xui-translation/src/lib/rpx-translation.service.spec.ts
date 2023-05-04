@@ -1,9 +1,9 @@
-import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { RpxTranslationService } from './rpx-translation.service';
+import { TestBed } from '@angular/core/testing';
+import { db } from './db';
+import { YesOrNoValue } from './rpx-language.enum';
 import { RpxTranslationConfig } from './rpx-translation.config';
-import { db, Translation } from './db';
-import { RpxLanguage, YesOrNoValue } from './rpx-language.enum';
+import { RpxTranslationService } from './rpx-translation.service';
 
 describe('RpxTranslationService', () => {
   let service: RpxTranslationService;

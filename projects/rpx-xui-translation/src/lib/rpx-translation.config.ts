@@ -1,4 +1,4 @@
-import { Injectable } from "@angular/core";
+import { Injectable } from '@angular/core';
 
 export type ValidityDurationSpec = {
   years?: number;
@@ -23,7 +23,7 @@ export class RpxTranslationConfig {
 
 export interface TranslationModel {
   phrase: string;
-  yesOrNoField: boolean,
+  yesOrNoField: boolean;
   yes: string;
   no: string;
 }

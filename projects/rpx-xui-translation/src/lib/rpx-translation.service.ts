@@ -5,11 +5,11 @@ import { DateTime } from 'luxon';
 import { BehaviorSubject, from, Observable, of, Subscription, timer } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { db, Translation } from './db';
-import { RpxLanguage } from './rpx-language.enum';
-import { RpxTranslationConfig } from './rpx-translation.config';
+import { RpxLanguage, YesOrNoValue } from './rpx-language.enum';
+import { RpxTranslationConfig, TranslationModel } from './rpx-translation.config';
 
 interface TranslationsDTO {
-  translations: { [from: string]: string };
+  translations: { [from: string]: TranslationModel };
 }
 
 export type Replacements = { [key: string]: string };
@@ -20,8 +20,8 @@ export class RpxTranslationService {
   private currentLanguage: RpxLanguage = 'en';
   private languageKey = 'exui-preferred-language';
 
-  private phrases: { [phrase: string]: BehaviorSubject<string>} = {};
-  private observables: { [phrase: string]: Observable<string>} = {};
+  private phrases: { [phrase: string]: BehaviorSubject<string> } = {};
+  private observables: { [phrase: string]: Observable<string> } = {};
   private requesting: { [lang: string]: string[] } = {};
   private requestTimerSubscription: Subscription | null;
   private languageSource: BehaviorSubject<RpxLanguage> = new BehaviorSubject<RpxLanguage>(this.currentLanguage);
@@ -54,12 +54,12 @@ export class RpxTranslationService {
     this.language$ = this.languageSource.asObservable();
   }
 
-  public getTranslation(phrase: string): Observable<string> {
+  public getTranslation(phrase: string, yesOrNo?: string): Observable<string> {
     if (this.observables.hasOwnProperty(phrase)) {
       return this.observables[phrase];
     }
 
-    return this.translate(phrase);
+    return this.translate(phrase, yesOrNo);
   }
 
   public getTranslationWithReplacements(phrase: string, replacements: Replacements): Observable<string> {
@@ -68,7 +68,24 @@ export class RpxTranslationService {
     );
   }
 
-  public translate(phrase: string): Observable<string> {
+  public getNoTranslationReplacement(phrase: string, yesValue: string): Observable<string> {
+    return this.getTranslation(phrase, yesValue);
+  }
+
+  public getYesTranslationReplacement(phrase: string, noValue: string): Observable<string> {
+    return this.getTranslation(phrase, noValue);
+  }
+
+  getPhrase(model: TranslationModel, yesOrNoValue: string | undefined): any {
+    if (model?.yesOrNoField && yesOrNoValue === YesOrNoValue.YES) {
+      return model?.yes ? model.yes : model;
+    } else if (model?.yesOrNoField && yesOrNoValue === YesOrNoValue.NO) {
+      return model?.no ? model.no : model;
+    }
+    return model?.phrase ? model.phrase : model;
+  }
+
+  public translate(phrase: string, yesOrNo?: string): Observable<string> {
     const lang = this.language;
     if (!this.phrases.hasOwnProperty(phrase)) {
       this.phrases[phrase] = new BehaviorSubject<string>(phrase);
@@ -81,17 +98,17 @@ export class RpxTranslationService {
       from(liveQuery(() => db.translations.where('[phrase+lang]').equals([phrase, lang]).first())).pipe(
         tap(t => {
           if (t && !t.isExpired()) {
-            this.phrases[phrase].next(t.translation);
+            this.phrases[phrase].next(this.getPhrase(t.translation, yesOrNo));
           } else {
             if (t) {
               // expired, clean up DB
               db.translations.delete(t.id!);
             }
             this.phrases[phrase].next(`${phrase} [Translation in progress]`);
-            this.load(phrase, lang);
+            this.load(phrase, lang, yesOrNo);
           }
         })
-      ).subscribe(() => {});
+      ).subscribe(() => { });
     }
 
     return this.observables[phrase];
@@ -108,7 +125,7 @@ export class RpxTranslationService {
     return input;
   }
 
-  private load(phrase: string, lang: RpxLanguage): void {
+  private load(phrase: string, lang: RpxLanguage, yesOrNo: string | undefined): void {
     if (lang === 'en') {
       this.phrases[phrase].next(phrase);
       return;
@@ -134,14 +151,14 @@ export class RpxTranslationService {
         map(t => t.translations),
         catchError(() => {
           const translations: { [from: string]: string } = {};
-          this.requesting[lang].forEach(p => translations[p] = this.config.testMode ?  `[Test translation for ${p}]` : p);
+          this.requesting[lang].forEach(p => translations[p] = this.config.testMode ? `[Test translation for ${p}]` : p);
           return of(translations);
         })
-      ).subscribe(translations => {
+      ).subscribe((translations: { [from: string]: TranslationModel }) => {
         const toAdd: Translation[] = [];
         Object.keys(translations).forEach(p => {
           toAdd.push(Translation.create(p, lang, translations[p], DateTime.now().plus(this.config.validity).toISO()));
-          this.phrases[p].next(translations[p]);
+          this.phrases[p].next(this.getPhrase(translations[p], yesOrNo));
         });
         db.translations.bulkAdd(toAdd);
         this.requesting[lang] = [];

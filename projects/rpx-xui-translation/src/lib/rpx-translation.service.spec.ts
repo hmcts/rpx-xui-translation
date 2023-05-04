@@ -42,9 +42,8 @@ describe('RpxTranslationService', () => {
     expect(service).toBeTruthy();
   });
 
-  it('should return the current language as a string', () => {
-    service['currentLanguage'] = 'cy';
-    expect(service.language).toEqual('cy');
+  it('should return the default language en as a string', () => {
+    expect(service.language).toEqual('en');
   });
 
   it('returns the phrase when yesOrNoValue is undefined', () => {

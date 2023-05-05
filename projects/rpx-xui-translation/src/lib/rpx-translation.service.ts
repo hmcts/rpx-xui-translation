@@ -68,12 +68,8 @@ export class RpxTranslationService {
     );
   }
 
-  public getNoTranslationReplacement(phrase: string, yesValue: string): Observable<string> {
-    return this.getTranslation(phrase, yesValue);
-  }
-
-  public getYesTranslationReplacement(phrase: string, noValue: string): Observable<string> {
-    return this.getTranslation(phrase, noValue);
+  public getYesOrNoTranslationReplacement(phrase: string, yesOrNoValue: string): Observable<string> {
+    return this.getTranslation(phrase, yesOrNoValue);
   }
 
   getPhrase(model: TranslationModel, yesOrNoValue: string | undefined): any {
@@ -93,7 +89,11 @@ export class RpxTranslationService {
     }
 
     if (lang === 'en') {
-      this.phrases[phrase].next(phrase);
+      if (yesOrNo) {
+        this.phrases[phrase].next(yesOrNo === YesOrNoValue.YES ? YesOrNoValue.YES : YesOrNoValue.NO);
+      } else {
+        this.phrases[phrase].next(phrase);
+      }
     } else {
       from(liveQuery(() => db.translations.where('[phrase+lang]').equals([phrase, lang]).first())).pipe(
         tap(t => {

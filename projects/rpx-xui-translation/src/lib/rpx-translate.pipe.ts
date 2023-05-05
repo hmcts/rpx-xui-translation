@@ -1,8 +1,8 @@
 import { AsyncPipe } from '@angular/common';
 import { ChangeDetectorRef, Pipe, PipeTransform } from '@angular/core';
-import { Observable, Subscribable } from 'rxjs';
-import { RpxTranslationService, Replacements } from './rpx-translation.service';
+import { Observable } from 'rxjs';
 import { YesOrNoValue } from './rpx-language.enum';
+import { Replacements, RpxTranslationService } from './rpx-translation.service';
 
 @Pipe({
   name: 'rpxTranslate',
@@ -22,10 +22,8 @@ export class RpxTranslatePipe extends AsyncPipe implements PipeTransform {
       let o: Observable<string>;
       if (replacements) {
         o = this.translationService.getTranslationWithReplacements(value, replacements);
-      } else if (yesOrNo?.toLowerCase() === YesOrNoValue.YES) {
-        o = this.translationService.getYesTranslationReplacement(value, yesOrNo);
-      } else if (yesOrNo?.toLowerCase() === YesOrNoValue.NO) {
-        o = this.translationService.getNoTranslationReplacement(value, yesOrNo);
+      } else if (yesOrNo?.toLowerCase() === YesOrNoValue.YES || yesOrNo?.toLocaleLowerCase() === YesOrNoValue.NO) {
+        o = this.translationService.getYesOrNoTranslationReplacement(value, yesOrNo);
       } else {
         o = this.translationService.getTranslation(value);
       }

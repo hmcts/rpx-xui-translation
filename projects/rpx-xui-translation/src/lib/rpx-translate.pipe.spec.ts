@@ -10,7 +10,7 @@ describe('RpxTranslatePipe', () => {
 
   beforeEach(() => {
     translationServiceMock = jasmine
-      .createSpyObj('RpxTranslationService', ['getTranslationWithReplacements', 'getYesTranslationReplacement', 'getNoTranslationReplacement', 'getTranslation']);
+      .createSpyObj('RpxTranslationService', ['getTranslationWithReplacements', 'getYesOrNoTranslationReplacement', 'getTranslation']);
     changeDetectorRefMock = jasmine.createSpyObj('ChangeDetectorRef', ['markForCheck']);
     pipe = new RpxTranslatePipe(translationServiceMock, changeDetectorRefMock);
   });
@@ -57,22 +57,22 @@ describe('RpxTranslatePipe', () => {
       const str = 'Are you sure?';
       const yesOrNo = 'yes';
       const obs = of('Translated string');
-      translationServiceMock.getYesTranslationReplacement.and.returnValue(obs);
+      translationServiceMock.getYesOrNoTranslationReplacement.and.returnValue(obs);
 
       pipe.transform(str, null, yesOrNo);
 
-      expect(translationServiceMock.getYesTranslationReplacement).toHaveBeenCalledWith(str, yesOrNo);
+      expect(translationServiceMock.getYesOrNoTranslationReplacement).toHaveBeenCalledWith(str, yesOrNo);
     });
 
     it('should call getNoTranslationReplacement with the string and yesOrNo argument when yesOrNo is "no"', () => {
       const str = 'Are you sure?';
       const yesOrNo = 'no';
       const obs = of('Translated string');
-      translationServiceMock.getNoTranslationReplacement.and.returnValue(obs);
+      translationServiceMock.getYesOrNoTranslationReplacement.and.returnValue(obs);
 
       pipe.transform(str, null, yesOrNo);
 
-      expect(translationServiceMock.getNoTranslationReplacement).toHaveBeenCalledWith(str, yesOrNo);
+      expect(translationServiceMock.getYesOrNoTranslationReplacement).toHaveBeenCalledWith(str, yesOrNo);
     });
   });
 });

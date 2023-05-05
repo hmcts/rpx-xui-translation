@@ -6,7 +6,8 @@ import { BehaviorSubject, from, Observable, of, Subscription, timer } from 'rxjs
 import { catchError, map, tap } from 'rxjs/operators';
 import { db, Translation } from './db';
 import { RpxLanguage, YesOrNoValue } from './rpx-language.enum';
-import { RpxTranslationConfig, TranslationModel } from './rpx-translation.config';
+import { RpxTranslationConfig } from './rpx-translation.config';
+import { TranslationModel } from './translation.model';
 
 interface TranslationsDTO {
   translations: { [from: string]: TranslationModel };

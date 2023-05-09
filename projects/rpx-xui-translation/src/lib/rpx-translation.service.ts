@@ -96,7 +96,8 @@ export class RpxTranslationService {
         this.phrases[phrase].next(phrase);
       }
     } else {
-      from(liveQuery(() => db.translations.where('[phrase+lang]').equals([phrase, lang]).first())).pipe(
+      const updatedPhrase: string = this.replacePhrase(phrase);
+      from(liveQuery(() => db.translations.where('[phrase+lang]').equals([updatedPhrase, lang]).first())).pipe(
         tap(t => {
           if (t && !t.isExpired()) {
             this.phrases[phrase].next(this.getPhrase(t.translation, yesOrNo));
@@ -113,6 +114,10 @@ export class RpxTranslationService {
     }
 
     return this.observables[phrase];
+  }
+
+  public replacePhrase(phrase: string): string {
+    return phrase.replace(`_${YesOrNoValue.YES}`, '').replace(`_${YesOrNoValue.NO}`, '');
   }
 
   public replacePlaceholders(input: string, replacements: Replacements): string {

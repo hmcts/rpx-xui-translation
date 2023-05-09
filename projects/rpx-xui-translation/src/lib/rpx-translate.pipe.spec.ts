@@ -55,7 +55,7 @@ describe('RpxTranslatePipe', () => {
 
     it('should call getYesTranslationReplacement with the string and yesOrNo argument when yesOrNo is "yes"', () => {
       const str = 'Are you sure?';
-      const yesOrNo = 'yes';
+      const yesOrNo = 'Yes';
       const obs = of('Translated string');
       translationServiceMock.getYesOrNoTranslationReplacement.and.returnValue(obs);
 
@@ -66,7 +66,7 @@ describe('RpxTranslatePipe', () => {
 
     it('should call getNoTranslationReplacement with the string and yesOrNo argument when yesOrNo is "no"', () => {
       const str = 'Are you sure?';
-      const yesOrNo = 'no';
+      const yesOrNo = 'No';
       const obs = of('Translated string');
       translationServiceMock.getYesOrNoTranslationReplacement.and.returnValue(obs);
 

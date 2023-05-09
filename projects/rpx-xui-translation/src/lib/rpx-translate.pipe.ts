@@ -22,8 +22,8 @@ export class RpxTranslatePipe extends AsyncPipe implements PipeTransform {
       let o: Observable<string>;
       if (replacements) {
         o = this.translationService.getTranslationWithReplacements(value, replacements);
-      } else if (yesOrNo?.toLowerCase() === YesOrNoValue.YES || yesOrNo?.toLocaleLowerCase() === YesOrNoValue.NO) {
-        o = this.translationService.getYesOrNoTranslationReplacement(value, yesOrNo);
+      } else if (yesOrNo?.toLowerCase() === YesOrNoValue.YES.toLowerCase() || yesOrNo?.toLowerCase() === YesOrNoValue.NO.toLowerCase()) {
+        o = this.translationService.getYesOrNoTranslationReplacement(value, yesOrNo?.toLowerCase() === YesOrNoValue.YES.toLowerCase() ? YesOrNoValue.YES : YesOrNoValue.NO);
       } else {
         o = this.translationService.getTranslation(value);
       }

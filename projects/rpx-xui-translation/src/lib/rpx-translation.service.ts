@@ -70,7 +70,7 @@ export class RpxTranslationService {
   }
 
   public getYesOrNoTranslationReplacement(phrase: string, yesOrNoValue: string): Observable<string> {
-    return this.getTranslation(phrase, yesOrNoValue);
+    return this.getTranslation(`${phrase}_${yesOrNoValue}`, yesOrNoValue);
   }
 
   getPhrase(model: TranslationModel, yesOrNoValue: string | undefined): any {
@@ -91,7 +91,7 @@ export class RpxTranslationService {
 
     if (lang === 'en') {
       if (yesOrNo?.length) {
-        this.phrases[phrase].next(yesOrNo.toLowerCase() === YesOrNoValue.YES ? YesOrNoValue.YES : YesOrNoValue.NO);
+        this.phrases[phrase].next(yesOrNo === YesOrNoValue.YES ? YesOrNoValue.YES : YesOrNoValue.NO);
       } else {
         this.phrases[phrase].next(phrase);
       }

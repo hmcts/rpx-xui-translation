@@ -56,7 +56,7 @@ export class RpxTranslationService {
   }
 
   public getTranslation(phrase: string, yesOrNo?: string): Observable<string> {
-    if (this.observables.hasOwnProperty(phrase)) {
+    if (this.observables.hasOwnProperty(phrase) && !yesOrNo?.length) {
       return this.observables[phrase];
     }
 
@@ -74,10 +74,10 @@ export class RpxTranslationService {
   }
 
   getPhrase(model: TranslationModel, yesOrNoValue: string | undefined): any {
-    if (model?.yesOrNoField && yesOrNoValue === YesOrNoValue.YES) {
-      return model?.yes ? model.yes : model;
-    } else if (model?.yesOrNoField && yesOrNoValue === YesOrNoValue.NO) {
-      return model?.no ? model.no : model;
+    if (yesOrNoValue === YesOrNoValue.YES) {
+      return model?.yes ? model.yes : YesOrNoValue.YES;
+    } else if (yesOrNoValue === YesOrNoValue.NO) {
+      return model?.no ? model.no : YesOrNoValue.NO;
     }
     return model?.phrase ? model.phrase : model;
   }
@@ -90,8 +90,8 @@ export class RpxTranslationService {
     }
 
     if (lang === 'en') {
-      if (yesOrNo) {
-        this.phrases[phrase].next(yesOrNo === YesOrNoValue.YES ? YesOrNoValue.YES : YesOrNoValue.NO);
+      if (yesOrNo?.length) {
+        this.phrases[phrase].next(yesOrNo.toLowerCase() === YesOrNoValue.YES ? YesOrNoValue.YES : YesOrNoValue.NO);
       } else {
         this.phrases[phrase].next(phrase);
       }

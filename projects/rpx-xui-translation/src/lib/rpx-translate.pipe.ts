@@ -18,7 +18,7 @@ export class RpxTranslatePipe implements PipeTransform, OnDestroy {
     this.asyncPipe = new AsyncPipe(injector.get(ChangeDetectorRef));
   }
 
-  transform<T = string>(value: T, replacements?: Replacements | null, yesOrNo?: string): T | null {
+  public transform<T = string>(value: T, replacements?: Replacements | null, yesOrNo?: string): T | null {
     if (typeof value === 'string') {
       let o: Observable<string>;
       if (replacements) {
@@ -36,7 +36,7 @@ export class RpxTranslatePipe implements PipeTransform, OnDestroy {
     return null;
   }
 
-  ngOnDestroy() {
+  public ngOnDestroy(): void {
     this.asyncPipe.ngOnDestroy();
   }
 }

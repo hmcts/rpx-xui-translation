@@ -109,7 +109,6 @@ export class RpxTranslationService {
             this.load(phrase, lang, yesOrNo);
           }
         }),
-        pipe(take(1))
       ).subscribe(() => {});
     }
 

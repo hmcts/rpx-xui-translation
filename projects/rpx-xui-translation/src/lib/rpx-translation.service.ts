@@ -2,8 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { liveQuery } from 'dexie';
 import { DateTime } from 'luxon';
-import { BehaviorSubject, from, Observable, of, Subscription, timer } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { BehaviorSubject, from, Observable, of, pipe, Subscription, timer } from 'rxjs';
+import { catchError, map, take, tap } from 'rxjs/operators';
 import { db, Translation } from './db';
 import { RpxLanguage, YesOrNoValue } from './rpx-language.enum';
 import { RpxTranslationConfig } from './rpx-translation.config';
@@ -17,7 +17,6 @@ export type Replacements = { [key: string]: string };
 
 @Injectable()
 export class RpxTranslationService {
-
   private currentLanguage: RpxLanguage = 'en';
   private languageKey = 'exui-preferred-language';
 
@@ -109,8 +108,9 @@ export class RpxTranslationService {
             this.phrases[phrase].next(`${phrase} [Translation in progress]`);
             this.load(phrase, lang, yesOrNo);
           }
-        })
-      ).subscribe(() => { });
+        }),
+        pipe(take(1))
+      ).subscribe(() => {});
     }
 
     return this.observables[phrase];

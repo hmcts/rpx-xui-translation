@@ -1,5 +1,5 @@
 import { AsyncPipe } from '@angular/common';
-import { ChangeDetectorRef, Pipe, PipeTransform } from '@angular/core';
+import { ChangeDetectorRef, Injector, OnDestroy, Pipe, PipeTransform } from '@angular/core';
 import { Observable } from 'rxjs';
 import { YesOrNoValue } from './rpx-language.enum';
 import { Replacements, RpxTranslationService } from './rpx-translation.service';
@@ -8,13 +8,14 @@ import { Replacements, RpxTranslationService } from './rpx-translation.service';
   name: 'rpxTranslate',
   pure: false
 })
-export class RpxTranslatePipe extends AsyncPipe implements PipeTransform {
+export class RpxTranslatePipe implements PipeTransform, OnDestroy {
+  private asyncPipe: AsyncPipe;
 
   constructor(
     private translationService: RpxTranslationService,
-    ref: ChangeDetectorRef
+    private injector: Injector
   ) {
-    super(ref);
+    this.asyncPipe = new AsyncPipe(injector.get(ChangeDetectorRef));
   }
 
   transform<T = string>(value: T, replacements?: Replacements | null, yesOrNo?: string): T | null {
@@ -28,10 +29,14 @@ export class RpxTranslatePipe extends AsyncPipe implements PipeTransform {
       } else {
         o = this.translationService.getTranslation(value);
       }
-      const ret = super.transform<string>(o);
+
+      const ret = this.asyncPipe.transform<string>(o);
       return ret as unknown as T;
     }
     return null;
   }
 
+  ngOnDestroy() {
+    this.asyncPipe.ngOnDestroy();
+  }
 }

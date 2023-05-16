@@ -1,13 +1,14 @@
 import { AsyncPipe } from '@angular/common';
 import { ChangeDetectorRef, Pipe, PipeTransform } from '@angular/core';
-import { Observable, Subscribable } from 'rxjs';
-import { RpxTranslationService, Replacements } from './rpx-translation.service';
+import { Observable } from 'rxjs';
+import { YesOrNoValue } from './rpx-language.enum';
+import { Replacements, RpxTranslationService } from './rpx-translation.service';
 
 @Pipe({
   name: 'rpxTranslate',
   pure: false
 })
-export class RpxTranslatePipe extends AsyncPipe implements PipeTransform  {
+export class RpxTranslatePipe extends AsyncPipe implements PipeTransform {
 
   constructor(
     private translationService: RpxTranslationService,
@@ -16,15 +17,14 @@ export class RpxTranslatePipe extends AsyncPipe implements PipeTransform  {
     super(ref);
   }
 
-  transform<T>(obj: Observable<T>|Subscribable<T>|Promise<T>): T|null;
-  transform<T>(obj: null|undefined): null;
-  transform<T>(obj: Observable<T>|Subscribable<T>|Promise<T>|null|undefined): T|null;
-  transform<T = string>(value: T): T|null;
-  transform<T = string>(value: T, replacements?: Replacements | null): T|null {
+  transform<T = string>(value: T, replacements?: Replacements | null, yesOrNo?: string): T | null {
     if (typeof value === 'string') {
       let o: Observable<string>;
       if (replacements) {
         o = this.translationService.getTranslationWithReplacements(value, replacements);
+      } else if (yesOrNo?.toLowerCase() === YesOrNoValue.YES.toLowerCase() || yesOrNo?.toLowerCase() === YesOrNoValue.NO.toLowerCase()) {
+        const yesOrNoValue = yesOrNo?.toLowerCase() === YesOrNoValue.YES.toLowerCase() ? YesOrNoValue.YES : YesOrNoValue.NO;
+        o = this.translationService.getYesOrNoTranslationReplacement(value, yesOrNoValue);
       } else {
         o = this.translationService.getTranslation(value);
       }

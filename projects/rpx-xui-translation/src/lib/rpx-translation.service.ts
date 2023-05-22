@@ -95,7 +95,7 @@ export class RpxTranslationService {
     return this.observables[phrase];
   }
 
-  private load(phrase: string, lang: RpxLanguage, yesOrNoField: boolean): void {
+  private load(phrase: string, lang: RpxLanguage): void {
     if (lang === 'en') {
       this.phrases[phrase].next({phrase});
       return;
@@ -120,7 +120,6 @@ export class RpxTranslationService {
       const s = this.http.post<TranslationsDTO>(url,
         {
           phrases: this.requesting[lang],
-          yesOrNoField
         }
       )
         .pipe(

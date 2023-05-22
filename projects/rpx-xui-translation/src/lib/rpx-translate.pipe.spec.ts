@@ -1,7 +1,8 @@
 import { ChangeDetectorRef } from '@angular/core';
-import { of } from 'rxjs';
 import { RpxTranslatePipe } from './rpx-translate.pipe';
 import { RpxTranslationService } from './rpx-translation.service';
+import { TranslatedData } from './helpers/models/translated-data.model';
+import { of } from 'rxjs';
 
 describe('RpxTranslatePipe', () => {
   let translationServiceMock: jasmine.SpyObj<RpxTranslationService>;
@@ -9,9 +10,10 @@ describe('RpxTranslatePipe', () => {
   let pipe: RpxTranslatePipe;
 
   beforeEach(() => {
-    translationServiceMock = jasmine
-      .createSpyObj('RpxTranslationService', ['getTranslationWithReplacements', 'getYesOrNoTranslationReplacement', 'getTranslation']);
-    changeDetectorRefMock = jasmine.createSpyObj('ChangeDetectorRef', ['markForCheck']);
+    translationServiceMock = jasmine.createSpyObj('RpxTranslationService',
+      ['getTranslation']);
+    changeDetectorRefMock = jasmine.createSpyObj('ChangeDetectorRef',
+      ['markForCheck']);
     pipe = new RpxTranslatePipe(translationServiceMock, changeDetectorRefMock);
   });
 
@@ -19,60 +21,59 @@ describe('RpxTranslatePipe', () => {
     expect(pipe).toBeTruthy();
   });
 
-  describe('transform', () => {
-    it('should return null when called with null or undefined', () => {
-      expect(pipe.transform(null)).toBeNull();
-      expect(pipe.transform(undefined)).toBeNull();
-    });
+  it('should return null when called with null or undefined', () => {
+    expect(pipe.transform(null)).toBeNull();
+    expect(pipe.transform(undefined)).toBeNull();
+  });
 
-    it('should return the same string when called with a string', () => {
-      translationServiceMock.getTranslation.and.callFake((someString) => of(someString));
+  it('should transform string value without replacements or yesOrNoValue', () => {
+    const value = 'Hello!';
+    const translatedData: TranslatedData = {
+      phrase: 'Hello! Translated',
+      yes: 'Yes Translated',
+      no: 'No Translated'
+    };
 
-      const translationString = 'Hello World!';
-      expect(pipe.transform(translationString)).toBe(translationString);
-    });
+    translationServiceMock.getTranslation.and.returnValue(of(translatedData));
+    const transformedValue = pipe.transform(value);
 
-    it('should call getTranslation with the string argument when no replacements or yesOrNo are provided', () => {
-      const str = 'Hello world!';
-      const obs = of('Translated string');
-      translationServiceMock.getTranslation.and.returnValue(obs);
+    expect(transformedValue).toBe('Hello! Translated');
+  });
 
-      pipe.transform(str);
+  it('should transform string value with replacements and do the replacements', () => {
+    const value = 'Hello, %FIELDNAME%!, %OTHERFIELDNAME%';
+    const replacements = {FIELDNAME: 'Abcdef', OTHERFIELDNAME: 'Ghijkl'};
+    const translatedData: TranslatedData = {
+      phrase: 'Hello, %FIELDNAME%, %OTHERFIELDNAME%! Translated',
+      yes: 'Yes Translated',
+      no: 'No Translated'
+    };
 
-      expect(translationServiceMock.getTranslation).toHaveBeenCalledWith(str);
-    });
+    translationServiceMock.getTranslation.and.returnValue(of(translatedData));
+    const transformedValue = pipe.transform(value, replacements);
 
-    it('should call getTranslationWithReplacements with the string and replacements arguments when replacements are provided', () => {
-      const str = 'Hello world!';
-      const replacements = { name: 'John' };
-      const obs = of('Translated string');
-      translationServiceMock.getTranslationWithReplacements.and.returnValue(obs);
+    expect(transformedValue).toBe('Hello, Abcdef, Ghijkl! Translated');
+  });
 
-      pipe.transform(str, replacements);
+  it('should transform string value with yesOrNo and return yes/no translated', () => {
+    const value = 'Hello, %FIELDNAME%!, %OTHERFIELDNAME%';
+    const translatedData: TranslatedData = {
+      phrase: 'Hello, %FIELDNAME%, %OTHERFIELDNAME%! Translated',
+      yes: 'Yes Translated',
+      no: 'No Translated'
+    };
 
-      expect(translationServiceMock.getTranslationWithReplacements).toHaveBeenCalledWith(str, replacements);
-    });
+    translationServiceMock.getTranslation.and.returnValue(of(translatedData));
+    const transformedValue = pipe.transform(value, null, 'yes');
 
-    it('should call getYesTranslationReplacement with the string and yesOrNo argument when yesOrNo is "yes"', () => {
-      const str = 'Are you sure?';
-      const yesOrNo = 'Yes';
-      const obs = of('Translated string');
-      translationServiceMock.getYesOrNoTranslationReplacement.and.returnValue(obs);
+    expect(transformedValue).toBe('Yes Translated');
+  });
 
-      pipe.transform(str, null, yesOrNo);
+  it('should return null for non-string value', () => {
+    const value = 123;
 
-      expect(translationServiceMock.getYesOrNoTranslationReplacement).toHaveBeenCalledWith(str, yesOrNo);
-    });
+    const transformedValue = pipe.transform(value);
 
-    it('should call getNoTranslationReplacement with the string and yesOrNo argument when yesOrNo is "no"', () => {
-      const str = 'Are you sure?';
-      const yesOrNo = 'No';
-      const obs = of('Translated string');
-      translationServiceMock.getYesOrNoTranslationReplacement.and.returnValue(obs);
-
-      pipe.transform(str, null, yesOrNo);
-
-      expect(translationServiceMock.getYesOrNoTranslationReplacement).toHaveBeenCalledWith(str, yesOrNo);
-    });
+    expect(transformedValue).toBeNull();
   });
 });

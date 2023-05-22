@@ -1,16 +1,16 @@
 import Dexie, { Table } from 'dexie';
 import { DateTime } from 'luxon';
 import { RpxLanguage } from './rpx-language.enum';
-import { TranslationModel } from './translation.model';
+import { TranslatedData } from './helpers/models/translated-data.model';
 
 export class Translation {
     id?: number;
     phrase: string;
     lang: RpxLanguage;
-    translation: TranslationModel;
+    translation: TranslatedData;
     validity: string;
 
-    public static create(phrase: string, lang: RpxLanguage, translation: TranslationModel, validity: string): Translation {
+    public static create(phrase: string, lang: RpxLanguage, translation: TranslatedData, validity: string): Translation {
         const t = new Translation();
         t.phrase = phrase;
         t.lang = lang;

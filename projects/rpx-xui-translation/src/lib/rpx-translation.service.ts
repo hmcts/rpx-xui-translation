@@ -5,24 +5,23 @@ import { DateTime } from 'luxon';
 import { BehaviorSubject, from, Observable, of, Subscription, timer } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { db, Translation } from './db';
-import { RpxLanguage, YesOrNoValue } from './rpx-language.enum';
+import { RpxLanguage } from './rpx-language.enum';
 import { RpxTranslationConfig } from './rpx-translation.config';
-import { TranslationModel } from './translation.model';
+import { TranslatedData } from './helpers/models/translated-data.model';
 
 interface TranslationsDTO {
-  translations: { [from: string]: TranslationModel };
+  translations: { [from: string]: string };
 }
 
 export type Replacements = { [key: string]: string };
 
 @Injectable()
 export class RpxTranslationService {
-
   private currentLanguage: RpxLanguage = 'en';
   private languageKey = 'exui-preferred-language';
 
-  private phrases: { [phrase: string]: BehaviorSubject<string> } = {};
-  private observables: { [phrase: string]: Observable<string> } = {};
+  private phrases: { [phrase: string]: BehaviorSubject<TranslatedData> } = {};
+  private observables: { [phrase: string]: Observable<TranslatedData> } = {};
   private requesting: { [lang: string]: string[] } = {};
   private requestTimerSubscription: Subscription | null;
   private languageSource: BehaviorSubject<RpxLanguage> = new BehaviorSubject<RpxLanguage>(this.currentLanguage);
@@ -55,59 +54,39 @@ export class RpxTranslationService {
     this.language$ = this.languageSource.asObservable();
   }
 
-  public getTranslation(phrase: string, yesOrNo?: string): Observable<string> {
-    if (this.observables.hasOwnProperty(phrase) && !yesOrNo?.length) {
+  public getTranslation(phrase: string, yesOrNoValue?: string): Observable<TranslatedData> {
+    if (this.observables.hasOwnProperty(phrase)) {
       return this.observables[phrase];
     }
 
-    return this.translate(phrase, yesOrNo);
+    return this.translate(phrase, yesOrNoValue);
   }
 
-  public getTranslationWithReplacements(phrase: string, replacements: Replacements): Observable<string> {
-    return this.getTranslation(phrase).pipe(
-      map(translation => this.replacePlaceholders(translation, replacements))
-    );
-  }
-
-  public getYesOrNoTranslationReplacement(phrase: string, yesOrNoValue: string): Observable<string> {
-    return this.getTranslation(`${phrase}_${yesOrNoValue}`, yesOrNoValue);
-  }
-
-  getPhrase(model: TranslationModel, yesOrNoValue: string | undefined): any {
-    if (yesOrNoValue === YesOrNoValue.YES) {
-      return model?.yes ? model.yes : YesOrNoValue.YES;
-    } else if (yesOrNoValue === YesOrNoValue.NO) {
-      return model?.no ? model.no : YesOrNoValue.NO;
-    }
-    return model?.phrase ? model.phrase : model;
-  }
-
-  public translate(phrase: string, yesOrNo?: string): Observable<string> {
+  public translate(phrase: string, yesOrNoValue?: string): Observable<TranslatedData> {
     const lang = this.language;
     if (!this.phrases.hasOwnProperty(phrase)) {
-      this.phrases[phrase] = new BehaviorSubject<string>(phrase);
+      this.phrases[phrase] = new BehaviorSubject<TranslatedData>({phrase});
       this.observables[phrase] = this.phrases[phrase].asObservable();
     }
 
     if (lang === 'en') {
-      if (yesOrNo?.length) {
-        this.phrases[phrase].next(yesOrNo === YesOrNoValue.YES ? YesOrNoValue.YES : YesOrNoValue.NO);
-      } else {
-        this.phrases[phrase].next(phrase);
-      }
+      this.phrases[phrase].next({phrase});
     } else {
-      const updatedPhrase: string = this.replacePhrase(phrase);
-      from(liveQuery(() => db.translations.where('[phrase+lang]').equals([updatedPhrase, lang]).first())).pipe(
+      from(liveQuery(() => db.translations.where('[phrase+lang]').equals([phrase, lang]).first())).pipe(
         tap(t => {
           if (t && !t.isExpired()) {
-            this.phrases[phrase].next(this.getPhrase(t.translation, yesOrNo));
+            this.phrases[phrase].next(t.translation);
           } else {
             if (t) {
               // expired, clean up DB
               db.translations.delete(t.id!);
             }
-            this.phrases[phrase].next(`${phrase} [Translation in progress]`);
-            this.load(phrase, lang, yesOrNo);
+            this.phrases[phrase].next({
+              phrase: `${phrase} [Translation in progress]`,
+              yes: 'Yes/No [Translation in progress]',
+              no: 'Yes/No [Translation in progress]'
+            });
+            this.load(phrase, lang, !!yesOrNoValue);
           }
         })
       ).subscribe(() => { });
@@ -116,24 +95,9 @@ export class RpxTranslationService {
     return this.observables[phrase];
   }
 
-  public replacePhrase(phrase: string): string {
-    return phrase.replace(`_${YesOrNoValue.YES}`, '').replace(`_${YesOrNoValue.NO}`, '');
-  }
-
-  public replacePlaceholders(input: string, replacements: Replacements): string {
-    Object.keys(replacements).forEach(key => {
-      // Ideally use replaceAll here, but that isn't fully compatible with targeted browsers and packaging yet
-      const search = `%${key}%`;
-      while (input.indexOf(search) !== -1) {
-        input = input.replace(search, replacements[key]);
-      }
-    });
-    return input;
-  }
-
-  private load(phrase: string, lang: RpxLanguage, yesOrNo: string | undefined): void {
+  private load(phrase: string, lang: RpxLanguage, yesOrNoField: boolean): void {
     if (lang === 'en') {
-      this.phrases[phrase].next(phrase);
+      this.phrases[phrase].next({phrase});
       return;
     }
 
@@ -153,18 +117,27 @@ export class RpxTranslationService {
 
     this.requestTimerSubscription = timer(this.config.debounceTimeMs).subscribe(() => {
       const url = this.config.baseUrl + `/${lang}`;
-      const s = this.http.post<TranslationsDTO>(url, { phrases: this.requesting[lang] }).pipe(
-        map(t => t.translations),
-        catchError(() => {
-          const translations: { [from: string]: string } = {};
-          this.requesting[lang].forEach(p => translations[p] = this.config.testMode ? `[Test translation for ${p}]` : p);
-          return of(translations);
-        })
-      ).subscribe((translations: { [from: string]: TranslationModel }) => {
+      const s = this.http.post<TranslationsDTO>(url,
+        {
+          phrases: this.requesting[lang],
+          yesOrNoField
+        }
+      )
+        .pipe(
+          map(t => t.translations),
+          catchError(() => {
+            const translations: { [from: string]: string } = {};
+            this.requesting[lang].forEach(p => translations[p] = this.config.testMode ? `[Test translation for ${p}]` : p);
+            return of(translations);
+          })
+      ).subscribe((translations: { [from: string]: string }) => {
         const toAdd: Translation[] = [];
         Object.keys(translations).forEach(p => {
-          toAdd.push(Translation.create(p, lang, translations[p], DateTime.now().plus(this.config.validity).toISO()));
-          this.phrases[p].next(this.getPhrase(translations[p], yesOrNo));
+          const translation: TranslatedData = {
+            phrase: translations[p]
+          };
+          toAdd.push(Translation.create(p, lang, translation, DateTime.now().plus(this.config.validity).toISO()));
+          this.phrases[p].next(translation);
         });
         db.translations.bulkAdd(toAdd);
         this.requesting[lang] = [];

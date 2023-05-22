@@ -22,7 +22,7 @@ export class RpxTranslatePipe extends AsyncPipe implements PipeTransform {
   transform<T = string>(value: T, replacements?: Replacements | null, yesOrNoValue?: string): T | null {
     if (typeof value === 'string') {
       let retString: string;
-      const o: Observable<TranslatedData> = this.translationService.getTranslation(value, yesOrNoValue);
+      const o: Observable<TranslatedData> = this.translationService.getTranslation(value);
       const ret = super.transform<TranslatedData>(o);
 
       if (ret) {

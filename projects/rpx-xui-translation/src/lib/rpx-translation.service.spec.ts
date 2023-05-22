@@ -52,7 +52,7 @@ describe('RpxTranslationService', () => {
     const language = 'en';
     const yesOrNo = YesOrNoValue.YES;
 
-    const observable = service.translate(phrase, yesOrNo);
+    const observable = service.translate(phrase);
 
     observable.subscribe(() => {
       expect(spy.load).not.toHaveBeenCalledWith(phrase, language, yesOrNo);

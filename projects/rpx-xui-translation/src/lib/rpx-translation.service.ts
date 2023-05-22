@@ -54,15 +54,15 @@ export class RpxTranslationService {
     this.language$ = this.languageSource.asObservable();
   }
 
-  public getTranslation(phrase: string, yesOrNoValue?: string): Observable<TranslatedData> {
+  public getTranslation(phrase: string): Observable<TranslatedData> {
     if (this.observables.hasOwnProperty(phrase)) {
       return this.observables[phrase];
     }
 
-    return this.translate(phrase, yesOrNoValue);
+    return this.translate(phrase);
   }
 
-  public translate(phrase: string, yesOrNoValue?: string): Observable<TranslatedData> {
+  public translate(phrase: string): Observable<TranslatedData> {
     const lang = this.language;
     if (!this.phrases.hasOwnProperty(phrase)) {
       this.phrases[phrase] = new BehaviorSubject<TranslatedData>({phrase});
@@ -86,7 +86,7 @@ export class RpxTranslationService {
               yes: 'Yes/No [Translation in progress]',
               no: 'Yes/No [Translation in progress]'
             });
-            this.load(phrase, lang, !!yesOrNoValue);
+            this.load(phrase, lang);
           }
         })
       ).subscribe(() => { });

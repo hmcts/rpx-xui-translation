@@ -7,7 +7,7 @@ import { catchError, map, tap } from 'rxjs/operators';
 import { db, Translation } from './db';
 import { RpxLanguage } from './rpx-language.enum';
 import { RpxTranslationConfig } from './rpx-translation.config';
-import { TranslatedData } from './helpers/models/translated-data.model';
+import { TranslatedData } from './models/translated-data.model';
 
 interface TranslationsDTO {
   translations: { [from: string]: string };

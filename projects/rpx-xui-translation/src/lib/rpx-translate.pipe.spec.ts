@@ -1,7 +1,7 @@
 import { ChangeDetectorRef } from '@angular/core';
 import { RpxTranslatePipe } from './rpx-translate.pipe';
 import { RpxTranslationService } from './rpx-translation.service';
-import { TranslatedData } from './helpers/models/translated-data.model';
+import { TranslatedData } from './models/translated-data.model';
 import { of } from 'rxjs';
 
 describe('RpxTranslatePipe', () => {

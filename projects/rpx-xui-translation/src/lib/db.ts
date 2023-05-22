@@ -1,7 +1,7 @@
 import Dexie, { Table } from 'dexie';
 import { DateTime } from 'luxon';
 import { RpxLanguage } from './rpx-language.enum';
-import { TranslatedData } from './helpers/models/translated-data.model';
+import { TranslatedData } from './models/translated-data.model';
 
 export class Translation {
     id?: number;

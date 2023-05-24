@@ -73,7 +73,8 @@ export class RpxTranslationService {
     const isNo = yesOrNoValue?.toLowerCase() === YesOrNoValue.NO.toLowerCase();
 
     return this.getTranslatedData(phrase).pipe(map(translatedData => {
-      const yesOrNoTranslated = isYes ? (translatedData?.yes || yesOrNoValue!) : (translatedData?.no || yesOrNoValue!);
+      const yesOrNoTranslated = (isYes ? (translatedData.yes || yesOrNoValue) : yesOrNoValue) ||
+        (isNo ? (translatedData.no || yesOrNoValue) : yesOrNoValue);
       return matchCase(yesOrNoValue!, yesOrNoTranslated);
       }
     ));

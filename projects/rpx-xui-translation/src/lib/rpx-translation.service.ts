@@ -12,7 +12,7 @@ import { replacePlaceholders } from './helpers/replace-placeholders/replace-plac
 import { matchCase } from './helpers/match-case/match-case.helper';
 
 interface TranslationsDTO {
-  translations: { [from: string]: string };
+  translations: { [from: string]: string | TranslatedData };
 }
 
 export type Replacements = { [key: string]: string };
@@ -153,19 +153,31 @@ export class RpxTranslationService {
       )
         .pipe(
           map(t => t.translations),
+          map(translations => {
+            const translatedData: { [from: string]: TranslatedData } = {};
+
+            Object.keys(translations).forEach(p => {
+              if (typeof(translations[p]) === 'string') {
+                translatedData[p] = { phrase: translations[p] as string };
+              } else {
+                translatedData[p] = translations[p] as TranslatedData;
+              }
+            });
+
+            return translatedData;
+          }),
           catchError(() => {
-            const translations: { [from: string]: string } = {};
-            this.requesting[lang].forEach(p => translations[p] = this.config.testMode ? `[Test translation for ${p}]` : p);
+            const translations: { [from: string]: TranslatedData } = {};
+            this.requesting[lang].forEach(p => (
+              translations[p] = this.config.testMode ? { phrase: `[Test translation for ${p}]` } : { phrase: p })
+            );
             return of(translations);
           })
-      ).subscribe((translations: { [from: string]: string }) => {
+      ).subscribe((translations: { [from: string]: TranslatedData }) => {
         const toAdd: Translation[] = [];
         Object.keys(translations).forEach(p => {
-          const translation: TranslatedData = {
-            phrase: translations[p]
-          };
-          toAdd.push(Translation.create(p, lang, translation, DateTime.now().plus(this.config.validity).toISO()));
-          this.phrases[p].next(translation);
+          toAdd.push(Translation.create(p, lang, translations[p], DateTime.now().plus(this.config.validity).toISO()));
+          this.phrases[p].next(translations[p]);
         });
         db.translations.bulkAdd(toAdd);
         this.requesting[lang] = [];

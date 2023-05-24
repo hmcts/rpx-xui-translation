@@ -5,9 +5,11 @@ import { DateTime } from 'luxon';
 import { BehaviorSubject, from, Observable, of, Subscription, timer } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { db, Translation } from './db';
-import { RpxLanguage } from './rpx-language.enum';
+import { RpxLanguage, YesOrNoValue } from './rpx-language.enum';
 import { RpxTranslationConfig } from './rpx-translation.config';
 import { TranslatedData } from './models/translated-data.model';
+import { replacePlaceholders } from './helpers/replace-placeholders/replace-placeholders.helper';
+import { matchCase } from './helpers/match-case/match-case.helper';
 
 interface TranslationsDTO {
   translations: { [from: string]: string };
@@ -54,7 +56,30 @@ export class RpxTranslationService {
     this.language$ = this.languageSource.asObservable();
   }
 
-  public getTranslation(phrase: string): Observable<TranslatedData> {
+  public getTranslation$(phrase: string): Observable<string> {
+    return this.getTranslatedData(phrase).pipe(
+      map(t => t.phrase)
+    );
+  }
+
+  public getTranslationWithReplacements$(phrase: string, replacements: Replacements): Observable<string> {
+    return this.getTranslatedData(phrase).pipe(
+      map(translatedData => replacePlaceholders(translatedData.phrase, replacements))
+    );
+  }
+
+  public getTranslationWithYesOrNo$(phrase: string, yesOrNoValue: string): Observable<string> {
+    const isYes = yesOrNoValue?.toLowerCase() === YesOrNoValue.YES.toLowerCase();
+    const isNo = yesOrNoValue?.toLowerCase() === YesOrNoValue.NO.toLowerCase();
+
+    return this.getTranslatedData(phrase).pipe(map(translatedData => {
+        const yesOrNoTranslated = isYes ? (translatedData?.yes || yesOrNoValue!) : (translatedData?.no || yesOrNoValue!);
+        return matchCase(yesOrNoTranslated, yesOrNoValue!);
+      }
+    ));
+  }
+
+  private getTranslatedData(phrase: string): Observable<TranslatedData> {
     if (this.observables.hasOwnProperty(phrase)) {
       return this.observables[phrase];
     }
@@ -62,7 +87,7 @@ export class RpxTranslationService {
     return this.translate(phrase);
   }
 
-  public translate(phrase: string): Observable<TranslatedData> {
+  private translate(phrase: string): Observable<TranslatedData> {
     const lang = this.language;
     if (!this.phrases.hasOwnProperty(phrase)) {
       this.phrases[phrase] = new BehaviorSubject<TranslatedData>({phrase});
@@ -83,8 +108,8 @@ export class RpxTranslationService {
             }
             this.phrases[phrase].next({
               phrase: `${phrase} [Translation in progress]`,
-              yes: 'Yes/No [Translation in progress]',
-              no: 'Yes/No [Translation in progress]'
+              yes: 'Yes [Translation in progress]',
+              no: 'No [Translation in progress]'
             });
             this.load(phrase, lang);
           }
@@ -97,7 +122,11 @@ export class RpxTranslationService {
 
   private load(phrase: string, lang: RpxLanguage): void {
     if (lang === 'en') {
-      this.phrases[phrase].next({phrase});
+      this.phrases[phrase].next({
+        phrase,
+        yes: 'Yes',
+        no: 'No'
+      });
       return;
     }
 

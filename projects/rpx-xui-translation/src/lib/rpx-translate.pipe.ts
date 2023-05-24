@@ -21,16 +21,15 @@ export class RpxTranslatePipe implements PipeTransform, OnDestroy {
     this.asyncPipe = new AsyncPipe(injector.get(ChangeDetectorRef));
   }
 
-  public transform<T = string>(value: T, replacements?: Replacements | null, yesOrNo?: string): T | null {
+  public transform<T = string>(value: T, replacements?: Replacements | null, yesOrNoValue?: string): T | null {
     if (typeof value === 'string') {
       let o: Observable<string>;
       if (replacements) {
-        o = this.translationService.getTranslationWithReplacements(value, replacements);
-      } else if (yesOrNo?.toLowerCase() === YesOrNoValue.YES.toLowerCase() || yesOrNo?.toLowerCase() === YesOrNoValue.NO.toLowerCase()) {
-        const yesOrNoValue = yesOrNo?.toLowerCase() === YesOrNoValue.YES.toLowerCase() ? YesOrNoValue.YES : YesOrNoValue.NO;
-        o = this.translationService.getYesOrNoTranslationReplacement(value, yesOrNoValue);
+        o = this.translationService.getTranslationWithReplacements$(value, replacements);
+      } else if (yesOrNoValue) {
+        o = this.translationService.getTranslationWithYesOrNo$(value, yesOrNoValue);
       } else {
-        o = this.translationService.getTranslation(value);
+        o = this.translationService.getTranslation$(value);
       }
 
       const ret = this.asyncPipe.transform<string>(o);

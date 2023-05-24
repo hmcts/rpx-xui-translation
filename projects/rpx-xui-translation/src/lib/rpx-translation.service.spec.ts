@@ -8,12 +8,6 @@ import { RpxTranslationService } from './rpx-translation.service';
 describe('RpxTranslationService', () => {
   let service: RpxTranslationService;
   let httpMock: HttpTestingController;
-  const model = {
-    phrase: 'Hello, world!',
-    yesOrNoField: true,
-    yes: 'Yes',
-    no: 'No'
-  };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -52,6 +46,7 @@ describe('RpxTranslationService', () => {
     const language = 'en';
     const yesOrNo = YesOrNoValue.YES;
 
+    // @ts-ignore-error - private method
     const observable = service.translate(phrase);
 
     observable.subscribe(() => {

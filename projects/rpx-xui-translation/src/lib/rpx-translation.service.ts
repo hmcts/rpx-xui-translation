@@ -88,8 +88,8 @@ export class RpxTranslationService {
             });
             this.load(phrase, lang);
           }
-        })
-      ).subscribe(() => { });
+        }),
+      ).subscribe(() => {});
     }
 
     return this.observables[phrase];

@@ -15,7 +15,8 @@ import { RpxTranslationModule } from 'projects/rpx-xui-translation/src/public-ap
       debounceTimeMs: 300,
       validity: {
         days: 1
-      }
+      },
+      testMode: true
     })
   ],
   providers: [],

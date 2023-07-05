@@ -1,37 +1,45 @@
 import { AsyncPipe } from '@angular/common';
-import { ChangeDetectorRef, Pipe, PipeTransform } from '@angular/core';
+import { ChangeDetectorRef, Injector, OnDestroy, Pipe, PipeTransform } from '@angular/core';
 import { Observable } from 'rxjs';
 import { YesOrNoValue } from './rpx-language.enum';
 import { Replacements, RpxTranslationService } from './rpx-translation.service';
+import { TranslatedData } from './models/translated-data.model';
+import { replacePlaceholders } from './helpers/replace-placeholders/replace-placeholders.helper';
+import { matchCase } from './helpers/match-case/match-case.helper';
 
 @Pipe({
   name: 'rpxTranslate',
   pure: false
 })
-export class RpxTranslatePipe extends AsyncPipe implements PipeTransform {
+export class RpxTranslatePipe implements PipeTransform, OnDestroy {
+  private asyncPipe: AsyncPipe;
 
   constructor(
     private translationService: RpxTranslationService,
-    ref: ChangeDetectorRef
+    private injector: Injector
   ) {
-    super(ref);
+    this.asyncPipe = new AsyncPipe(injector.get(ChangeDetectorRef));
   }
 
-  transform<T = string>(value: T, replacements?: Replacements | null, yesOrNo?: string): T | null {
+  public transform<T = string>(value: T, replacements?: Replacements | null, yesOrNoValue?: string): T | null {
     if (typeof value === 'string') {
       let o: Observable<string>;
       if (replacements) {
-        o = this.translationService.getTranslationWithReplacements(value, replacements);
-      } else if (yesOrNo?.toLowerCase() === YesOrNoValue.YES.toLowerCase() || yesOrNo?.toLowerCase() === YesOrNoValue.NO.toLowerCase()) {
-        const yesOrNoValue = yesOrNo?.toLowerCase() === YesOrNoValue.YES.toLowerCase() ? YesOrNoValue.YES : YesOrNoValue.NO;
-        o = this.translationService.getYesOrNoTranslationReplacement(value, yesOrNoValue);
+        o = this.translationService.getTranslationWithReplacements$(value, replacements);
+      } else if (yesOrNoValue) {
+        o = this.translationService.getTranslationWithYesOrNo$(value, yesOrNoValue);
       } else {
-        o = this.translationService.getTranslation(value);
+        o = this.translationService.getTranslation$(value);
       }
-      const ret = super.transform<string>(o);
+
+      const ret = this.asyncPipe.transform<string>(o);
       return ret as unknown as T;
     }
+
     return null;
   }
 
+  public ngOnDestroy(): void {
+    this.asyncPipe.ngOnDestroy();
+  }
 }

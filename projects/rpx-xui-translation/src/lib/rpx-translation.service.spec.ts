@@ -8,12 +8,6 @@ import { RpxTranslationService } from './rpx-translation.service';
 describe('RpxTranslationService', () => {
   let service: RpxTranslationService;
   let httpMock: HttpTestingController;
-  const model = {
-    phrase: 'Hello, world!',
-    yesOrNoField: true,
-    yes: 'Yes',
-    no: 'No'
-  };
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -46,32 +40,18 @@ describe('RpxTranslationService', () => {
     expect(service.language).toEqual('en');
   });
 
-  it('returns the phrase when yesOrNoValue is undefined', () => {
-    const result = service.getPhrase(model, undefined);
-    expect(result).toEqual(model.phrase);
-  });
-
   it('should not call load method with given phrase, language, and yesOrNo value when translation not found in DB', (done) => {
     const spy = jasmine.createSpyObj('RpxTranslationService', ['load']);
     const phrase = 'Hello, world!';
     const language = 'en';
     const yesOrNo = YesOrNoValue.YES;
 
-    const observable = service.translate(phrase, yesOrNo);
+    // @ts-ignore-error - private method
+    const observable = service.translate(phrase);
 
     observable.subscribe(() => {
       expect(spy.load).not.toHaveBeenCalledWith(phrase, language, yesOrNo);
       done();
     });
-  });
-
-  it('returns the yes value when yesOrNoValue is YES and yes is defined', () => {
-    const result = service.getPhrase(model, YesOrNoValue.YES);
-    expect(result).toEqual(model.yes);
-  });
-
-  it('returns the no value when yesOrNoValue is NO and no is defined', () => {
-    const result = service.getPhrase(model, YesOrNoValue.NO);
-    expect(result).toEqual(model.no);
   });
 });

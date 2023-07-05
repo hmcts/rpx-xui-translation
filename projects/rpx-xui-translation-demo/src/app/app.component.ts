@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { RpxLanguage, RpxTranslationService } from 'projects/rpx-translation/src/public-api';
+import { RpxTranslationService } from '../../../rpx-xui-translation/src/lib/rpx-translation.service';
+import { RpxLanguage } from '../../../rpx-xui-translation/src/lib/rpx-language.enum';
 
 @Component({
   selector: 'app-root',

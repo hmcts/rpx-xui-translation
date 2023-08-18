@@ -3,10 +3,5 @@
   "dest": "../../dist/rpx-xui-translation",
   "lib": {
     "entryFile": "src/public-api.ts"
-  },
-  "whitelistedNonPeerDependencies": [
-    "tslib",
-    "dexie",
-    "luxon"
-  ]
+  }
 }

@@ -66,7 +66,6 @@
             "main": "projects/rpx-xui-translation-demo/src/main.ts",
             "polyfills": "projects/rpx-xui-translation-demo/src/polyfills.ts",
             "tsConfig": "projects/rpx-xui-translation-demo/tsconfig.app.json",
-            "aot": true,
             "assets": [
               "projects/rpx-xui-translation-demo/src/favicon.ico",
               "projects/rpx-xui-translation-demo/src/assets"
@@ -74,7 +73,13 @@
             "styles": [
               "projects/rpx-xui-translation-demo/src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "vendorChunk": true,
+            "extractLicenses": false,
+            "buildOptimizer": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
           },
           "configurations": {
             "production": {
@@ -104,7 +109,8 @@
                 }
               ]
             }
-          }
+          },
+          "defaultConfiguration": ""
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",

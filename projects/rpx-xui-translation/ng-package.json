@@ -4,9 +4,6 @@
   "lib": {
     "entryFile": "src/public-api.ts"
   },
-  "whitelistedNonPeerDependencies": [
-    "tslib",
-    "dexie",
-    "luxon"
-  ]
-}
+  "allowedNonPeerDependencies": [
+    "dexie"
+  ]}

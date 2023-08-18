@@ -9,7 +9,7 @@
   "dependencies": {
     "dexie": "^3.2.2",
     "luxon": "^2.4.0",
-    "tslib": "^1.10.0"
+    "tslib": "^2.0.0"
   },
   "devDependencies": {
     "@types/luxon": "^2.3.2"

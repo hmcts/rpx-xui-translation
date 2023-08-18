@@ -32,18 +32,6 @@
             "tsConfig": "projects/rpx-xui-translation/tsconfig.spec.json",
             "karmaConfig": "projects/rpx-xui-translation/karma.conf.js"
           }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "projects/rpx-xui-translation/tsconfig.lib.json",
-              "projects/rpx-xui-translation/tsconfig.spec.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
-          }
         }
       }
     },
@@ -144,19 +132,6 @@
               "projects/rpx-xui-translation-demo/src/styles.scss"
             ],
             "scripts": []
-          }
-        },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "projects/rpx-xui-translation-demo/tsconfig.app.json",
-              "projects/rpx-xui-translation-demo/tsconfig.spec.json",
-              "projects/rpx-xui-translation-demo/e2e/tsconfig.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
           }
         },
         "e2e": {

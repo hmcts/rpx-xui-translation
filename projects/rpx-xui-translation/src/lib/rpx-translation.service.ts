@@ -34,7 +34,7 @@ export class RpxTranslationService {
       this.currentLanguage = lang;
       this.persistLanguage();
       this.languageSource.next(lang);
-      Object.keys(this.phrases).forEach(phrase => this.translate(phrase));
+      Object.keys(this.phrases).forEach((phrase) => this.translate(phrase));
     }
   }
 
@@ -58,13 +58,13 @@ export class RpxTranslationService {
 
   public getTranslation$(phrase: string): Observable<string> {
     return this.getTranslatedData(phrase).pipe(
-      map(t => t.phrase)
+      map((t) => t.phrase)
     );
   }
 
   public getTranslationWithReplacements$(phrase: string, replacements: Replacements): Observable<string> {
     return this.getTranslatedData(phrase).pipe(
-      map(translatedData => replacePlaceholders(translatedData.phrase, replacements))
+      map((translatedData) => replacePlaceholders(translatedData.phrase, replacements))
     );
   }
 
@@ -72,11 +72,11 @@ export class RpxTranslationService {
     const isYes = yesOrNoValue?.toLowerCase() === YesOrNoValue.YES.toLowerCase();
     const isNo = yesOrNoValue?.toLowerCase() === YesOrNoValue.NO.toLowerCase();
 
-    return this.getTranslatedData(phrase).pipe(map(translatedData => {
+    return this.getTranslatedData(phrase).pipe(map((translatedData) => {
       const yesOrNoTranslated = (isYes ? (translatedData.yes || yesOrNoValue) : yesOrNoValue) ||
         (isNo ? (translatedData.no || yesOrNoValue) : yesOrNoValue);
       return matchCase(yesOrNoValue!, yesOrNoTranslated);
-      }
+    }
     ));
   }
 
@@ -91,15 +91,15 @@ export class RpxTranslationService {
   private translate(phrase: string): Observable<TranslatedData> {
     const lang = this.language;
     if (!this.phrases.hasOwnProperty(phrase)) {
-      this.phrases[phrase] = new BehaviorSubject<TranslatedData>({phrase});
+      this.phrases[phrase] = new BehaviorSubject<TranslatedData>({ phrase });
       this.observables[phrase] = this.phrases[phrase].asObservable();
     }
 
     if (lang === 'en') {
-      this.phrases[phrase].next({phrase});
+      this.phrases[phrase].next({ phrase });
     } else {
       from(liveQuery(() => db.translations.where('[phrase+lang]').equals([phrase, lang]).first())).pipe(
-        tap(t => {
+        tap((t) => {
           if (t && !t.isExpired()) {
             this.phrases[phrase].next(t.translation);
           } else {
@@ -149,15 +149,15 @@ export class RpxTranslationService {
       const url = this.config.baseUrl + `/${lang}`;
       const s = this.http.post<TranslationsDTO>(url,
         {
-          phrases: this.requesting[lang],
+          phrases: this.requesting[lang]
         }
       )
         .pipe(
-          map(t => t.translations),
-          map(translations => {
+          map((t) => t.translations),
+          map((translations) => {
             const translatedData: { [from: string]: TranslatedData } = {};
 
-            Object.keys(translations).forEach(p => {
+            Object.keys(translations).forEach((p) => {
               if (typeof(translations[p]) === 'string') {
                 translatedData[p] = { phrase: translations[p] as string };
               } else {
@@ -169,23 +169,23 @@ export class RpxTranslationService {
           }),
           catchError(() => {
             const translations: { [from: string]: TranslatedData } = {};
-            this.requesting[lang].forEach(p => (
+            this.requesting[lang].forEach((p) => (
               translations[p] = this.config.testMode ? { phrase: `[Test translation for ${p}]` } : { phrase: p })
             );
             return of(translations);
           })
-      ).subscribe((translations: { [from: string]: TranslatedData }) => {
-        const toAdd: Translation[] = [];
-        Object.keys(translations).forEach(p => {
-          toAdd.push(Translation.create(p, lang, translations[p], DateTime.now().plus(this.config.validity).toISO()));
-          this.phrases[p].next(translations[p]);
-        });
-        db.translations.bulkAdd(toAdd);
-        this.requesting[lang] = [];
+        ).subscribe((translations: { [from: string]: TranslatedData }) => {
+          const toAdd: Translation[] = [];
+          Object.keys(translations).forEach((p) => {
+            toAdd.push(Translation.create(p, lang, translations[p], DateTime.now().plus(this.config.validity).toISO()));
+            this.phrases[p].next(translations[p]);
+          });
+          db.translations.bulkAdd(toAdd);
+          this.requesting[lang] = [];
         this.requestTimerSubscription!.unsubscribe();
         this.requestTimerSubscription = null;
         s.unsubscribe();
-      });
+        });
     });
   }
 
@@ -194,6 +194,6 @@ export class RpxTranslationService {
   }
 
   private getPersistedLanguage(): RpxLanguage {
-    return document.cookie.split(';').find(cookie => cookie.trim().startsWith(this.languageKey + '='))?.split('=')[1].trim() as RpxLanguage;
+    return document.cookie.split(';').find((cookie) => cookie.trim().startsWith(this.languageKey + '='))?.split('=')[1].trim() as RpxLanguage;
   }
 }

@@ -29,7 +29,7 @@ describe('RpxTranslationService', () => {
 
   afterEach(() => {
     httpMock.verify();
-    db.delete().catch(error => console.error('Error deleting db', error));
+    db.delete().catch((error) => console.error('Error deleting db', error));
   });
 
   it('should be created', () => {

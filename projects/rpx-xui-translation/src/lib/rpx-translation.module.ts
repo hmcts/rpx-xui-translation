@@ -10,7 +10,6 @@ import { RpxTranslationService } from './rpx-translation.service';
   exports: [RpxTranslatePipe]
 })
 export class RpxTranslationModule {
-
   public static forRoot(config: RpxTranslationConfig): ModuleWithProviders<RpxTranslationModule> {
     return {
       ngModule: RpxTranslationModule,

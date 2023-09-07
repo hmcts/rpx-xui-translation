@@ -4,36 +4,36 @@ import { RpxLanguage } from './rpx-language.enum';
 import { TranslatedData } from './models/translated-data.model';
 
 export class Translation {
-    id?: number;
-    phrase: string;
-    lang: RpxLanguage;
-    translation: TranslatedData;
-    validity: string;
+  id?: number;
+  phrase: string;
+  lang: RpxLanguage;
+  translation: TranslatedData;
+  validity: string;
 
-    public static create(phrase: string, lang: RpxLanguage, translation: TranslatedData, validity: string): Translation {
-        const t = new Translation();
-        t.phrase = phrase;
-        t.lang = lang;
-        t.translation = translation;
-        t.validity = validity;
-        return t;
-    }
+  public static create(phrase: string, lang: RpxLanguage, translation: TranslatedData, validity: string): Translation {
+    const t = new Translation();
+    t.phrase = phrase;
+    t.lang = lang;
+    t.translation = translation;
+    t.validity = validity;
+    return t;
+  }
 
-    isExpired(): boolean {
-        return DateTime.fromISO(this.validity) < DateTime.now();
-    }
+  isExpired(): boolean {
+    return DateTime.fromISO(this.validity) < DateTime.now();
+  }
 }
 
 export class TranslationDB extends Dexie {
-    translations: Table<Translation, number>;
+  translations: Table<Translation, number>;
 
-    constructor() {
-        super('RpxTranslations');
-        this.version(1).stores({
-            translations: '++id, [phrase+lang]'
-        });
-        this.translations.mapToClass(Translation);
-    }
+  constructor() {
+    super('RpxTranslations');
+    this.version(1).stores({
+      translations: '++id, [phrase+lang]'
+    });
+    this.translations.mapToClass(Translation);
+  }
 }
 
 export const db = new TranslationDB();

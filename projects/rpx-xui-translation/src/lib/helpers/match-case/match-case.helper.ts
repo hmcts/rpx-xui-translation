@@ -5,7 +5,6 @@ export const matchCase = (str1: string, str2: string) => {
 
   if (str1.charAt(0).toUpperCase() === str1.charAt(0)) {
     return `${str2.charAt(0).toUpperCase()}${str2.slice(1)}`;
-  } else {
-    return str2.toLowerCase();
   }
+  return str2.toLowerCase();
 };

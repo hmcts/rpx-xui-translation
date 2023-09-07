@@ -29,6 +29,10 @@ export class RpxTranslationService {
   private languageSource: BehaviorSubject<RpxLanguage> = new BehaviorSubject<RpxLanguage>(this.currentLanguage);
   public language$: Observable<RpxLanguage>;
 
+  public get language(): RpxLanguage {
+    return this.currentLanguage;
+  }
+
   public set language(lang: RpxLanguage) {
     if (lang !== this.currentLanguage) {
       this.currentLanguage = lang;
@@ -36,10 +40,6 @@ export class RpxTranslationService {
       this.languageSource.next(lang);
       Object.keys(this.phrases).forEach((phrase) => this.translate(phrase));
     }
-  }
-
-  public get language(): RpxLanguage {
-    return this.currentLanguage;
   }
 
   constructor(
@@ -115,7 +115,7 @@ export class RpxTranslationService {
             this.load(phrase, lang);
           }
         }),
-      ).subscribe(() => {});
+      ).subscribe(() => ({}));
     }
 
     return this.observables[phrase];
@@ -158,7 +158,7 @@ export class RpxTranslationService {
             const translatedData: { [from: string]: TranslatedData } = {};
 
             Object.keys(translations).forEach((p) => {
-              if (typeof(translations[p]) === 'string') {
+              if (typeof (translations[p]) === 'string') {
                 translatedData[p] = { phrase: translations[p] as string };
               } else {
                 translatedData[p] = translations[p] as TranslatedData;
@@ -182,9 +182,9 @@ export class RpxTranslationService {
           });
           db.translations.bulkAdd(toAdd);
           this.requesting[lang] = [];
-        this.requestTimerSubscription!.unsubscribe();
-        this.requestTimerSubscription = null;
-        s.unsubscribe();
+          this.requestTimerSubscription!.unsubscribe();
+          this.requestTimerSubscription = null;
+          s.unsubscribe();
         });
     });
   }

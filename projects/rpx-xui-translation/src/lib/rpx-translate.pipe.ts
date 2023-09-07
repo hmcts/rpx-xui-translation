@@ -1,11 +1,7 @@
 import { AsyncPipe } from '@angular/common';
 import { ChangeDetectorRef, Injector, OnDestroy, Pipe, PipeTransform } from '@angular/core';
 import { Observable } from 'rxjs';
-import { YesOrNoValue } from './rpx-language.enum';
 import { Replacements, RpxTranslationService } from './rpx-translation.service';
-import { TranslatedData } from './models/translated-data.model';
-import { replacePlaceholders } from './helpers/replace-placeholders/replace-placeholders.helper';
-import { matchCase } from './helpers/match-case/match-case.helper';
 
 @Pipe({
   name: 'rpxTranslate',

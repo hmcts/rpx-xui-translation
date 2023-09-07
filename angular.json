@@ -38,7 +38,7 @@
           "options": {
             "eslintConfig": ".eslintrc.js",
             "lintFilePatterns": [
-              "**/*.ts"
+              "projects/**/*.ts"
             ]
           }
         }

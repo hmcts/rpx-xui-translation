@@ -15,7 +15,7 @@
     "start:no-open": "ng serve",
     "build": "ng build rpx-xui-translation --configuration production",
     "test": "ng test rpx-xui-translation",
-    "lint": "echo \\'ng lint\\' skipped as it is broken!",
+    "lint": "ng lint",
     "e2e": "ng e2e",
     "install-all": "yarn install && cd projects/rpx-xui-translation && yarn install && cd ../.."
   },
@@ -40,11 +40,19 @@
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^15.2.9",
+    "@angular-eslint/builder": "16.1.0",
+    "@angular-eslint/eslint-plugin": "16.1.0",
+    "@angular-eslint/eslint-plugin-template": "16.1.0",
+    "@angular-eslint/schematics": "16.1.0",
+    "@angular-eslint/template-parser": "16.1.0",
     "@angular/cli": "^15.2.9",
     "@angular/compiler-cli": "^15.2.9",
     "@types/jasmine": "~3.6.0",
     "@types/jasminewd2": "~2.0.3",
     "@types/node": "^18.17.0",
+    "@typescript-eslint/eslint-plugin": "5.62.0",
+    "@typescript-eslint/parser": "5.62.0",
+    "eslint": "^8.44.0",
     "codelyzer": "^6.0.0",
     "jasmine-core": "~3.6.0",
     "jasmine-spec-reporter": "~5.0.0",
@@ -56,7 +64,6 @@
     "ng-packagr": "^15.2.2",
     "protractor": "~7.0.0",
     "ts-node": "10.8.1",
-    "tslint": "~6.1.0",
     "typescript": "~4.9.5"
   }
 }

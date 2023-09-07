@@ -32,6 +32,15 @@
             "tsConfig": "projects/rpx-xui-translation/tsconfig.spec.json",
             "karmaConfig": "projects/rpx-xui-translation/karma.conf.js"
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "eslintConfig": ".eslintrc.js",
+            "lintFilePatterns": [
+              "**/*.ts"
+            ]
+          }
         }
       }
     },

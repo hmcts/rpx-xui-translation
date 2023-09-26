@@ -3,8 +3,8 @@
   "version": "1.0.0-NodeAndNgUpgrades-02",
   "private": false,
   "peerDependencies": {
-    "@angular/common": "^9.1.13",
-    "@angular/core": "^9.1.13"
+    "@angular/common": "^15.2.9",
+    "@angular/core": "^15.2.9"
   },
   "dependencies": {
     "dexie": "^3.2.2",

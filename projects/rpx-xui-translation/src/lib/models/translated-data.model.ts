@@ -1,5 +1,5 @@
 export interface TranslatedData {
-  phrase: string;
+  translation: string;
   yesOrNoField?: boolean;
   yes?: string;
   no?: string;

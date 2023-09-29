@@ -139,7 +139,7 @@ export class RpxTranslationService {
       return;
     }
 
-    if (phrase) { 
+    if (phrase) {
       this.requesting[lang].push(phrase);
     }
 

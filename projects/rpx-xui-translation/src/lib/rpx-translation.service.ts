@@ -139,7 +139,9 @@ export class RpxTranslationService {
       return;
     }
 
-    this.requesting[lang].push(phrase);
+    if (phrase) { 
+      this.requesting[lang].push(phrase);
+    }
 
     if (this.requestTimerSubscription) {
       this.requestTimerSubscription.unsubscribe();

@@ -72,9 +72,9 @@ export class RpxTranslationService {
     const isYes = yesOrNoValue?.toLowerCase() === YesOrNoValue.YES.toLowerCase();
     const isNo = yesOrNoValue?.toLowerCase() === YesOrNoValue.NO.toLowerCase();
 
-    return this.getTranslatedData(phrase).pipe(map(translatedData => {
-      const yesOrNoTranslated = (isYes ? (translatedData.yes || yesOrNoValue) : yesOrNoValue) ||
-        (isNo ? (translatedData.no || yesOrNoValue) : yesOrNoValue);
+    return this.getTranslatedData(phrase).pipe(map((translatedData: TranslatedData) => {
+      const yesOrNoTranslated = isYes ? (translatedData.yes || yesOrNoValue)
+              : (translatedData.no || yesOrNoValue);
       return matchCase(yesOrNoValue!, yesOrNoTranslated);
       }
     ));
@@ -139,9 +139,12 @@ export class RpxTranslationService {
       return;
     }
 
-    if (phrase) {
-      this.requesting[lang].push(phrase);
+    // Prevent making a API call with empty array of phrase
+    if (phrase.length === 0) {
+      return;
     }
+
+    this.requesting[lang].push(phrase);
 
     if (this.requestTimerSubscription) {
       this.requestTimerSubscription.unsubscribe();

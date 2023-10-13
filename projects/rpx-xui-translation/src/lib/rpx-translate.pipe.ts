@@ -18,7 +18,7 @@ export class RpxTranslatePipe implements PipeTransform, OnDestroy {
   }
 
   public transform<T = string>(value: T, replacements?: Replacements | null, yesOrNoValue?: string): T | null {
-    if (value && typeof value === 'string' ) {
+    if (value && typeof value === 'string' && value.toString().trim()) {
       let o: Observable<string>;
       if (replacements) {
         o = this.translationService.getTranslationWithReplacements$(value, replacements);

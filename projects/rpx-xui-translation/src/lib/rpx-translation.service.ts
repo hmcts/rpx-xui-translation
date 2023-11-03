@@ -182,7 +182,7 @@ export class RpxTranslationService {
           });
           db.translations.bulkAdd(toAdd);
           this.requesting[lang] = [];
-          this.requestTimerSubscription!.unsubscribe();
+          this.requestTimerSubscription?.unsubscribe();
           this.requestTimerSubscription = null;
           s.unsubscribe();
         });

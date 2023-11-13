@@ -1,11 +1,7 @@
 import { AsyncPipe } from '@angular/common';
 import { ChangeDetectorRef, Injector, OnDestroy, Pipe, PipeTransform } from '@angular/core';
 import { Observable } from 'rxjs';
-import { YesOrNoValue } from './rpx-language.enum';
 import { Replacements, RpxTranslationService } from './rpx-translation.service';
-import { TranslatedData } from './models/translated-data.model';
-import { replacePlaceholders } from './helpers/replace-placeholders/replace-placeholders.helper';
-import { matchCase } from './helpers/match-case/match-case.helper';
 
 @Pipe({
   name: 'rpxTranslate',
@@ -22,7 +18,7 @@ export class RpxTranslatePipe implements PipeTransform, OnDestroy {
   }
 
   public transform<T = string>(value: T, replacements?: Replacements | null, yesOrNoValue?: string): T | null {
-    if (typeof value === 'string') {
+    if (value && typeof value === 'string' && value.toString().trim()) {
       let o: Observable<string>;
       if (replacements) {
         o = this.translationService.getTranslationWithReplacements$(value, replacements);

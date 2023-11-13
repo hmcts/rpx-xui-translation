@@ -5,11 +5,11 @@ import { DateTime } from 'luxon';
 import { BehaviorSubject, from, Observable, of, Subscription, timer } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { db, Translation } from './db';
+import { matchCase } from './helpers/match-case/match-case.helper';
+import { replacePlaceholders } from './helpers/replace-placeholders/replace-placeholders.helper';
+import { TranslatedData } from './models/translated-data.model';
 import { RpxLanguage, YesOrNoValue } from './rpx-language.enum';
 import { RpxTranslationConfig } from './rpx-translation.config';
-import { TranslatedData } from './models/translated-data.model';
-import { replacePlaceholders } from './helpers/replace-placeholders/replace-placeholders.helper';
-import { matchCase } from './helpers/match-case/match-case.helper';
 
 interface TranslationsDTO {
   translations: { [from: string]: string | TranslatedData };
@@ -58,13 +58,13 @@ export class RpxTranslationService {
 
   public getTranslation$(phrase: string): Observable<string> {
     return this.getTranslatedData(phrase).pipe(
-      map(t => t.phrase)
+      map(t => t.translation)
     );
   }
 
   public getTranslationWithReplacements$(phrase: string, replacements: Replacements): Observable<string> {
     return this.getTranslatedData(phrase).pipe(
-      map(translatedData => replacePlaceholders(translatedData.phrase, replacements))
+      map(translatedData => replacePlaceholders(translatedData.translation, replacements))
     );
   }
 
@@ -72,9 +72,9 @@ export class RpxTranslationService {
     const isYes = yesOrNoValue?.toLowerCase() === YesOrNoValue.YES.toLowerCase();
     const isNo = yesOrNoValue?.toLowerCase() === YesOrNoValue.NO.toLowerCase();
 
-    return this.getTranslatedData(phrase).pipe(map(translatedData => {
-      const yesOrNoTranslated = (isYes ? (translatedData.yes || yesOrNoValue) : yesOrNoValue) ||
-        (isNo ? (translatedData.no || yesOrNoValue) : yesOrNoValue);
+    return this.getTranslatedData(phrase).pipe(map((translatedData: TranslatedData) => {
+      const yesOrNoTranslated = isYes ? (translatedData.yes || yesOrNoValue)
+              : (translatedData.no || yesOrNoValue);
       return matchCase(yesOrNoValue!, yesOrNoTranslated);
       }
     ));
@@ -91,12 +91,12 @@ export class RpxTranslationService {
   private translate(phrase: string): Observable<TranslatedData> {
     const lang = this.language;
     if (!this.phrases.hasOwnProperty(phrase)) {
-      this.phrases[phrase] = new BehaviorSubject<TranslatedData>({phrase});
+      this.phrases[phrase] = new BehaviorSubject<TranslatedData>({translation: phrase});
       this.observables[phrase] = this.phrases[phrase].asObservable();
     }
 
     if (lang === 'en') {
-      this.phrases[phrase].next({phrase});
+      this.phrases[phrase].next({translation: phrase});
     } else {
       from(liveQuery(() => db.translations.where('[phrase+lang]').equals([phrase, lang]).first())).pipe(
         tap(t => {
@@ -108,7 +108,7 @@ export class RpxTranslationService {
               db.translations.delete(t.id!);
             }
             this.phrases[phrase].next({
-              phrase: `${phrase} [Translation in progress]`,
+              translation: `${phrase} [Translation in progress]`,
               yes: 'Yes [Translation in progress]',
               no: 'No [Translation in progress]'
             });
@@ -124,7 +124,7 @@ export class RpxTranslationService {
   private load(phrase: string, lang: RpxLanguage): void {
     if (lang === 'en') {
       this.phrases[phrase].next({
-        phrase,
+        translation: phrase,
         yes: 'Yes',
         no: 'No'
       });
@@ -136,6 +136,11 @@ export class RpxTranslationService {
     }
 
     if (this.requesting[lang].indexOf(phrase) !== -1) {
+      return;
+    }
+
+    // Prevent making a API call with empty array of phrase
+    if (phrase.length === 0) {
       return;
     }
 
@@ -159,7 +164,7 @@ export class RpxTranslationService {
 
             Object.keys(translations).forEach(p => {
               if (typeof(translations[p]) === 'string') {
-                translatedData[p] = { phrase: translations[p] as string };
+                translatedData[p] = { translation: translations[p] as string };
               } else {
                 translatedData[p] = translations[p] as TranslatedData;
               }
@@ -170,7 +175,7 @@ export class RpxTranslationService {
           catchError(() => {
             const translations: { [from: string]: TranslatedData } = {};
             this.requesting[lang].forEach(p => (
-              translations[p] = this.config.testMode ? { phrase: `[Test translation for ${p}]` } : { phrase: p })
+              translations[p] = this.config.testMode ? { translation: `[Test translation for ${p}]` } : { translation: p })
             );
             return of(translations);
           })

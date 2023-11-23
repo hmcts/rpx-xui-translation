@@ -58,13 +58,13 @@ export class RpxTranslationService {
 
   public getTranslation$(phrase: string): Observable<string> {
     return this.getTranslatedData(phrase).pipe(
-      map(t => t.translation)
+      map((t) => t.translation)
     );
   }
 
   public getTranslationWithReplacements$(phrase: string, replacements: Replacements): Observable<string> {
     return this.getTranslatedData(phrase).pipe(
-      map(translatedData => replacePlaceholders(translatedData.translation, replacements))
+      map((translatedData) => replacePlaceholders(translatedData.translation, replacements))
     );
   }
 
@@ -74,7 +74,7 @@ export class RpxTranslationService {
 
     return this.getTranslatedData(phrase).pipe(map((translatedData: TranslatedData) => {
       const yesOrNoTranslated = isYes ? (translatedData.yes || yesOrNoValue)
-              : (translatedData.no || yesOrNoValue);
+        : (translatedData.no || yesOrNoValue);
       return matchCase(yesOrNoValue!, yesOrNoTranslated);
     }
     ));
@@ -91,12 +91,12 @@ export class RpxTranslationService {
   private translate(phrase: string): Observable<TranslatedData> {
     const lang = this.language;
     if (!this.phrases.hasOwnProperty(phrase)) {
-      this.phrases[phrase] = new BehaviorSubject<TranslatedData>({translation: phrase});
+      this.phrases[phrase] = new BehaviorSubject<TranslatedData>({ translation: phrase });
       this.observables[phrase] = this.phrases[phrase].asObservable();
     }
 
     if (lang === 'en') {
-      this.phrases[phrase].next({translation: phrase});
+      this.phrases[phrase].next({ translation: phrase });
     } else {
       from(liveQuery(() => db.translations.where('[phrase+lang]').equals([phrase, lang]).first())).pipe(
         tap((t) => {
@@ -162,7 +162,7 @@ export class RpxTranslationService {
           map((translations) => {
             const translatedData: { [from: string]: TranslatedData } = {};
 
-            Object.keys(translations).forEach(p => {
+            Object.keys(translations).forEach((p) => {
               if (typeof(translations[p]) === 'string') {
                 translatedData[p] = { translation: translations[p] as string };
               } else {
@@ -174,7 +174,7 @@ export class RpxTranslationService {
           }),
           catchError(() => {
             const translations: { [from: string]: TranslatedData } = {};
-            this.requesting[lang].forEach(p => (
+            this.requesting[lang].forEach((p) => (
               translations[p] = this.config.testMode ? { translation: `[Test translation for ${p}]` } : { translation: p })
             );
             return of(translations);

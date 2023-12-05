@@ -8,7 +8,6 @@ import { RpxLanguage } from '../../../rpx-xui-translation/src/lib/rpx-language.e
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-
   public get currentLang() {
     return this.langService.language;
   }

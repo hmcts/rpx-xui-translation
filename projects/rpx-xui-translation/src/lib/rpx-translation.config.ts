@@ -11,9 +11,9 @@ export type ValidityDurationSpec = {
 };
 
 export class RpxTranslationConfig {
-    validity: ValidityDurationSpec;
-    baseUrl: string;
+  validity: ValidityDurationSpec;
+  baseUrl: string;
 
-    debounceTimeMs = 300;
-    testMode = false;
+  debounceTimeMs = 300;
+  testMode = false;
 }

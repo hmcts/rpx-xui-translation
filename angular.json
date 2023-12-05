@@ -14,7 +14,7 @@
       "prefix": "rpx",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-ng-packagr:build",
+          "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
             "tsConfig": "projects/rpx-xui-translation/tsconfig.lib.json",
             "project": "projects/rpx-xui-translation/ng-package.json"
@@ -34,14 +34,11 @@
           }
         },
         "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
+          "builder": "@angular-eslint/builder:lint",
           "options": {
-            "tsConfig": [
-              "projects/rpx-xui-translation/tsconfig.lib.json",
-              "projects/rpx-xui-translation/tsconfig.spec.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
+            "eslintConfig": ".eslintrc.js",
+            "lintFilePatterns": [
+              "projects/**/*.ts"
             ]
           }
         }
@@ -66,7 +63,6 @@
             "main": "projects/rpx-xui-translation-demo/src/main.ts",
             "polyfills": "projects/rpx-xui-translation-demo/src/polyfills.ts",
             "tsConfig": "projects/rpx-xui-translation-demo/tsconfig.app.json",
-            "aot": true,
             "assets": [
               "projects/rpx-xui-translation-demo/src/favicon.ico",
               "projects/rpx-xui-translation-demo/src/assets"
@@ -74,7 +70,13 @@
             "styles": [
               "projects/rpx-xui-translation-demo/src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "vendorChunk": true,
+            "extractLicenses": false,
+            "buildOptimizer": false,
+            "sourceMap": true,
+            "optimization": false,
+            "namedChunks": true
           },
           "configurations": {
             "production": {
@@ -87,7 +89,6 @@
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,
-              "extractCss": true,
               "namedChunks": false,
               "extractLicenses": true,
               "vendorChunk": false,
@@ -105,7 +106,8 @@
                 }
               ]
             }
-          }
+          },
+          "defaultConfiguration": ""
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
@@ -141,19 +143,6 @@
             "scripts": []
           }
         },
-        "lint": {
-          "builder": "@angular-devkit/build-angular:tslint",
-          "options": {
-            "tsConfig": [
-              "projects/rpx-xui-translation-demo/tsconfig.app.json",
-              "projects/rpx-xui-translation-demo/tsconfig.spec.json",
-              "projects/rpx-xui-translation-demo/e2e/tsconfig.json"
-            ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
-          }
-        },
         "e2e": {
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
@@ -168,6 +157,5 @@
         }
       }
     }
-  },
-  "defaultProject": "rpx-xui-translation"
+  }
 }

@@ -15,7 +15,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "importHelpers": true,
-    "target": "es2015",
+    "target": "es2022",
     "lib": [
       "es2018",
       "dom"
@@ -25,7 +25,8 @@
         "dist/rpx-xui-translation/rpx-xui-translation",
         "dist/rpx-xui-translation"
       ]
-    }
+    },
+    "useDefineForClassFields": false
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,

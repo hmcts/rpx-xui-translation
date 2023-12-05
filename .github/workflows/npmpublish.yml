@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
         with:
-          node-version: 12
+          node-version: 18
       - run: yarn run install-all
       - run: yarn lint
       - run: yarn build:library
@@ -34,7 +34,7 @@ jobs:
       - uses: actions/setup-node@v1
         if: startsWith(github.ref, 'refs/tags')
         with:
-          node-version: 12
+          node-version: 18
           registry-url: https://registry.npmjs.org/
       - run:  yarn install-all && yarn build:library && cd dist/rpx-xui-translation && yarn publish
         if: startsWith(github.ref, 'refs/tags')

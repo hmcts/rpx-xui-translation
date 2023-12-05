@@ -1,15 +1,15 @@
 {
   "name": "rpx-xui-translation",
-  "version": "0.2.3-yes-no-bug-fix-v4",
+  "version": "1.0.2",
   "private": false,
   "peerDependencies": {
-    "@angular/common": "^9.1.13",
-    "@angular/core": "^9.1.13"
+    "@angular/common": "^15.2.9",
+    "@angular/core": "^15.2.9"
   },
   "dependencies": {
     "dexie": "^3.2.2",
     "luxon": "^2.4.0",
-    "tslib": "^1.10.0"
+    "tslib": "^2.0.0"
   },
   "devDependencies": {
     "@types/luxon": "^2.3.2"

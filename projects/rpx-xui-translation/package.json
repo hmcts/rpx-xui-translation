@@ -1,6 +1,6 @@
 {
   "name": "rpx-xui-translation",
-  "version": "1.0.3-angular-upgrade-17",
+  "version": "1.0.3-angular-upgrade-17-rc",
   "private": false,
   "peerDependencies": {
     "@angular/common": "^15.2.9",

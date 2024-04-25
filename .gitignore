@@ -48,3 +48,5 @@ Thumbs.db
 
 #lib specific
 projects/rpx-xui-translation/node_modules
+
+.nx/

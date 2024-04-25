@@ -112,18 +112,18 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "rpx-xui-translation-demo:build"
+            "buildTarget": "rpx-xui-translation-demo:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "rpx-xui-translation-demo:build:production"
+              "buildTarget": "rpx-xui-translation-demo:build:production"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "rpx-xui-translation-demo:build"
+            "buildTarget": "rpx-xui-translation-demo:build"
           }
         },
         "test": {

@@ -61,7 +61,9 @@
             "outputPath": "dist/rpx-xui-translation-demo",
             "index": "projects/rpx-xui-translation-demo/src/index.html",
             "main": "projects/rpx-xui-translation-demo/src/main.ts",
-            "polyfills": "projects/rpx-xui-translation-demo/src/polyfills.ts",
+            "polyfills": [
+              "zone.js"
+            ],
             "tsConfig": "projects/rpx-xui-translation-demo/tsconfig.app.json",
             "assets": [
               "projects/rpx-xui-translation-demo/src/favicon.ico",
@@ -130,7 +132,10 @@
           "builder": "@angular-devkit/build-angular:karma",
           "options": {
             "main": "projects/rpx-xui-translation-demo/src/test.ts",
-            "polyfills": "projects/rpx-xui-translation-demo/src/polyfills.ts",
+            "polyfills": [
+              "zone.js",
+              "zone.js/testing"
+            ],
             "tsConfig": "projects/rpx-xui-translation-demo/tsconfig.spec.json",
             "karmaConfig": "projects/rpx-xui-translation-demo/karma.conf.js",
             "assets": [

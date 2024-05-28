@@ -70,7 +70,6 @@ export class RpxTranslationService {
 
   public getTranslationWithYesOrNo$(phrase: string, yesOrNoValue: string): Observable<string> {
     const isYes = yesOrNoValue?.toLowerCase() === YesOrNoValue.YES.toLowerCase();
-    const isNo = yesOrNoValue?.toLowerCase() === YesOrNoValue.NO.toLowerCase();
 
     return this.getTranslatedData(phrase).pipe(map((translatedData: TranslatedData) => {
       const yesOrNoTranslated = isYes ? (translatedData.yes || yesOrNoValue)

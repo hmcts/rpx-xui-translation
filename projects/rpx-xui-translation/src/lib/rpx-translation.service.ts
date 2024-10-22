@@ -6,7 +6,7 @@ import { BehaviorSubject, from, Observable, of, Subscription, timer } from 'rxjs
 import { catchError, map, tap } from 'rxjs/operators';
 import { db, Translation } from './db';
 import { matchCase } from './helpers/match-case/match-case.helper';
-import { replacePlaceholders } from './helpers/replace-placeholders/replace-placeholders.helper';
+import { replacePlaceholders, splitPhraseIntoComponents } from './helpers/replace-placeholders/replace-placeholders.helper';
 import { TranslatedData } from './models/translated-data.model';
 import { RpxLanguage, YesOrNoValue } from './rpx-language.enum';
 import { RpxTranslationConfig } from './rpx-translation.config';
@@ -64,7 +64,12 @@ export class RpxTranslationService {
 
   public getTranslationWithReplacements$(phrase: string, replacements: Replacements): Observable<string> {
     return this.getTranslatedData(phrase).pipe(
-      map((translatedData) => replacePlaceholders(translatedData.translation, replacements))
+      map((translatedData) => {
+        const translatedComponents = splitPhraseIntoComponents(translatedData.translation, replacements);
+        console.log('translatedComponents', translatedComponents);
+        // Now join the components back into a single string after translation
+        return translatedComponents.join(' ');
+      })
     );
   }
 

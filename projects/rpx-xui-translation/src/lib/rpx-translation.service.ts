@@ -6,7 +6,7 @@ import { BehaviorSubject, from, Observable, of, Subscription, timer } from 'rxjs
 import { catchError, map, tap } from 'rxjs/operators';
 import { db, Translation } from './db';
 import { matchCase } from './helpers/match-case/match-case.helper';
-import { replacePlaceholders, splitPhraseIntoComponents } from './helpers/replace-placeholders/replace-placeholders.helper';
+import { splitPhraseIntoComponents } from './helpers/replace-placeholders/replace-placeholders.helper';
 import { TranslatedData } from './models/translated-data.model';
 import { RpxLanguage, YesOrNoValue } from './rpx-language.enum';
 import { RpxTranslationConfig } from './rpx-translation.config';

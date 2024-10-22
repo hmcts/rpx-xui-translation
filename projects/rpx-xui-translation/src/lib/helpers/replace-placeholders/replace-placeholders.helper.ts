@@ -19,9 +19,9 @@ export const splitPhraseIntoComponents = (phrase: string, replacements: Replacem
   // Iterate over the object keys (replacements) and perform replacements
   Object.keys(replacements).forEach((key) => {
     const placeholder = `%${key}%`; // Construct the placeholder string to search for
- 
+
     const parts = phrase.split(placeholder); // Split the phrase using the placeholder
-   
+
     // Clear the result array and process the components
     parts.forEach((part, index) => {
       if (index < parts.length - 1) {
@@ -36,6 +36,6 @@ export const splitPhraseIntoComponents = (phrase: string, replacements: Replacem
     // Join the split parts back to phrase to handle multiple placeholders
     phrase = parts.join(' ').trim();
   });
-console.log('result', result);
+  console.log('result', result);
   return result;
 };

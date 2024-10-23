@@ -22,7 +22,6 @@ export class RpxTranslatePipe implements PipeTransform, OnDestroy {
       let o: Observable<string>;
       if (replacements) {
         o = this.translationService.getTranslationWithReplacements$(value, replacements);
-        console.log('value', value, typeof value, replacements);
         o.subscribe((x) => console.log('x------', x));
       } else if (yesOrNoValue) {
         o = this.translationService.getTranslationWithYesOrNo$(value, yesOrNoValue);

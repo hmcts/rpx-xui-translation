@@ -15,5 +15,5 @@ export class RpxTranslationConfig {
   baseUrl: string;
 
   debounceTimeMs = 300;
-  testMode = false;
+  testMode = true;
 }

@@ -24,18 +24,18 @@ export const splitPhraseIntoComponents = (phrase: string, replacements: Replacem
 
     // Clear the result array and process the components
     parts.forEach((part, index) => {
+      const trimmedPart = part.trim();
+
+      if (trimmedPart) {
+        result.push(trimmedPart); // Add only non-empty parts
+      }
+
       if (index < parts.length - 1) {
-        // Add the current part and the replacement value to the result
-        result.push(part.trim(), replacements[key]);
-      } else {
-        // Add the last part (remaining text after the last placeholder)
-        result.push(part.trim());
+        result.push(replacements[key]); // Add the replacement value
       }
     });
-    console.log('parts----', parts);
     // Join the split parts back to phrase to handle multiple placeholders
     phrase = parts.join(' ').trim();
   });
-  console.log('result', result);
   return result;
 };

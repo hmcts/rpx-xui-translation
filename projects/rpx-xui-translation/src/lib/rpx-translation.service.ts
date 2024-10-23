@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { liveQuery } from 'dexie';
 import { DateTime } from 'luxon';
-import { BehaviorSubject, from, Observable, of, Subscription, timer } from 'rxjs';
+import { BehaviorSubject, combineLatest, from, Observable, of, Subscription, timer } from 'rxjs';
 import { catchError, map, tap } from 'rxjs/operators';
 import { db, Translation } from './db';
 import { matchCase } from './helpers/match-case/match-case.helper';
@@ -63,13 +63,16 @@ export class RpxTranslationService {
   }
 
   public getTranslationWithReplacements$(phrase: string, replacements: Replacements): Observable<string> {
-    return this.getTranslatedData(phrase).pipe(
-      map((translatedData) => {
-        const translatedComponents = splitPhraseIntoComponents(translatedData.translation, replacements);
-        console.log('translatedComponents', translatedComponents);
-        // Now join the components back into a single string after translation
-        return translatedComponents.join(' ');
-      })
+    // Split the phrase into components first based on replacements
+    const components = splitPhraseIntoComponents(phrase, replacements);
+
+    // Translate each component individually using getTranslatedData and then combine them
+    const translatedComponents$ = components.map((component) => this.getTranslatedData(component).pipe(
+      map((translatedData) => translatedData.translation) // Extract the translated string
+    ));
+
+    return combineLatest(translatedComponents$).pipe(
+      map((values: string[]) => values.join(' ')) // Join the strings with a space or any separator
     );
   }
 

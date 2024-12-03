@@ -1,6 +1,6 @@
 {
   "name": "rpx-xui-translation",
-  "version": "1.0.4",
+  "version": "1.0.8",
   "description": "Facilitate translations in Reform programme applications in Angular",
   "main": "index.js",
   "repository": "git@github.com:hmcts/rpx-xui-translation.git",
@@ -32,7 +32,7 @@
     "@angular/platform-browser-dynamic": "^17.3.5",
     "@angular/router": "^17.3.5",
     "@types/luxon": "^2.4.0",
-    "dexie": "^3.2.3",
+    "dexie": "^4.0.8",
     "luxon": "^2.5.2",
     "rxjs": "~6.5.4",
     "tslib": "^2.0.0",

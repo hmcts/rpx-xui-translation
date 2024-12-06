@@ -16,29 +16,54 @@ export const replacePlaceholders = (input: string, replacements: Replacements) =
 export const splitPhraseIntoComponents = (phrase: string, replacements: Record<string, string>): string[] => {
   const result: string[] = [];
   const placeholders = Object.keys(replacements).map((key) => `%${key}%`);
+  phrase = phrase.trim();
 
   // Regular expression to match all placeholders in the phrase
   const placeholderRegex = new RegExp(placeholders.join('|'), 'g');
 
-  // Split the phrase into parts based on the placeholders
-  const parts = phrase.split(placeholderRegex);
+  let lastIndex = 0;
 
-  // Match placeholders in the phrase for adding their replacement values
-  const matches = phrase.match(placeholderRegex) || [];
+  // Helper function to split text into spaces and content
+  const splitTextIntoComponents = (text: string): string[] => {
+    const components: string[] = [];
+    const trimmed = text.trim();
 
-  // Iterate through parts and matches to build the result array
-  parts.forEach((part, index) => {
-    const trimmedPart = part.trim();
+    if (text.startsWith(' ')) {
+      components.push(' ');
+    } // Leading space
+    if (trimmed) {
+      components.push(trimmed);
+    } // Content (if any)
+    if (text.endsWith(' ')) {
+      components.push(' ');
+    } // Trailing space
 
-    if (trimmedPart) {
-      result.push(trimmedPart); // Add non-empty text parts
+    return components;
+  };
+
+  // Process the phrase by matching placeholders
+  phrase.replace(placeholderRegex, (placeholder, offset) => {
+    if (offset > lastIndex) {
+      // Add text before the placeholder
+      result.push(...splitTextIntoComponents(phrase.slice(lastIndex, offset)));
     }
 
-    if (matches[index]) {
-      const replacementKey = matches[index].slice(1, -1); // Remove surrounding '%' characters
-      result.push(replacements[replacementKey]); // Add the corresponding replacement value
+    // Add the replacement for the placeholder
+    const replacementKey = placeholder.slice(1, -1);
+    const replacement = replacements[replacementKey]?.trim();
+    if (replacement) {
+      result.push(replacement);
     }
+
+    lastIndex = offset + placeholder.length; // Update lastIndex
+    return ''; // Required by `replace`, but not used here
   });
+
+  // Add any remaining text after the last match
+  if (lastIndex < phrase.length) {
+    result.push(...splitTextIntoComponents(phrase.slice(lastIndex)));
+  }
 
   return result;
 };
+

@@ -14,6 +14,7 @@ export const replacePlaceholders = (input: string, replacements: Replacements) =
 
 // Helper method to split the phrase into components, preserving placeholders and text separately
 export const splitPhraseIntoComponents = (phrase: string, replacements: Record<string, string>): string[] => {
+  console.log('phrase, replacements----', phrase, replacements);
   const result: string[] = [];
   const placeholders = Object.keys(replacements).map((key) => `%${key}%`);
 
@@ -25,48 +26,45 @@ export const splitPhraseIntoComponents = (phrase: string, replacements: Record<s
   // Helper function to split text into spaces and content
   const splitTextIntoComponents = (text: string): string[] => {
     const components: string[] = [];
+    const trimmed = text.trim();
+
     if (text.startsWith(' ')) {
-      components.push(' '); // Add leading space
-      text = text.trimStart(); // Remove leading spaces
-    }
+      components.push(' ');
+    } // Leading space
+    if (trimmed) {
+      components.push(trimmed);
+    } // Content (if any)
     if (text.endsWith(' ')) {
-      text = text.trimEnd(); // Remove trailing spaces
-      components.push(text, ' '); // Add trimmed text and trailing space
-    } else if (text) {
-      components.push(text); // Only add the trimmed text
-    }
+      components.push(' ');
+    } // Trailing space
+
     return components;
   };
 
-  // Find all matches of placeholders in the phrase
-  let match;
-  while ((match = placeholderRegex.exec(phrase)) !== null) {
-    const placeholder = match[0]; // The matched placeholder (e.g., %CASEREFERENCE%)
-    const start = match.index; // Start index of the matched placeholder
-    const end = placeholderRegex.lastIndex; // End index of the matched placeholder
-
-    // Add any text before the placeholder
-    if (start > lastIndex) {
-      const textBeforePlaceholder = phrase.substring(lastIndex, start);
-      result.push(...splitTextIntoComponents(textBeforePlaceholder));
+  // Process the phrase by matching placeholders
+  phrase.replace(placeholderRegex, (placeholder, offset) => {
+    if (offset > lastIndex) {
+      // Add text before the placeholder
+      result.push(...splitTextIntoComponents(phrase.slice(lastIndex, offset)));
     }
 
-    // Replace the placeholder with its corresponding value from replacements
-    const replacementKey = placeholder.slice(1, -1); // Remove '%' from the placeholder to get the key (e.g., 'CASEREFERENCE')
-    if (replacements[replacementKey]) {
-      result.push(replacements[replacementKey].trim());
+    // Add the replacement for the placeholder
+    const replacementKey = placeholder.slice(1, -1);
+    const replacement = replacements[replacementKey]?.trim();
+    if (replacement) {
+      result.push(replacement);
     }
 
-    // Update the lastIndex to the end of the current match
-    lastIndex = end;
-  }
+    lastIndex = offset + placeholder.length; // Update lastIndex
+    return ''; // Required by `replace`, but not used here
+  });
 
   // Add any remaining text after the last match
   if (lastIndex < phrase.length) {
-    const remainingText = phrase.substring(lastIndex);
-    result.push(...splitTextIntoComponents(remainingText));
+    result.push(...splitTextIntoComponents(phrase.slice(lastIndex)));
   }
 
+  console.log('result----', result);
   return result;
 };
 

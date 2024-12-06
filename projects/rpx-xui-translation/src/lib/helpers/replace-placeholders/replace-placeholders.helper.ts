@@ -16,6 +16,7 @@ export const replacePlaceholders = (input: string, replacements: Replacements) =
 export const splitPhraseIntoComponents = (phrase: string, replacements: Record<string, string>): string[] => {
   const result: string[] = [];
   const placeholders = Object.keys(replacements).map((key) => `%${key}%`);
+  phrase = phrase.trim();
 
   // Regular expression to match all placeholders in the phrase
   const placeholderRegex = new RegExp(placeholders.join('|'), 'g');

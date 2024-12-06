@@ -20,25 +20,55 @@ export const splitPhraseIntoComponents = (phrase: string, replacements: Record<s
   // Regular expression to match all placeholders in the phrase
   const placeholderRegex = new RegExp(placeholders.join('|'), 'g');
 
-  // Split the phrase into parts based on the placeholders
-  const parts = phrase.split(placeholderRegex);
+  let lastIndex = 0;
 
-  // Match placeholders in the phrase for adding their replacement values
-  const matches = phrase.match(placeholderRegex) || [];
+  // Helper function to split text into spaces and content
+  const splitTextIntoComponents = (text: string): string[] => {
+    const components: string[] = [];
+    if (text.startsWith(' ')) {
+      components.push(' '); // Add leading space
+      text = text.trimStart(); // Remove leading spaces
+    }
+    if (text.endsWith(' ')) {
+      text = text.trimEnd(); // Remove trailing spaces
+      components.push(text, ' '); // Add trimmed text and trailing space
+    } else if (text) {
+      components.push(text); // Only add the trimmed text
+    }
+    return components;
+  };
 
-  // Iterate through parts and matches to build the result array
-  parts.forEach((part, index) => {
-    const trimmedPart = part.trim();
+  // Find all matches of placeholders in the phrase
+  let match;
+  while ((match = placeholderRegex.exec(phrase)) !== null) {
+    console.log('match----', match);
+    const placeholder = match[0]; // The matched placeholder (e.g., %CASEREFERENCE%)
+    const start = match.index; // Start index of the matched placeholder
+    const end = placeholderRegex.lastIndex; // End index of the matched placeholder
 
-    if (trimmedPart) {
-      result.push(trimmedPart); // Add non-empty text parts
+    // Add any text before the placeholder
+    if (start > lastIndex) {
+      const textBeforePlaceholder = phrase.substring(lastIndex, start);
+      result.push(...splitTextIntoComponents(textBeforePlaceholder));
     }
 
-    if (matches[index]) {
-      const replacementKey = matches[index].slice(1, -1); // Remove surrounding '%' characters
-      result.push(replacements[replacementKey]); // Add the corresponding replacement value
+    // Replace the placeholder with its corresponding value from replacements
+    const replacementKey = placeholder.slice(1, -1); // Remove '%' from the placeholder to get the key (e.g., 'CASEREFERENCE')
+    if (replacements[replacementKey]) {
+      console.log('replacements[replacementKey]----', replacements[replacementKey]);
+      result.push(replacements[replacementKey].trim());
     }
-  });
+
+    // Update the lastIndex to the end of the current match
+    lastIndex = end;
+  }
+
+  // Add any remaining text after the last match
+  if (lastIndex < phrase.length) {
+    const remainingText = phrase.substring(lastIndex);
+    result.push(...splitTextIntoComponents(remainingText));
+  }
 
   return result;
 };
+

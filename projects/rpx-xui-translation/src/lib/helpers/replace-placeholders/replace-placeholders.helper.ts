@@ -14,7 +14,6 @@ export const replacePlaceholders = (input: string, replacements: Replacements) =
 
 // Helper method to split the phrase into components, preserving placeholders and text separately
 export const splitPhraseIntoComponents = (phrase: string, replacements: Record<string, string>): string[] => {
-  console.log('phrase, replacements----', phrase, replacements);
   const result: string[] = [];
   const placeholders = Object.keys(replacements).map((key) => `%${key}%`);
 
@@ -64,7 +63,6 @@ export const splitPhraseIntoComponents = (phrase: string, replacements: Record<s
     result.push(...splitTextIntoComponents(phrase.slice(lastIndex)));
   }
 
-  console.log('result----', result);
   return result;
 };
 

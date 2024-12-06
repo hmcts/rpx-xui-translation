@@ -68,7 +68,7 @@ export class RpxTranslationService {
 
     // Translate each component individually using getTranslatedData and then combine them
     const translatedComponents$ = components.map((component) => this.getTranslatedData(component).pipe(
-      map((translatedData) => translatedData.translation || component) // Extract the translated string
+      map((translatedData) => translatedData.translation) // Extract the translated string
     ));
 
     return combineLatest(translatedComponents$).pipe(

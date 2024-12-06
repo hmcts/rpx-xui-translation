@@ -41,7 +41,6 @@ export const splitPhraseIntoComponents = (phrase: string, replacements: Record<s
   // Find all matches of placeholders in the phrase
   let match;
   while ((match = placeholderRegex.exec(phrase)) !== null) {
-    console.log('match----', match);
     const placeholder = match[0]; // The matched placeholder (e.g., %CASEREFERENCE%)
     const start = match.index; // Start index of the matched placeholder
     const end = placeholderRegex.lastIndex; // End index of the matched placeholder
@@ -55,7 +54,6 @@ export const splitPhraseIntoComponents = (phrase: string, replacements: Record<s
     // Replace the placeholder with its corresponding value from replacements
     const replacementKey = placeholder.slice(1, -1); // Remove '%' from the placeholder to get the key (e.g., 'CASEREFERENCE')
     if (replacements[replacementKey]) {
-      console.log('replacements[replacementKey]----', replacements[replacementKey]);
       result.push(replacements[replacementKey].trim());
     }
 

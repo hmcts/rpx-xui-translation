@@ -72,7 +72,7 @@ export class RpxTranslationService {
     ));
 
     return combineLatest(translatedComponents$).pipe(
-      map((values: string[]) => values.join('')) // Join the strings with a space or any separator
+      map((values: string[]) => values.join('')) // Join the strings without any separator
     );
   }
 

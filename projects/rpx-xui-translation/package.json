@@ -1,6 +1,6 @@
 {
   "name": "rpx-xui-translation",
-  "version": "1.0.10",
+  "version": "1.0.10-yarn-upgrade-4.5",
   "private": false,
   "peerDependencies": {
     "@angular/common": "^15.2.9",

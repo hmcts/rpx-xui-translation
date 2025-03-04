@@ -21,6 +21,7 @@ jobs:
       - uses: actions/setup-node@v1
         with:
           node-version: 18
+      - run: corepack enable && yarn --version
       - run: yarn run install-all
       - run: yarn lint
       - run: yarn build:library

@@ -22,7 +22,8 @@ jobs:
         with:
           node-version: 18
       - run: corepack enable && corepack prepare yarn@stable --activate
-      - run: yarn install-all
+      - run: yarn install
+      - run: cd projects/rpx-xui-translation && yarn install && cd ../..
       - run: yarn lint
       - run: yarn build:library
 

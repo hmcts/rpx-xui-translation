@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: 18
       - run: corepack enable
-      - run: yarn install
+      - run: yarn install-all
       - run: yarn lint
       - run: yarn build:library
 

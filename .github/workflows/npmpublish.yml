@@ -21,7 +21,7 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: 18
-      - run: corepack enable && corepack prepare yarn@stable --activate
+      - run: corepack enable
       - run: yarn install
       - run: cd projects/rpx-xui-translation && yarn install && cd ../..
       - run: yarn lint
@@ -38,7 +38,7 @@ jobs:
         with:
           node-version: 18
           registry-url: https://registry.npmjs.org/
-      - run: corepack enable && corepack use yarn@4.5 && yarn --version
+      - run: corepack enable
       - run: yarn install
       - run: cd projects/rpx-xui-translation && yarn install && cd ../..
       - run: yarn build:library && cd dist/rpx-xui-translation && yarn publish

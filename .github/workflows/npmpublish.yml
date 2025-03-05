@@ -17,8 +17,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v1
+      - uses: actions/setup-node@v1
         with:
           node-version: 18
       - run: corepack enable
@@ -31,9 +31,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v1
         if: startsWith(github.ref, 'refs/tags')
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v1
         if: startsWith(github.ref, 'refs/tags')
         with:
           node-version: 18

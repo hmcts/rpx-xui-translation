@@ -38,7 +38,10 @@ jobs:
         with:
           node-version: 18
           registry-url: https://registry.npmjs.org/
-      - run:  yarn install-all && yarn build:library && cd dist/rpx-xui-translation && yarn publish
+      - run: corepack enable && corepack prepare yarn@stable --activate
+      - run: yarn install
+      - run: cd projects/rpx-xui-translation && yarn install && cd ../..
+      - run: yarn build:library && cd dist/rpx-xui-translation && yarn publish
         if: startsWith(github.ref, 'refs/tags')
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_API_TOKEN }}

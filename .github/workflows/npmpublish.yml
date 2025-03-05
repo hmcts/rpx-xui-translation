@@ -38,7 +38,7 @@ jobs:
         with:
           node-version: 18
           registry-url: https://registry.npmjs.org/
-      - run: corepack enable && corepack prepare yarn@stable --activate
+      - run: corepack enable && corepack prepare yarn@stable --activate && yarn --version
       - run: yarn install
       - run: cd projects/rpx-xui-translation && yarn install && cd ../..
       - run: yarn build:library && cd dist/rpx-xui-translation && yarn publish

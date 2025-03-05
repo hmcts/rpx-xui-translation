@@ -40,6 +40,7 @@ jobs:
           registry-url: https://registry.npmjs.org/
       - run: corepack enable
       - run: yarn install
+      - run: cd projects/rpx-xui-translation && yarn install && cd ../..
       - run: yarn build:library --cwd projects/rpx-xui-translation
       - run: npm publish dist/rpx-xui-translation/ --ignore-scripts
         if: startsWith(github.ref, 'refs/tags')

@@ -50,3 +50,7 @@ Thumbs.db
 projects/rpx-xui-translation/node_modules
 
 .nx/
+.yarn/install-state
+.yarn/install-state.gz
+.yarnrc.yml
+projects/rpx-xui-translation/.yarn/install-state.gz

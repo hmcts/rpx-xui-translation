@@ -5,7 +5,7 @@ import { RpxTranslationConfig } from './rpx-translation.config';
 import { RpxTranslationService } from './rpx-translation.service';
 
 @NgModule({ declarations: [RpxTranslatePipe],
-    exports: [RpxTranslatePipe], imports: [], providers: [provideHttpClient(withInterceptorsFromDi())] })
+  exports: [RpxTranslatePipe], imports: [], providers: [provideHttpClient(withInterceptorsFromDi())] })
 export class RpxTranslationModule {
   public static forRoot(config: RpxTranslationConfig): ModuleWithProviders<RpxTranslationModule> {
     return {

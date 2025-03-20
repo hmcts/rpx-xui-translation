@@ -12,20 +12,20 @@ describe('RpxTranslationService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-    imports: [],
-    providers: [
+      imports: [],
+      providers: [
         RpxTranslationService,
         {
-            provide: RpxTranslationConfig,
-            useValue: {
-                baseUrl: 'translations',
-                debounceTimeMs: 500
-            }
+          provide: RpxTranslationConfig,
+          useValue: {
+            baseUrl: 'translations',
+            debounceTimeMs: 500
+          }
         },
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting()
-    ]
-});
+      ]
+    });
     service = TestBed.inject(RpxTranslationService);
     httpMock = TestBed.inject(HttpTestingController);
   });

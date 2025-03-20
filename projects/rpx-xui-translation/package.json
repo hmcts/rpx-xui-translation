@@ -1,9 +1,9 @@
 {
   "name": "rpx-xui-translation",
-  "version": "1.0.11-upgrade-18",
+  "version": "1.0.11-upgrade-18-2",
   "peerDependencies": {
-    "@angular/common": "^15.2.9",
-    "@angular/core": "^15.2.9"
+    "@angular/common": "^18.2.13",
+    "@angular/core": "^18.2.13"
   },
   "dependencies": {
     "dexie": "^3.2.2",

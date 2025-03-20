@@ -1,6 +1,6 @@
 {
   "name": "rpx-xui-translation",
-  "version": "1.0.11",
+  "version": "1.0.11-upgrade-18",
   "description": "Facilitate translations in Reform programme applications in Angular",
   "main": "index.js",
   "repository": "git@github.com:hmcts/rpx-xui-translation.git",
@@ -39,7 +39,7 @@
     "zone.js": "~0.14.10"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "^17.3.5",
+    "@angular-devkit/build-angular": "^18.2.15",
     "@angular-eslint/builder": "17.3.0",
     "@angular-eslint/eslint-plugin": "17.3.0",
     "@angular-eslint/eslint-plugin-template": "17.3.0",

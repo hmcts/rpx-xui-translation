@@ -206,7 +206,7 @@ export class RpxTranslationService {
   }
 
   private getPersistedLanguage(): RpxLanguage {
-    console.log(document.cookie.split(';').find((cookie) => cookie.trim().startsWith(this.languageKey + '='))?.split('=')[1].trim())
+    console.log(document.cookie.split(';').find((cookie) => cookie.trim().startsWith(this.languageKey + '='))?.split('=')[1].trim());
     return document.cookie.split(';').find((cookie) => cookie.trim().startsWith(this.languageKey + '='))?.split('=')[1].trim() as RpxLanguage;
   }
 }

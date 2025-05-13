@@ -202,7 +202,7 @@ export class RpxTranslationService {
   }
 
   private persistLanguage(): void {
-    document.cookie = `${this.languageKey}=${this.currentLanguage};`;
+    document.cookie = `${this.languageKey}-1=${this.currentLanguage}; SameSite=Strict;`;
   }
 
   private getPersistedLanguage(): RpxLanguage {

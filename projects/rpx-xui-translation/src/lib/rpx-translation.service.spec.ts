@@ -1,9 +1,10 @@
-import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { db } from './db';
 import { YesOrNoValue } from './rpx-language.enum';
 import { RpxTranslationConfig } from './rpx-translation.config';
 import { RpxTranslationService } from './rpx-translation.service';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 describe('RpxTranslationService', () => {
   let service: RpxTranslationService;
@@ -11,7 +12,7 @@ describe('RpxTranslationService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [],
       providers: [
         RpxTranslationService,
         {
@@ -20,7 +21,9 @@ describe('RpxTranslationService', () => {
             baseUrl: 'translations',
             debounceTimeMs: 500
           }
-        }
+        },
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting()
       ]
     });
     service = TestBed.inject(RpxTranslationService);

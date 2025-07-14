@@ -202,10 +202,11 @@ export class RpxTranslationService {
   }
 
   private persistLanguage(): void {
-    document.cookie = `${this.languageKey}=${this.currentLanguage};`;
+    document.cookie = `${this.languageKey}=${this.currentLanguage}; SameSite=Strict;`;
   }
 
   private getPersistedLanguage(): RpxLanguage {
+    console.log(document.cookie.split(';').find((cookie) => cookie.trim().startsWith(this.languageKey + '='))?.split('=')[1].trim());
     return document.cookie.split(';').find((cookie) => cookie.trim().startsWith(this.languageKey + '='))?.split('=')[1].trim() as RpxLanguage;
   }
 }

@@ -3,9 +3,10 @@ import { RpxTranslationService } from '../../../rpx-xui-translation/src/lib/rpx-
 import { RpxLanguage } from '../../../rpx-xui-translation/src/lib/rpx-language.enum';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.scss'],
+    standalone: false
 })
 export class AppComponent {
   public get currentLang() {

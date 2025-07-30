@@ -56,11 +56,12 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "outputPath": "dist/rpx-xui-translation-demo",
+            "outputPath": {
+              "base": "dist/rpx-xui-translation-demo"
+            },
             "index": "projects/rpx-xui-translation-demo/src/index.html",
-            "main": "projects/rpx-xui-translation-demo/src/main.ts",
             "polyfills": [
               "zone.js"
             ],
@@ -73,12 +74,11 @@
               "projects/rpx-xui-translation-demo/src/styles.scss"
             ],
             "scripts": [],
-            "vendorChunk": true,
             "extractLicenses": false,
-            "buildOptimizer": false,
             "sourceMap": true,
             "optimization": false,
-            "namedChunks": true
+            "namedChunks": true,
+            "browser": "projects/rpx-xui-translation-demo/src/main.ts"
           },
           "configurations": {
             "production": {
@@ -93,8 +93,6 @@
               "sourceMap": false,
               "namedChunks": false,
               "extractLicenses": true,
-              "vendorChunk": false,
-              "buildOptimizer": true,
               "budgets": [
                 {
                   "type": "initial",

@@ -7,5 +7,9 @@
 <p>{{'Translated Text' | rpxTranslate}}</p>
 
 
-<button (click)="toggleLanguage('cy')" *ngIf="currentLang == 'en'">Newid i'r Gymraeg</button>
-<button (click)="toggleLanguage('en')" *ngIf="currentLang == 'cy'">Change to English</button>
+@if (currentLang == 'en') {
+  <button (click)="toggleLanguage('cy')">Newid i'r Gymraeg</button>
+}
+@if (currentLang == 'cy') {
+  <button (click)="toggleLanguage('en')">Change to English</button>
+}

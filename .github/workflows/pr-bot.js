@@ -334,6 +334,7 @@ async function repostApprovalList() {
   if (state.metadata.approvalListMessageTs) {
     try {
       await slack.deleteMessage(ENV.slackChannelId, state.metadata.approvalListMessageTs);
+      await stateManager.updateMetadata({ approvalListMessageTs: null });
     } catch (error) {
       // if message doesn't exist, we can ignore the error
     }

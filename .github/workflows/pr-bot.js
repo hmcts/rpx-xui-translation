@@ -30,6 +30,10 @@ function validateEnvironment() {
   }
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function loadEventData() {
   try {
     const data = JSON.parse(fs.readFileSync(ENV.githubEventPath, 'utf8'));

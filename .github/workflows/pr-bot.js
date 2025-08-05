@@ -240,12 +240,16 @@ const stateManager = {
       body.sha = sha;
     }
 
-    await httpRequest(CONFIG.GITHUB_API_BASE, path, 'PUT', headers, body);
+    const stateAfter = await httpRequest(CONFIG.GITHUB_API_BASE, path, 'PUT', headers, body);
+
+    console.log('State written successfully, after: ', stateAfter);
   },
 
   async updatePR(repo, prNumber, updates) {
     const state = await this.readState();
-  
+
+    console.log('Updating PR state before:', state);
+
     if (!state.repositories[repo]) {
       state.repositories[repo] = { pullRequests: {} };
     }
@@ -290,6 +294,8 @@ const stateManager = {
 async function repostApprovalList() {
   const state = await stateManager.readState();
 
+  console.log('Reposting approval list with state:', state);
+
   const needsApproval = [];
   
   Object.entries(state.repositories).forEach(([repo, data]) => {
@@ -307,6 +313,8 @@ async function repostApprovalList() {
     return new Date(a.createdAt) - new Date(b.createdAt);
   });
 
+  console.log('Needs approval PRs after sorting:', needsApproval);
+
   let message = '';
 
   needsApproval.forEach(pr => {
@@ -322,6 +330,8 @@ async function repostApprovalList() {
       // if message doesn't exist, we can ignore the error
     }
   }
+
+  console.log('Posting approval list message:', message);
 
   const ts = await slack.postMessage(ENV.slackChannelId, message);
   await stateManager.updateMetadata({ approvalListMessageTs: ts });

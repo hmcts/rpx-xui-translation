@@ -233,7 +233,7 @@ const stateManager = {
     const body = {
       message: `Update PR state from ${loadEventData().repo}`,
       content,
-      branch: 'main'
+      branch: 'master'
     }
 
     if (sha) {

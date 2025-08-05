@@ -308,7 +308,7 @@ async function repostApprovalList() {
   
   Object.entries(state.repositories).forEach(([repo, data]) => {
     Object.values(data.pullRequests).forEach(pr => {
-      if (pr.status === 'needs_Approval' || pr.changesRequested) {
+      if (pr.status === 'needs_approval' || pr.changesRequested) {
         needsApproval.push({
           ...pr,
           repository: repo

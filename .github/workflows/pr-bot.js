@@ -242,6 +242,8 @@ const stateManager = {
 
     const stateAfter = await httpRequest(CONFIG.GITHUB_API_BASE, path, 'PUT', headers, body);
 
+    await sleep(5000);
+
     console.log('State written successfully, after: ', stateAfter);
   },
 
@@ -292,6 +294,8 @@ const stateManager = {
 }
 
 async function repostApprovalList() {
+  await sleep(5000);
+
   const state = await stateManager.readState();
 
   console.log('Reposting approval list with state:', state);

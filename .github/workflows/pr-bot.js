@@ -6,7 +6,7 @@ const CONFIG = {
   TITLE_MAX_LENGTH: 60,
   SLACK_API_BASE: 'slack.com',
   GITHUB_API_BASE: 'api.github.com',
-  UTILS_REPO_OWNER: 'hmcts',
+  UTILS_REPO_OWNER: 'chrisjones-hmcts',
   UTILS_REPO_NAME: 'rpx-xui-dev-utils',
   UTILS_STATE_FILE_PATH: 'prBot/state.json'
 };
@@ -169,7 +169,7 @@ const slack = {
       'Authorization': `Bearer ${ENV.slackBotToken}`,
       'Content-Type': 'application/json'
     };
-    
+
     const response = await httpRequest(
       CONFIG.SLACK_API_BASE,
       '/api/chat.delete',
@@ -177,7 +177,7 @@ const slack = {
       headers,
       { channel, ts }
     );
-    
+
     if (!response.ok) {
       throw new Error(`Slack API error: ${response.error}`);
     }

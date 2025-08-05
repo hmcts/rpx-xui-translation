@@ -38,8 +38,8 @@ jobs:
             echo "::add-mask::$SLACK_BOT_TOKEN"
             echo "SLACK_BOT_TOKEN=$SLACK_BOT_TOKEN" >> $GITHUB_ENV
 
-            # Get SSH token for utils repo access from Azure Key Vault
-            UTILS_REPO_TOKEN=$(az keyvault secret show --name "pr-bot-utils-repo-token" --vault-name "${{ secrets.AZURE_VAULT_NAME }}" --query "value" --output tsv)
+            # Get token for utils repo access from Azure Key Vault
+            UTILS_REPO_TOKEN=$(az keyvault secret show --name "pr-bot-utils-repo-pat" --vault-name "${{ secrets.AZURE_VAULT_NAME }}" --query "value" --output tsv)
             echo "::add-mask::$UTILS_REPO_TOKEN"
             echo "UTILS_REPO_TOKEN=$UTILS_REPO_TOKEN" >> $GITHUB_ENV
 

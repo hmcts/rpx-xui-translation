@@ -339,7 +339,7 @@ async function repostApprovalList() {
     }
   }
 
-  if (needsApproval.length > 1) {
+  if (needsApproval.length > 0) {
     console.log('Posting approval list message:', message);
   
     const ts = await slack.postMessage(ENV.slackChannelId, message);

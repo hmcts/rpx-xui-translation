@@ -331,10 +331,12 @@ async function repostApprovalList() {
     }
   }
 
-  console.log('Posting approval list message:', message);
-
-  const ts = await slack.postMessage(ENV.slackChannelId, message);
-  await stateManager.updateMetadata({ approvalListMessageTs: ts });
+  if (needsApproval.length > 1) {
+    console.log('Posting approval list message:', message);
+  
+    const ts = await slack.postMessage(ENV.slackChannelId, message);
+    await stateManager.updateMetadata({ approvalListMessageTs: ts });
+  }
 }
 
 function formatPRMessage(prNumber, prAuthor, prTitle, repo, approvalCount, emoji = '') {

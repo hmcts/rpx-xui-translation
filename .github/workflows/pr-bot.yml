@@ -57,6 +57,9 @@ jobs:
 
       - name: Run pr-bot
         run: |
+          mkdir pr-bot-tmp
+          cd pr-bot-tmp
+          npm init -y
           npm install @hmcts/pr-bot
           node node_modules/@hmcts/pr-bot/dist/prBot.js
         env:

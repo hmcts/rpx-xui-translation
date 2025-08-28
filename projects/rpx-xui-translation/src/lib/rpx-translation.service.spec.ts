@@ -57,4 +57,50 @@ describe('RpxTranslationService', () => {
       done();
     });
   });
+
+  describe('shouldTranslate', () => {
+    it('should return false for phrases without alphabetic characters', () => {
+      expect((service as any).shouldTranslate('123')).toBe(false);
+      expect((service as any).shouldTranslate('!@#$%')).toBe(false);
+      expect((service as any).shouldTranslate('   ')).toBe(false);
+      expect((service as any).shouldTranslate(' ')).toBe(false);
+      expect((service as any).shouldTranslate('___')).toBe(false);
+      expect((service as any).shouldTranslate('123-456')).toBe(false);
+    });
+
+    it('should return true for phrases with alphabetic characters', () => {
+      expect((service as any).shouldTranslate('Hello')).toBe(true);
+      expect((service as any).shouldTranslate('Test123')).toBe(true);
+      expect((service as any).shouldTranslate('123ABC')).toBe(true);
+      expect((service as any).shouldTranslate('ABC123')).toBe(true);
+      expect((service as any).shouldTranslate('a')).toBe(true);
+      expect((service as any).shouldTranslate('Z')).toBe(true);
+    });
+
+    it('should return false for phrases containing [Translation in progress]', () => {
+      expect((service as any).shouldTranslate('Hello [Translation in progress]')).toBe(false);
+      expect((service as any).shouldTranslate('[Translation in progress]')).toBe(false);
+      expect((service as any).shouldTranslate('Some text [Translation in progress] more text')).toBe(false);
+    });
+
+    it('should return true for phrases not containing [Translation in progress]', () => {
+      expect((service as any).shouldTranslate('Hello World')).toBe(true);
+      expect((service as any).shouldTranslate('Translation complete')).toBe(true);
+      expect((service as any).shouldTranslate('[Other text]')).toBe(true);
+    });
+
+    it('should return false for placeholder-only phrases', () => {
+      expect((service as any).shouldTranslate('${key}')).toBe(false);
+      expect((service as any).shouldTranslate('  ${someVariable}  ')).toBe(false);
+      expect((service as any).shouldTranslate('${userName}')).toBe(false);
+      expect((service as any).shouldTranslate('${email}')).toBe(false);
+      expect((service as any).shouldTranslate('${count}')).toBe(false);
+    });
+
+    it('should return true for phrases containing placeholders with other text', () => {
+      expect((service as any).shouldTranslate('Hello ${name}')).toBe(true);
+      expect((service as any).shouldTranslate('${count} items')).toBe(true);
+      expect((service as any).shouldTranslate('Welcome ${user} to our site')).toBe(true);
+    });
+  });
 });

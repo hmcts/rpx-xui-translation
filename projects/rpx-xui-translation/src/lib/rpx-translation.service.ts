@@ -132,16 +132,16 @@ export class RpxTranslationService {
     if (!/[a-zA-Z]/.test(phrase)) {
       return false;
     }
-    
+
     if (phrase.includes('[Translation in progress]')) {
-      return false
+      return false;
     }
-    
+
     // check if phrase consists of a placeholder only (eg ${key})
     if (/^\$\{[^}]+\}$/.test(phrase.trim())) {
       return false;
     }
-    
+
     return true;
   }
 

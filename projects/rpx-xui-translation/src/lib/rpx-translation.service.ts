@@ -128,8 +128,25 @@ export class RpxTranslationService {
     return this.observables[phrase];
   }
 
+  private shouldTranslate(phrase: string): boolean {
+    if (!/[a-zA-Z]/.test(phrase)) {
+      return false;
+    }
+
+    if (phrase.includes('[Translation in progress]')) {
+      return false;
+    }
+
+    // check if phrase consists of a placeholder only (eg ${key})
+    if (/^\$\{[^}]+\}$/.test(phrase.trim())) {
+      return false;
+    }
+
+    return true;
+  }
+
   private load(phrase: string, lang: RpxLanguage): void {
-    if (lang === 'en') {
+    if (lang === 'en' || !this.shouldTranslate(phrase)) {
       this.phrases[phrase].next({
         translation: phrase,
         yes: 'Yes',

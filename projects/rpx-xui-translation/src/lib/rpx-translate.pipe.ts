@@ -5,7 +5,8 @@ import { Replacements, RpxTranslationService } from './rpx-translation.service';
 
 @Pipe({
   name: 'rpxTranslate',
-  pure: false
+  pure: false,
+  standalone: false
 })
 export class RpxTranslatePipe implements PipeTransform, OnDestroy {
   private asyncPipe: AsyncPipe;

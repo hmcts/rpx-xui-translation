@@ -1,5 +1,5 @@
 import { AsyncPipe } from '@angular/common';
-import { ChangeDetectorRef, Injector, OnDestroy, Pipe, PipeTransform } from '@angular/core';
+import { ChangeDetectorRef, OnDestroy, Pipe, PipeTransform } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Replacements, RpxTranslationService } from './rpx-translation.service';
 
@@ -13,9 +13,9 @@ export class RpxTranslatePipe implements PipeTransform, OnDestroy {
 
   constructor(
     private translationService: RpxTranslationService,
-    private injector: Injector
+    changeDetectorRef: ChangeDetectorRef
   ) {
-    this.asyncPipe = new AsyncPipe(injector.get(ChangeDetectorRef));
+    this.asyncPipe = new AsyncPipe(changeDetectorRef);
   }
 
   public transform<T = string>(value: T, replacements?: Replacements | null, yesOrNoValue?: string): T | null {

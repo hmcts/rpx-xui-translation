@@ -25,6 +25,7 @@ jobs:
       - run: yarn install
       - run: cd projects/rpx-xui-translation && yarn install && cd ../..
       - run: yarn lint
+      - run: yarn test
       - run: yarn build:library
 
   publish-npm:

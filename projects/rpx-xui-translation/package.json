@@ -1,6 +1,6 @@
 {
   "name": "rpx-xui-translation",
-  "version": "1.1.2-CME-780-6",
+  "version": "1.1.2-CME-780-7",
   "peerDependencies": {
     "@angular/common": "^20.3.1",
     "@angular/core": "^20.3.1"

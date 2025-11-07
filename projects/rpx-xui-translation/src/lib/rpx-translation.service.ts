@@ -57,7 +57,7 @@ export class RpxTranslationService {
   }
 
   public getTranslation$(phrase: string): Observable<string> {
-    return this.getTranslatedData(phrase).pipe(
+    return this.getTranslatedData(phrase.trim()).pipe(
       map((t) => t.translation)
     );
   }

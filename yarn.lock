@@ -4086,11 +4086,11 @@ __metadata:
   linkType: hard
 
 "@types/jasminewd2@npm:~2.0.3":
-  version: 2.0.10
-  resolution: "@types/jasminewd2@npm:2.0.10"
+  version: 2.0.13
+  resolution: "@types/jasminewd2@npm:2.0.13"
   dependencies:
     "@types/jasmine": "npm:*"
-  checksum: 10c0/696f63e584d265b4511f129a69c8a62cff2e586cebc8b89d1676d2aa638bfe338148e7a8b3a86a87b74a1ce4cf6bf5dfac7e70d02cd342f633a09ab388774c8c
+  checksum: 10c0/4a4abed8a09a278e8f21a6bb28e1bf8566658992e1812d0555bdfbdc24e47f23ca19c75444af1d5936337a0c62b777651b9b70dcee7abdfdaa394b517cb259ba
   languageName: node
   linkType: hard
 

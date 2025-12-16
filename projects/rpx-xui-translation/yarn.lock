@@ -35,8 +35,8 @@ __metadata:
     luxon: "npm:^2.4.0"
     tslib: "npm:^2.0.0"
   peerDependencies:
-    "@angular/common": ^20.3.1
-    "@angular/core": ^20.3.1
+    "@angular/common": ^20.3.14
+    "@angular/core": ^20.3.14
   languageName: unknown
   linkType: soft
 

@@ -51,7 +51,7 @@ jobs:
 
   publish-gpr:
     if: startsWith(github.ref, 'refs/tags')
-    needs: release-build
+    needs: build
     runs-on: ubuntu-latest
     permissions:
       contents: write

@@ -9,9 +9,9 @@ on:
     branches:
       - master
       - Release
-      - refs/tags/*
-    tags:
-      - '*'
+  release:
+    types:
+      - created
 
 env:
   NODE_VERSION: 20
@@ -32,7 +32,7 @@ jobs:
       - run: yarn build:library
 
   publish-npm:
-    if: startsWith(github.ref, 'refs/tags')
+    if: github.event_name == 'release'
     needs: build
     runs-on: ubuntu-latest
     permissions:
@@ -53,6 +53,14 @@ jobs:
           npm --version
           npm i -g npm@11.5.1
           npm --version
+
+      - name: Determine npm dist-tag from GitHub Release
+        run: |
+          if [ "${{ github.event.release.prerelease }}" = "true" ]; then
+            echo "NPM_TAG=next" >> "$GITHUB_ENV"
+          else
+            echo "NPM_TAG=latest" >> "$GITHUB_ENV"
+          fi
       
       - name: Publish version (OIDC via npm)
         working-directory: dist/rpx-xui-translation
@@ -68,10 +76,10 @@ jobs:
           npm config delete //registry.npmjs.org/:_authToken || true
           npm config delete _authToken || true
 
-          npm publish --access public --ignore-scripts
+          npm publish --access public --tag "$NPM_TAG" --ignore-scripts
 
   publish-gpr:
-    if: startsWith(github.ref, 'refs/tags')
+    if: github.event_name == 'release'
     needs: build
     runs-on: ubuntu-latest
     permissions:
@@ -98,7 +106,3 @@ jobs:
           files: ${{ steps.pack.outputs.tarball }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - run: npm publish dist/rpx-xui-translation/ --ignore-scripts
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_PUBLISH_REGISTRY: https://npm.pkg.github.com/

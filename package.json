@@ -1,14 +1,11 @@
 {
   "name": "rpx-xui-translation",
-  "version": "1.2.1-exui-3994-1",
+  "version": "1.2.1-exui-3994-2",
   "description": "Facilitate translations in Reform programme applications in Angular",
   "main": "index.js",
+  "repository": "git@github.com:hmcts/rpx-xui-translation.git",
   "author": "Ronald Mansveld <ronald.mansveld@atos.net>",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/hmcts/rpx-xui-translation"
-  },
   "scripts": {
     "ng": "ng",
     "build:library": "ng build rpx-xui-translation --configuration production",

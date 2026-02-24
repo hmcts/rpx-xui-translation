@@ -20,7 +20,7 @@
     "install-all": "yarn install && cd projects/rpx-xui-translation && yarn install && cd ../.."
   },
   "dependencies": {
-    "@angular-devkit/architect": "^0.2003.0",
+    "@angular-devkit/architect": "^0.2101.0",
     "@angular/animations": "^20.3.14",
     "@angular/cdk": "^20.2.4",
     "@angular/common": "^20.3.14",

@@ -9262,9 +9262,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ng-packagr@npm:20.3.0":
-  version: 20.3.0
-  resolution: "ng-packagr@npm:20.3.0"
+"ng-packagr@npm:20.3.2":
+  version: 20.3.2
+  resolution: "ng-packagr@npm:20.3.2"
   dependencies:
     "@ampproject/remapping": "npm:^2.3.0"
     "@rollup/plugin-json": "npm:^6.1.0"
@@ -9301,7 +9301,7 @@ __metadata:
       optional: true
   bin:
     ng-packagr: src/cli/main.js
-  checksum: 10c0/73def61351d8ccb093fc97794d21b92d8e77ec6c7ec345cc9e321c6a1b3181c9fd6e2e03669a3f1a12064537a0413b78a6555d99ace41e9f19dec3a2aa454013
+  checksum: 10c0/1bfc63fa91e281ff95e5e13b3bce2ac8588a83be28649184717c5b559186de45885f94f0264027fbfa1d4a8b0ac33b17099a392ee60b22dad146b7a9e00f55fe
   languageName: node
   linkType: hard
 
@@ -10699,7 +10699,7 @@ __metadata:
     karma-jasmine: "npm:~4.0.0"
     karma-jasmine-html-reporter: "npm:^1.5.0"
     luxon: "npm:^2.5.2"
-    ng-packagr: "npm:20.3.0"
+    ng-packagr: "npm:20.3.2"
     protractor: "npm:~7.0.0"
     rxjs: "npm:^7.8.0"
     ts-node: "npm:10.8.1"

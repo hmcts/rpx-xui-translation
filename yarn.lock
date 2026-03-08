@@ -4087,10 +4087,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jasmine@npm:~3.6.0":
-  version: 3.6.11
-  resolution: "@types/jasmine@npm:3.6.11"
-  checksum: 10c0/a9a5b3c7e40a3853209b1c60bf2b2835d4257b9ac8bce52e162125b578bf64057bbacc163fc7e04b443f4863fbe111aaa0be41c570a148359b36c10981a6accc
+"@types/jasmine@npm:~3.10.0":
+  version: 3.10.19
+  resolution: "@types/jasmine@npm:3.10.19"
+  checksum: 10c0/162b97e986e73ad9e32fadc565bc2cbde8295d39d6b20980a40647c4fe4c8867fc75be05593b6d143df2978b4720aa5648379451336121644cd52729ae77d31c
   languageName: node
   linkType: hard
 
@@ -10682,7 +10682,7 @@ __metadata:
     "@angular/platform-browser": "npm:^20.3.14"
     "@angular/platform-browser-dynamic": "npm:^20.3.14"
     "@angular/router": "npm:^20.3.14"
-    "@types/jasmine": "npm:~3.6.0"
+    "@types/jasmine": "npm:~3.10.0"
     "@types/jasminewd2": "npm:~2.0.3"
     "@types/luxon": "npm:^2.4.0"
     "@types/node": "npm:^20.19.0"

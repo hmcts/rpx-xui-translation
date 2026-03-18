@@ -472,17 +472,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@angular/animations@npm:^20.3.14":
-  version: 20.3.15
-  resolution: "@angular/animations@npm:20.3.15"
-  dependencies:
-    tslib: "npm:^2.3.0"
-  peerDependencies:
-    "@angular/core": 20.3.15
-  checksum: 10c0/847149a2aceafed321c02f62a95ebb0c11911d652d59444e7f3a0ed1646365c6c014320b40cd07bbadd5733ef7a5b3a2f55124fc34790865776c7cf72eb466eb
-  languageName: node
-  linkType: hard
-
 "@angular/build@npm:20.3.2":
   version: 20.3.2
   resolution: "@angular/build@npm:20.3.2"
@@ -686,20 +675,6 @@ __metadata:
     zone.js:
       optional: true
   checksum: 10c0/fdf5e49cb5c5336f1b3d147f03e653b08fb670cf1a08777c860be3884ff0a2effad0c9e6e1323c3bf7c8239eb2a677c41846ce4c9c5653d80dec8be780165797
-  languageName: node
-  linkType: hard
-
-"@angular/forms@npm:^20.3.14":
-  version: 20.3.15
-  resolution: "@angular/forms@npm:20.3.15"
-  dependencies:
-    tslib: "npm:^2.3.0"
-  peerDependencies:
-    "@angular/common": 20.3.15
-    "@angular/core": 20.3.15
-    "@angular/platform-browser": 20.3.15
-    rxjs: ^6.5.3 || ^7.4.0
-  checksum: 10c0/d2f09cfc49c46b2d33d5798784ea6f7883e2cbbbf0708f38c98be30efcd4870ea3c2f95ca8573a13204e2a7363c701b17a66dac55b142b2771b4f694fc84ea85
   languageName: node
   linkType: hard
 
@@ -10777,14 +10752,12 @@ __metadata:
     "@angular-eslint/eslint-plugin-template": "npm:20.3.0"
     "@angular-eslint/schematics": "npm:20.3.0"
     "@angular-eslint/template-parser": "npm:20.3.0"
-    "@angular/animations": "npm:^20.3.14"
     "@angular/cdk": "npm:^20.2.4"
     "@angular/cli": "npm:^20.3.9"
     "@angular/common": "npm:^20.3.14"
     "@angular/compiler": "npm:20.3.14"
     "@angular/compiler-cli": "npm:20.3.14"
     "@angular/core": "npm:^20.3.14"
-    "@angular/forms": "npm:^20.3.14"
     "@angular/localize": "npm:20.3.14"
     "@angular/platform-browser": "npm:^20.3.14"
     "@angular/platform-browser-dynamic": "npm:^20.3.14"

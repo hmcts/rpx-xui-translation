@@ -20,18 +20,14 @@
     "install-all": "yarn install && cd projects/rpx-xui-translation && yarn install && cd ../.."
   },
   "dependencies": {
-    "@angular-devkit/architect": "^0.2003.0",
-    "@angular/animations": "^20.3.14",
     "@angular/cdk": "^20.2.4",
     "@angular/common": "^20.3.14",
     "@angular/compiler": "20.3.14",
     "@angular/core": "^20.3.14",
-    "@angular/forms": "^20.3.14",
     "@angular/localize": "20.3.14",
     "@angular/platform-browser": "^20.3.14",
     "@angular/platform-browser-dynamic": "^20.3.14",
     "@angular/router": "^20.3.14",
-    "@types/luxon": "^2.4.0",
     "dexie": "^4.0.8",
     "luxon": "^2.5.2",
     "rxjs": "^7.8.0",
@@ -39,6 +35,7 @@
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
+    "@angular-devkit/architect": "^0.2003.0",
     "@angular-devkit/build-angular": "^20.3.1",
     "@angular-eslint/builder": "20.3.0",
     "@angular-eslint/eslint-plugin": "20.3.0",
@@ -49,6 +46,7 @@
     "@angular/compiler-cli": "20.3.14",
     "@types/jasmine": "~3.6.0",
     "@types/jasminewd2": "~2.0.3",
+    "@types/luxon": "^2.4.0",
     "@types/node": "^20.19.0",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",

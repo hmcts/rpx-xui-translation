@@ -1,6 +1,6 @@
 {
   "name": "rpx-xui-translation",
-  "version": "1.2.2-EXUI-4227-angular-CVE-fixes",
+  "version": "1.2.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/hmcts/rpx-xui-translation"

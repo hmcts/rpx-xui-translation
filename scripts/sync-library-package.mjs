@@ -7,17 +7,24 @@ const __dirname = path.dirname(__filename);
 
 const repoRoot = path.resolve(__dirname, '..');
 const rootPackagePath = path.join(repoRoot, 'package.json');
+const libraryPackagePath = path.join(repoRoot, 'projects', 'rpx-xui-translation', 'package.json');
 const distPackagePath = path.join(repoRoot, 'dist', 'rpx-xui-translation', 'package.json');
 
 const rootPackage = readJson(rootPackagePath);
+const libraryPackage = readJson(libraryPackagePath);
 const distPackage = readJson(distPackagePath);
 
 const distDependencies = distPackage.dependencies || {};
 const rootDependencies = rootPackage.dependencies || {};
+const peerDependencies = libraryPackage.peerDependencies || {};
 
 const mergedDependencies = { ...distDependencies };
 
 for (const [dependencyName, version] of Object.entries(rootDependencies)) {
+  if (peerDependencies[dependencyName]) {
+    continue;
+  }
+
   mergedDependencies[dependencyName] = version;
 }
 

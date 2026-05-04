@@ -1,20 +1,21 @@
 {
   "name": "rpx-xui-translation",
-  "version": "1.2.3-exui-4425-rc-1",
+  "version": "1.2.3-exui-4425-rc-2",
   "repository": {
     "type": "git",
     "url": "https://github.com/hmcts/rpx-xui-translation"
   },
   "peerDependencies": {
-    "@angular/common": "^20.3.14",
-    "@angular/core": "^20.3.14"
+    "@angular/common": "^20.3.18",
+    "@angular/core": "^20.3.18",
+    "rxjs": "^7.8.0"
   },
   "dependencies": {
-    "dexie": "^3.2.2",
-    "luxon": "^2.4.0",
+    "dexie": "^4.0.8",
+    "luxon": "^2.5.2",
     "tslib": "^2.0.0"
   },
   "devDependencies": {
-    "@types/luxon": "^2.3.2"
+    "@types/luxon": "^2.4.0"
   }
 }

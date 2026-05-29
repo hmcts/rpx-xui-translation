@@ -1,22 +1,26 @@
-import { ChangeDetectorRef, Injector } from '@angular/core';
+import { ChangeDetectorRef } from '@angular/core';
+import { TestBed } from '@angular/core/testing';
 import { RpxTranslatePipe } from './rpx-translate.pipe';
 import { RpxTranslationService } from './rpx-translation.service';
 import { of } from 'rxjs';
 
 describe('RpxTranslatePipe', () => {
   let translationServiceMock: jasmine.SpyObj<RpxTranslationService>;
-  let changeDetectorRefMock: jasmine.SpyObj<ChangeDetectorRef>;
-  let injectorMock: jasmine.SpyObj<Injector>;
   let pipe: RpxTranslatePipe;
 
   beforeEach(() => {
     translationServiceMock = jasmine
       .createSpyObj('RpxTranslationService', ['getTranslationWithReplacements$', 'getTranslationWithYesOrNo$', 'getTranslation$']);
-    changeDetectorRefMock = jasmine.createSpyObj('ChangeDetectorRef', ['markForCheck']);
-    injectorMock = jasmine.createSpyObj('Injector', ['get']);
-    injectorMock.get.and.returnValue(changeDetectorRefMock);
 
-    pipe = new RpxTranslatePipe(translationServiceMock, injectorMock);
+    TestBed.configureTestingModule({
+      providers: [
+        RpxTranslatePipe,
+        { provide: RpxTranslationService, useValue: translationServiceMock },
+        { provide: ChangeDetectorRef, useValue: jasmine.createSpyObj('ChangeDetectorRef', ['markForCheck', 'detach', 'detectChanges', 'checkNoChanges', 'reattach']) }
+      ]
+    });
+
+    pipe = TestBed.inject(RpxTranslatePipe);
   });
 
   it('create an instance', () => {

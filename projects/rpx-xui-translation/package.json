@@ -1,6 +1,10 @@
 {
   "name": "rpx-xui-translation",
   "version": "1.2.4-welsh-translation-fix",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hmcts/rpx-xui-translation"
+  },
   "peerDependencies": {
     "@angular/common": "^20.3.14",
     "@angular/core": "^20.3.14"

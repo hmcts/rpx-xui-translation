@@ -4080,26 +4080,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jasmine@npm:*":
-  version: 5.1.9
-  resolution: "@types/jasmine@npm:5.1.9"
-  checksum: 10c0/f39edad861c8d9c980fc5a8b594dc835d72bfa4187b9799a8a1d716b658ac0680e4a50d60e792718acfa19dc62016e8a23c2c6a87a2c90d1e31d070c01da1954
-  languageName: node
-  linkType: hard
-
-"@types/jasmine@npm:~3.6.0":
-  version: 3.6.11
-  resolution: "@types/jasmine@npm:3.6.11"
-  checksum: 10c0/a9a5b3c7e40a3853209b1c60bf2b2835d4257b9ac8bce52e162125b578bf64057bbacc163fc7e04b443f4863fbe111aaa0be41c570a148359b36c10981a6accc
-  languageName: node
-  linkType: hard
-
-"@types/jasminewd2@npm:~2.0.3":
-  version: 2.0.13
-  resolution: "@types/jasminewd2@npm:2.0.13"
-  dependencies:
-    "@types/jasmine": "npm:*"
-  checksum: 10c0/4a4abed8a09a278e8f21a6bb28e1bf8566658992e1812d0555bdfbdc24e47f23ca19c75444af1d5936337a0c62b777651b9b70dcee7abdfdaa394b517cb259ba
+"@types/jasmine@npm:5.1.0":
+  version: 5.1.0
+  resolution: "@types/jasmine@npm:5.1.0"
+  checksum: 10c0/ee07a36cf34747a28eff4ecccdfdad883814c1328edbe5eadfb311b3a0ada0e2e28f932b5ec4b288e32932fc70c70bfe5d563a89633804cccc4bdaca5194977f
   languageName: node
   linkType: hard
 
@@ -8117,10 +8101,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jasmine-core@npm:^3.6.0":
-  version: 3.99.1
-  resolution: "jasmine-core@npm:3.99.1"
-  checksum: 10c0/f89721874e2af19a098e214b8f3f201a644d625339c010733b6b0dba4ff9149f16997712a639c2bb427e7533526f82e0477b7927e175d3a2b2f9ff92928a5329
+"jasmine-core@npm:5.1.0":
+  version: 5.1.0
+  resolution: "jasmine-core@npm:5.1.0"
+  checksum: 10c0/e81fc9f5051eb61ad7f09aa02b1802109bbb309595bc58aae1707b7bae1d8ddde997e26cbd49222a97f8528ce5933328f9125bb057e99e38ee40348726554ad3
+  languageName: node
+  linkType: hard
+
+"jasmine-core@npm:^4.1.0":
+  version: 4.6.1
+  resolution: "jasmine-core@npm:4.6.1"
+  checksum: 10c0/3d038b7f6f6f0d3cb56cdb4d2f0323a9d84f3a64a03746f9329a2d5a5166ec5e0ad3232d72ceb4f357cf2f120fdb86310715eaeb174f325833515fd0792a6860
   languageName: node
   linkType: hard
 
@@ -8128,13 +8119,6 @@ __metadata:
   version: 2.8.0
   resolution: "jasmine-core@npm:2.8.0"
   checksum: 10c0/fae03b26d322c50f11cc47232f50577accacacc2478b8dd32c94a242240739f9e527e4de5b50e630656715dcc9ab12c6c91e514a546148565816c0bc6169e34c
-  languageName: node
-  linkType: hard
-
-"jasmine-core@npm:~3.6.0":
-  version: 3.6.0
-  resolution: "jasmine-core@npm:3.6.0"
-  checksum: 10c0/cc10049ecd2cacca17e174b91c2b8137ac03d493667570fc2beab38912027947bb7388302ad812d984cd5749d8f38aaa891e4ab54543db31c96a8a41bc01d40a
   languageName: node
   linkType: hard
 
@@ -8369,14 +8353,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"karma-jasmine@npm:~4.0.0":
-  version: 4.0.2
-  resolution: "karma-jasmine@npm:4.0.2"
+"karma-jasmine@npm:5.1.0":
+  version: 5.1.0
+  resolution: "karma-jasmine@npm:5.1.0"
   dependencies:
-    jasmine-core: "npm:^3.6.0"
+    jasmine-core: "npm:^4.1.0"
   peerDependencies:
-    karma: "*"
-  checksum: 10c0/4cc4e812130898e59ae125fa9bf5cada2e228b246c7612175906ec44beb41725f6bab01097b08f642c3a1f99c3e0c1780aaec786fb383c33e9b4f2669dea521e
+    karma: ^6.0.0
+  checksum: 10c0/827843d2b4af5396c35de6911d15304955bd7376f96527f46285beb0178510aa401ff123a010a9ee3f13aeeeb56f64a9a3e22d7d61fb58ee76a2845b153a9d20
   languageName: node
   linkType: hard
 
@@ -10682,8 +10666,7 @@ __metadata:
     "@angular/platform-browser": "npm:^20.3.18"
     "@angular/platform-browser-dynamic": "npm:^20.3.18"
     "@angular/router": "npm:^20.3.18"
-    "@types/jasmine": "npm:~3.6.0"
-    "@types/jasminewd2": "npm:~2.0.3"
+    "@types/jasmine": "npm:5.1.0"
     "@types/luxon": "npm:^2.4.0"
     "@types/node": "npm:^20.19.0"
     "@typescript-eslint/eslint-plugin": "npm:^7.2.0"
@@ -10691,12 +10674,12 @@ __metadata:
     codelyzer: "npm:^6.0.0"
     dexie: "npm:^4.0.8"
     eslint: "npm:^8.57.0"
-    jasmine-core: "npm:~3.6.0"
+    jasmine-core: "npm:5.1.0"
     jasmine-spec-reporter: "npm:~5.0.0"
     karma: "npm:~6.4.2"
     karma-chrome-launcher: "npm:~3.1.0"
     karma-coverage-istanbul-reporter: "npm:~3.0.2"
-    karma-jasmine: "npm:~4.0.0"
+    karma-jasmine: "npm:5.1.0"
     karma-jasmine-html-reporter: "npm:^1.5.0"
     luxon: "npm:^2.5.2"
     ng-packagr: "npm:20.3.0"

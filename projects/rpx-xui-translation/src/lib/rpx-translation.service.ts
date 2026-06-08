@@ -57,7 +57,7 @@ export class RpxTranslationService {
   }
 
   public getTranslation$(phrase: string): Observable<string> {
-    return this.getTranslatedData(phrase.trim()).pipe(
+    return this.getTranslatedData(phrase).pipe(
       map((t) => t.translation)
     );
   }
@@ -88,11 +88,21 @@ export class RpxTranslationService {
   }
 
   private getTranslatedData(phrase: string): Observable<TranslatedData> {
+    phrase = this.normalisePhraseSpacing(phrase);
+
     if (this.observables.hasOwnProperty(phrase)) {
       return this.observables[phrase];
     }
 
     return this.translate(phrase);
+  }
+
+  private normalisePhraseSpacing(phrase: string): string {
+    if (phrase.trim().length === 0) {
+      return phrase;
+    }
+
+    return phrase.trim().replace(/\s+/g, ' ');
   }
 
   private translate(phrase: string): Observable<TranslatedData> {

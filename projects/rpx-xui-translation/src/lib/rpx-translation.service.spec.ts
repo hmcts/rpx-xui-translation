@@ -43,6 +43,26 @@ describe('RpxTranslationService', () => {
     expect(service.language).toEqual('en');
   });
 
+  it('should normalise repeated spacing before translating a phrase', (done) => {
+    const translateSpy = spyOn<any>(service, 'translate').and.callThrough();
+
+    service.getTranslation$(' notice  of charge ').subscribe((translation) => {
+      expect(translateSpy).toHaveBeenCalledWith('notice of charge');
+      expect(translation).toBe('notice of charge');
+      done();
+    });
+  });
+
+  it('should normalise multiple spacing runs before translating a phrase', (done) => {
+    const translateSpy = spyOn<any>(service, 'translate').and.callThrough();
+
+    service.getTranslation$('notice   of    charge').subscribe((translation) => {
+      expect(translateSpy).toHaveBeenCalledWith('notice of charge');
+      expect(translation).toBe('notice of charge');
+      done();
+    });
+  });
+
   it('should not call load method with given phrase, language, and yesOrNo value when translation not found in DB', (done) => {
     const spy = jasmine.createSpyObj('RpxTranslationService', ['load']);
     const phrase = 'Hello, world!';

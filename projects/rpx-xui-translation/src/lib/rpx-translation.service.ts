@@ -57,7 +57,7 @@ export class RpxTranslationService {
   }
 
   public getTranslation$(phrase: string): Observable<string> {
-    return this.getTranslatedData(phrase).pipe(
+    return this.getTranslatedData(phrase.trim()).pipe(
       map((t) => t.translation)
     );
   }
@@ -88,8 +88,6 @@ export class RpxTranslationService {
   }
 
   private getTranslatedData(phrase: string): Observable<TranslatedData> {
-    phrase = this.normalisePhraseSpacing(phrase);
-
     if (this.observables.hasOwnProperty(phrase)) {
       return this.observables[phrase];
     }
@@ -102,11 +100,12 @@ export class RpxTranslationService {
       return phrase;
     }
 
-    return phrase.trim().replace(/\s+/g, ' ');
+    return phrase.trim().replace(/[^\S\r\n]+/g, ' ');
   }
 
   private translate(phrase: string): Observable<TranslatedData> {
     const lang = this.language;
+    const lookupPhrase = this.normalisePhraseSpacing(phrase);
     if (!this.phrases.hasOwnProperty(phrase)) {
       this.phrases[phrase] = new BehaviorSubject<TranslatedData>({ translation: phrase });
       this.observables[phrase] = this.phrases[phrase].asObservable();
@@ -115,7 +114,7 @@ export class RpxTranslationService {
     if (lang === 'en') {
       this.phrases[phrase].next({ translation: phrase });
     } else {
-      from(liveQuery(() => db.translations.where('[phrase+lang]').equals([phrase, lang]).first())).pipe(
+      from(liveQuery(() => db.translations.where('[phrase+lang]').equals([lookupPhrase, lang]).first())).pipe(
         tap((t) => {
           if (t && !t.isExpired()) {
             this.phrases[phrase].next(t.translation);
@@ -156,7 +155,9 @@ export class RpxTranslationService {
   }
 
   private load(phrase: string, lang: RpxLanguage): void {
-    if (lang === 'en' || !this.shouldTranslate(phrase)) {
+    const lookupPhrase = this.normalisePhraseSpacing(phrase);
+
+    if (lang === 'en' || !this.shouldTranslate(lookupPhrase)) {
       this.phrases[phrase].next({
         translation: phrase,
         yes: 'Yes',
@@ -169,16 +170,16 @@ export class RpxTranslationService {
       this.requesting[lang] = [];
     }
 
-    if (this.requesting[lang].indexOf(phrase) !== -1) {
+    if (this.requesting[lang].indexOf(lookupPhrase) !== -1) {
       return;
     }
 
     // Prevent making a API call with empty array of phrase
-    if (phrase.length === 0) {
+    if (lookupPhrase.length === 0) {
       return;
     }
 
-    this.requesting[lang].push(phrase);
+    this.requesting[lang].push(lookupPhrase);
 
     if (this.requestTimerSubscription) {
       this.requestTimerSubscription.unsubscribe();
@@ -217,7 +218,9 @@ export class RpxTranslationService {
           const toAdd: Translation[] = [];
           Object.keys(translations).forEach((p) => {
             toAdd.push(Translation.create(p, lang, translations[p], DateTime.now().plus(this.config.validity).toISO()));
-            this.phrases[p].next(translations[p]);
+            Object.keys(this.phrases)
+              .filter((phraseKey) => this.normalisePhraseSpacing(phraseKey) === p)
+              .forEach((phraseKey) => this.phrases[phraseKey].next(translations[p]));
           });
           db.translations.bulkAdd(toAdd);
           this.requesting[lang] = [];

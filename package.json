@@ -33,7 +33,7 @@
     "luxon": "^2.5.2",
     "rxjs": "^7.8.0",
     "tslib": "^2.0.0",
-    "zone.js": "~0.15.0"
+    "zone.js": "~0.16.0"
   },
   "devDependencies": {
     "@angular-devkit/architect": "^0.2003.0",

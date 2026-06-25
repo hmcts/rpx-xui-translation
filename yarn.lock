@@ -4085,10 +4085,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/luxon@npm:^2.4.0":
-  version: 2.4.0
-  resolution: "@types/luxon@npm:2.4.0"
-  checksum: 10c0/2686d03827a3799f0374923323148f4d0d07f9e4321551389b2ae285e5085e178cfe908806041ab32bf66534497702b4ae8459d1b4190258af133818d4b846c9
+"@types/luxon@npm:^3.7.1":
+  version: 3.7.1
+  resolution: "@types/luxon@npm:3.7.1"
+  checksum: 10c0/2db30c13b58adcd86daa447faa3ba59515fe907ead8ee3e6bb716d662812af0619d712f6c1eb190cdd7f9d2c00444c3ecd80af0f36e8143eb0c5e7339d6b2aca
   languageName: node
   linkType: hard
 
@@ -8806,10 +8806,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"luxon@npm:^2.5.2":
-  version: 2.5.2
-  resolution: "luxon@npm:2.5.2"
-  checksum: 10c0/c93b71c4ae74c440982f39832159b9311eca6db1e55d032d30a3f9354e6ceb16d576158c5dc9f847eb15c481557063bd61defdb96ee0953f8df2c57cd91e0b13
+"luxon@npm:^3.7.2":
+  version: 3.7.2
+  resolution: "luxon@npm:3.7.2"
+  checksum: 10c0/ed8f0f637826c08c343a29dd478b00628be93bba6f068417b1d8896b61cb61c6deacbe1df1e057dbd9298334044afa150f9aaabbeb3181418ac8520acfdc2ae2
   languageName: node
   linkType: hard
 
@@ -10764,7 +10764,7 @@ __metadata:
     "@angular/router": "npm:^20.3.18"
     "@types/jasmine": "npm:~3.6.0"
     "@types/jasminewd2": "npm:~2.0.3"
-    "@types/luxon": "npm:^2.4.0"
+    "@types/luxon": "npm:^3.7.1"
     "@types/node": "npm:^20.19.0"
     "@typescript-eslint/eslint-plugin": "npm:^7.2.0"
     "@typescript-eslint/parser": "npm:^7.2.0"
@@ -10780,15 +10780,15 @@ __metadata:
     karma-coverage-istanbul-reporter: "npm:~3.0.2"
     karma-jasmine: "npm:~4.0.0"
     karma-jasmine-html-reporter: "npm:^1.5.0"
-    luxon: "npm:^2.5.2"
+    luxon: "npm:^3.7.2"
     ng-packagr: "npm:20.3.0"
     protractor: "npm:~7.0.0"
-    rxjs: "npm:^7.8.0"
+    rxjs: "npm:^7.8.2"
     ts-node: "npm:10.8.1"
-    tslib: "npm:^2.0.0"
+    tslib: "npm:^2.8.1"
     tslint: "npm:~6.1.0"
     typescript: "npm:~5.9.0"
-    zone.js: "npm:~0.15.0"
+    zone.js: "npm:0.16.2"
   languageName: unknown
   linkType: soft
 
@@ -10808,7 +10808,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rxjs@npm:7.8.2, rxjs@npm:^7.8.0, rxjs@npm:^7.8.1":
+"rxjs@npm:7.8.2, rxjs@npm:^7.8.1, rxjs@npm:^7.8.2":
   version: 7.8.2
   resolution: "rxjs@npm:7.8.2"
   dependencies:
@@ -11908,7 +11908,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:2.8.1, tslib@npm:^2.0.0, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.4.0":
+"tslib@npm:2.8.1, tslib@npm:^2.0.0, tslib@npm:^2.1.0, tslib@npm:^2.3.0, tslib@npm:^2.4.0, tslib@npm:^2.8.1":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 10c0/9c4759110a19c53f992d9aae23aac5ced636e99887b51b9e61def52611732872ff7668757d4e4c61f19691e36f4da981cd9485e869b4a7408d689f6bf1f14e62
@@ -12828,16 +12828,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"zone.js@npm:0.16.2":
+  version: 0.16.2
+  resolution: "zone.js@npm:0.16.2"
+  checksum: 10c0/bc84f2257335881f274a4522d9a3a1b21ef02ce42bbc8322751cd4b40636bfe19af48eb08053f3864f30d78549e0893d6bb336bf7123fc06020da70e6d89db8e
+  languageName: node
+  linkType: hard
+
 "zone.js@npm:~0.10.3":
   version: 0.10.3
   resolution: "zone.js@npm:0.10.3"
   checksum: 10c0/302151d3b7a0c28c956613d1ec8e26a07b40c2cc198fe0a815d4a4fe93436e4a3e5616b7adc22b7f595401a083a02d6266226964511d86fef181b58da5cbfe0c
-  languageName: node
-  linkType: hard
-
-"zone.js@npm:~0.15.0":
-  version: 0.15.1
-  resolution: "zone.js@npm:0.15.1"
-  checksum: 10c0/4eca000f90dbea1c34f62e88ce56910dace8cdecbe14747b214f2af37aa511264c7bd50faf3e9b00612e95dc4567da156a9690fef1983bfcf74604a630d190ef
   languageName: node
   linkType: hard

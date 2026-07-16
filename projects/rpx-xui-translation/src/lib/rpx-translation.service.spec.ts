@@ -1,5 +1,6 @@
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
-import { TestBed } from '@angular/core/testing';
+import { fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { BehaviorSubject } from 'rxjs';
 import { db } from './db';
 import { YesOrNoValue } from './rpx-language.enum';
 import { RpxTranslationConfig } from './rpx-translation.config';
@@ -19,7 +20,8 @@ describe('RpxTranslationService', () => {
           provide: RpxTranslationConfig,
           useValue: {
             baseUrl: 'translations',
-            debounceTimeMs: 500
+            debounceTimeMs: 500,
+            validity: { days: 1 }
           }
         },
         provideHttpClient(withInterceptorsFromDi()),
@@ -42,6 +44,45 @@ describe('RpxTranslationService', () => {
   it('should return the default language en as a string', () => {
     expect(service.language).toEqual('en');
   });
+
+  it('should normalise repeated spacing before translating a phrase', (done) => {
+    service.getTranslation$(' notice  of charge ').subscribe((translation) => {
+      expect((service as any).normalisePhraseSpacing(translation)).toBe('notice of charge');
+      expect(translation).toBe('notice  of charge');
+      done();
+    });
+  });
+
+  it('should normalise multiple spacing runs before translating a phrase', (done) => {
+    service.getTranslation$('notice   of    charge').subscribe((translation) => {
+      expect((service as any).normalisePhraseSpacing(translation)).toBe('notice of charge');
+      expect(translation).toBe('notice   of    charge');
+      done();
+    });
+  });
+
+  it('should preserve markdown line breaks while normalising horizontal spacing', () => {
+    const markdown = 'Current progress of the case\n\n![Progress map](https://example.com/caseOfficer_listing.svg)';
+
+    expect((service as any).normalisePhraseSpacing(markdown)).toBe(markdown);
+  });
+
+  it('should request the normalised phrase when loading a phrase with multiple spaces', fakeAsync(() => {
+    const phrase = 'notice   of    charge';
+
+    (service as any).phrases[phrase] = new BehaviorSubject({ translation: phrase });
+    (service as any).load(phrase, 'cy');
+    tick(500);
+
+    const request = httpMock.expectOne('translations/cy');
+    expect(request.request.body).toEqual({ phrases: ['notice of charge'] });
+
+    request.flush({
+      translations: {
+        'notice of charge': 'translated notice of charge'
+      }
+    });
+  }));
 
   it('should not call load method with given phrase, language, and yesOrNo value when translation not found in DB', (done) => {
     const spy = jasmine.createSpyObj('RpxTranslationService', ['load']);

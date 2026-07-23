@@ -189,12 +189,12 @@ describe('RpxTranslationService', () => {
       const cookieValue = document.cookie
         .split(';')
         .find((cookie) => cookie.trim().startsWith(languageKey + '='));
-      
+
       // If cookie exists, remove it
       if (cookieValue) {
         document.cookie = `${languageKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict;`;
       }
-      
+
       const result = (service as any).getPersistedLanguage();
       // Should safely return undefined without throwing when cookie is not present
       expect(result).toBeUndefined();
@@ -215,7 +215,7 @@ describe('RpxTranslationService', () => {
         { input: null, expected: '' },
         { input: undefined, expected: '' },
         { input: '', expected: '' },
-        { input: '  hello   world  ', expected: 'hello world' },
+        { input: '  hello   world  ', expected: 'hello world' }
       ];
 
       testCases.forEach(({ input, expected }) => {
@@ -239,7 +239,7 @@ describe('RpxTranslationService', () => {
           expect(translation).toBeDefined();
           done();
         },
-        (error) => {
+        () => {
           // Should not error, should handle gracefully
           done();
         }

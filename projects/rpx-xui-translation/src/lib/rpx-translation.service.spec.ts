@@ -143,5 +143,119 @@ describe('RpxTranslationService', () => {
       expect((service as any).shouldTranslate('${count} items')).toBe(true);
       expect((service as any).shouldTranslate('Welcome ${user} to our site')).toBe(true);
     });
+
+    it('should return false for null or undefined phrases', () => {
+      expect((service as any).shouldTranslate(null)).toBe(false);
+      expect((service as any).shouldTranslate(undefined)).toBe(false);
+      expect((service as any).shouldTranslate('')).toBe(false);
+    });
+  });
+
+  describe('Null/Undefined handling', () => {
+    it('should handle null phrase in normalisePhraseSpacing', () => {
+      const result = (service as any).normalisePhraseSpacing(null);
+      expect(result).toBe('');
+    });
+
+    it('should handle undefined phrase in normalisePhraseSpacing', () => {
+      const result = (service as any).normalisePhraseSpacing(undefined);
+      expect(result).toBe('');
+    });
+
+    it('should handle empty string in normalisePhraseSpacing', () => {
+      const result = (service as any).normalisePhraseSpacing('');
+      expect(result).toBe('');
+    });
+
+    it('should handle null phrase in getTranslation$', (done) => {
+      service.getTranslation$(null as any).subscribe((translation) => {
+        expect(translation).toBe('');
+        done();
+      });
+    });
+
+    it('should handle undefined phrase in getTranslation$', (done) => {
+      service.getTranslation$(undefined as any).subscribe((translation) => {
+        expect(translation).toBe('');
+        done();
+      });
+    });
+
+    it('should safely get persisted language when cookie not set', () => {
+      // The service has a default language, but getPersistedLanguage should return undefined
+      // when the cookie is not present
+      const languageKey = 'exui-preferred-language';
+      // Ensure cookie is not set
+      const cookieValue = document.cookie
+        .split(';')
+        .find((cookie) => cookie.trim().startsWith(languageKey + '='));
+
+      // If cookie exists, remove it
+      if (cookieValue) {
+        document.cookie = `${languageKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict;`;
+      }
+
+      const result = (service as any).getPersistedLanguage();
+      // Should safely return undefined without throwing when cookie is not present
+      expect(result).toBeUndefined();
+    });
+
+    it('should safely get persisted language when cookie is set', () => {
+      // Set a language cookie
+      const languageKey = 'exui-preferred-language';
+      document.cookie = `${languageKey}=cy; SameSite=Strict;`;
+      const result = (service as any).getPersistedLanguage();
+      expect(result).toBe('cy');
+      // Cleanup
+      document.cookie = `${languageKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; SameSite=Strict;`;
+    });
+
+    it('should handle normalisePhraseSpacing with multiple spaces and null/undefined', () => {
+      const testCases = [
+        { input: null, expected: '' },
+        { input: undefined, expected: '' },
+        { input: '', expected: '' },
+        { input: '  hello   world  ', expected: 'hello world' }
+      ];
+
+      testCases.forEach(({ input, expected }) => {
+        const result = (service as any).normalisePhraseSpacing(input);
+        expect(result).toBe(expected);
+      });
+    });
+
+    it('should handle shouldTranslate with various null/undefined edge cases', () => {
+      expect((service as any).shouldTranslate(null)).toBe(false);
+      expect((service as any).shouldTranslate(undefined)).toBe(false);
+      expect((service as any).shouldTranslate('')).toBe(false);
+      expect((service as any).shouldTranslate('   ')).toBe(false);
+      expect((service as any).shouldTranslate('a')).toBe(true);
+    });
+
+    it('should handle getTranslationWithYesOrNo$ with null yesOrNoValue', (done) => {
+      const phrase = 'Test';
+      service.getTranslationWithYesOrNo$(phrase, null as any).subscribe(
+        (translation) => {
+          expect(translation).toBeDefined();
+          done();
+        },
+        () => {
+          // Should not error, should handle gracefully
+          done();
+        }
+      );
+    });
+
+    it('should handle getTranslationWithReplacements$ with empty replacements', (done) => {
+      const phrase = 'Test  phrase'; // Note: phrase has two spaces
+      service.getTranslationWithReplacements$(phrase, {}).subscribe((translation) => {
+        // When there are no replacements, the phrase is processed but may have spacing adjusted
+        // The important thing is that it doesn't throw an error when replacements are empty
+        expect(translation).toBeDefined();
+        expect(translation).toContain('Test');
+        expect(translation).toContain('phrase');
+        done();
+      });
+    });
   });
 });

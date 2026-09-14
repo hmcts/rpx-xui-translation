@@ -24,6 +24,7 @@ export class RpxTranslationService {
 
   private phrases: { [phrase: string]: BehaviorSubject<TranslatedData> } = {};
   private observables: { [phrase: string]: Observable<TranslatedData> } = {};
+  private cacheSubscriptions: { [phrase: string]: Subscription } = {};
   private requesting: { [lang: string]: string[] } = {};
   private requestTimerSubscription: Subscription | null;
   private languageSource: BehaviorSubject<RpxLanguage> = new BehaviorSubject<RpxLanguage>(this.currentLanguage);
@@ -107,6 +108,9 @@ export class RpxTranslationService {
   private translate(phrase: string): Observable<TranslatedData> {
     const lang = this.language;
     const lookupPhrase = this.normalisePhraseSpacing(phrase);
+    // A phrase has one cache observer, belonging to its currently selected language.
+    this.cacheSubscriptions[phrase]?.unsubscribe();
+    delete this.cacheSubscriptions[phrase];
     if (!this.phrases.hasOwnProperty(phrase)) {
       this.phrases[phrase] = new BehaviorSubject<TranslatedData>({ translation: phrase });
       this.observables[phrase] = this.phrases[phrase].asObservable();
@@ -115,7 +119,7 @@ export class RpxTranslationService {
     if (lang === 'en') {
       this.phrases[phrase].next({ translation: phrase });
     } else {
-      from(liveQuery(() => db.translations.where('[phrase+lang]').equals([lookupPhrase, lang]).first())).pipe(
+      this.cacheSubscriptions[phrase] = from(liveQuery(() => db.translations.where('[phrase+lang]').equals([lookupPhrase, lang]).first())).pipe(
         tap((t) => {
           if (t && !t.isExpired()) {
             this.phrases[phrase].next(t.translation);
@@ -220,7 +224,7 @@ export class RpxTranslationService {
           Object.keys(translations).forEach((p) => {
             toAdd.push(Translation.create(p, lang, translations[p], DateTime.now().plus(this.config.validity).toISO()));
             Object.keys(this.phrases)
-              .filter((phraseKey) => this.normalisePhraseSpacing(phraseKey) === p)
+              .filter((phraseKey) => this.language === lang && this.normalisePhraseSpacing(phraseKey) === p)
               .forEach((phraseKey) => this.phrases[phraseKey].next(translations[p]));
           });
           db.translations.bulkAdd(toAdd);

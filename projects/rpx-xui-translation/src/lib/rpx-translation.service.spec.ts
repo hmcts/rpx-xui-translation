@@ -1,7 +1,7 @@
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { BehaviorSubject } from 'rxjs';
-import { db } from './db';
+import { db, Translation } from './db';
 import { YesOrNoValue } from './rpx-language.enum';
 import { RpxTranslationConfig } from './rpx-translation.config';
 import { RpxTranslationService } from './rpx-translation.service';
@@ -97,6 +97,109 @@ describe('RpxTranslationService', () => {
       expect(spy.load).not.toHaveBeenCalledWith(phrase, language, yesOrNo);
       done();
     });
+  });
+
+  describe('language changes during translation', () => {
+    beforeEach(() => {
+      document.cookie = 'exui-preferred-language=en; SameSite=Strict;';
+      spyOn(db.translations, 'bulkAdd').and.returnValue(Promise.resolve(1) as any);
+    });
+
+    it('keeps English rendering when an earlier Welsh HTTP response arrives, while caching that response', fakeAsync(() => {
+      let rendered = '';
+      service.getTranslation$('Manage Cases').subscribe((value) => rendered = value);
+      // Seed an already queued Welsh lookup independently of IndexedDB scheduling.
+      (service as any).currentLanguage = 'cy';
+      (service as any).load('Manage Cases', 'cy');
+      tick(500);
+      const request = httpMock.expectOne('translations/cy');
+      service.language = 'en';
+      expect(rendered).toBe('Manage Cases');
+
+      request.flush({ translations: { 'Manage Cases': 'Rheoli achosion' } });
+
+      expect(service.language).toBe('en');
+      expect(rendered).toBe('Manage Cases');
+      expect(db.translations.bulkAdd).toHaveBeenCalledWith([
+        jasmine.objectContaining({ phrase: 'Manage Cases', lang: 'cy', translation: { translation: 'Rheoli achosion' } })
+      ]);
+    }));
+
+    it('keeps English rendering when an earlier Welsh request fails in test mode', fakeAsync(() => {
+      TestBed.inject(RpxTranslationConfig).testMode = true;
+      let rendered = '';
+      service.getTranslation$('Manage Cases').subscribe((value) => rendered = value);
+      (service as any).currentLanguage = 'cy';
+      (service as any).load('Manage Cases', 'cy');
+      tick(500);
+      const request = httpMock.expectOne('translations/cy');
+      service.language = 'en';
+      request.flush('unavailable', { status: 503, statusText: 'Service Unavailable' });
+      expect(rendered).toBe('Manage Cases');
+    }));
+
+    it('does not publish a cached Welsh lookup that resolves after English is selected', async () => {
+      let resolveLookup!: (value: Translation) => void;
+      let notifyLookup!: () => void;
+      const started = new Promise<void>((resolve) => notifyLookup = resolve);
+      const lookup = new Promise<Translation>((resolve) => resolveLookup = resolve);
+      spyOn(db.translations, 'where').and.returnValue({
+        equals: () => ({ first: () => {
+          notifyLookup(); return lookup;
+        } })
+      } as any);
+      let rendered = '';
+      service.getTranslation$('Manage Cases').subscribe((value) => rendered = value);
+      service.language = 'cy';
+      await started;
+      service.language = 'en';
+      resolveLookup(Translation.create('Manage Cases', 'cy', { translation: 'Rheoli achosion' }, '2099-01-01'));
+      // Drain the resolved Dexie query callback; no product settling delay is added.
+      await new Promise<void>((resolve) => setTimeout(resolve, 25));
+      expect(rendered).toBe('Manage Cases');
+      expect(service.language).toBe('en');
+    });
+
+    it('reuses cached translations across repeated Welsh and English cycles', async () => {
+      const cached = Translation.create('Manage Cases', 'cy', { translation: 'Rheoli achosion' }, '2099-01-01');
+      spyOn(db.translations, 'where').and.returnValue({
+        equals: () => ({ first: () => Promise.resolve(cached) })
+      } as any);
+      let rendered = '';
+      let translated: (() => void) | undefined;
+      service.getTranslation$('Manage Cases').subscribe((value) => {
+        rendered = value;
+        if (value === 'Rheoli achosion') {
+          translated?.();
+        }
+      });
+      for (let cycle = 0; cycle < 3; cycle++) {
+        const ready = new Promise<void>((resolve) => translated = resolve);
+        service.language = 'cy';
+        await ready;
+        expect(rendered).toBe('Rheoli achosion');
+        service.language = 'en';
+        expect(rendered).toBe('Manage Cases');
+      }
+      httpMock.expectNone('translations/cy');
+    });
+
+    it('continues publishing current Welsh responses for spacing variants and replacement components', fakeAsync(() => {
+      let spaced = '';
+      let replaced = '';
+      service.getTranslation$('Hello   world').subscribe((value) => spaced = value);
+      service.getTranslationWithReplacements$('Hello world %name%', { name: '123' }).subscribe((value) => replaced = value);
+      (service as any).currentLanguage = 'cy';
+      (service as any).load('Hello   world', 'cy');
+      tick(500);
+      httpMock.expectOne('translations/cy').flush({ translations: { 'Hello world': 'Helo byd' } });
+      expect(spaced).toBe('Helo byd');
+      expect(replaced).toContain('Helo byd');
+      expect(replaced).toContain('123');
+      service.language = 'en';
+      expect(spaced).toBe('Hello   world');
+      expect(replaced).toContain('Hello world');
+    }));
   });
 
   describe('shouldTranslate', () => {

@@ -1,6 +1,6 @@
 {
   "name": "rpx-xui-translation",
-  "version": "1.2.13",
+  "version": "1.2.13-tar-upscale",
   "description": "Facilitate translations in Reform programme applications in Angular",
   "main": "index.js",
   "repository": "git@github.com:hmcts/rpx-xui-translation.git",
@@ -37,7 +37,7 @@
     "zone.js": "0.15.1"
   },
   "resolutions": {
-    "tar": "^7.5.22"
+    "tar": "7.5.22"
   },
   "devDependencies": {
     "@angular-devkit/architect": "0.2003.32",

@@ -40,14 +40,14 @@
     "tar": "7.5.22"
   },
   "devDependencies": {
-    "@angular-devkit/architect": "0.2003.32",
-    "@angular-devkit/build-angular": "20.3.32",
+    "@angular-devkit/architect": "0.2202.0",
+    "@angular-devkit/build-angular": "20.3.37",
     "@angular-eslint/builder": "20.3.0",
     "@angular-eslint/eslint-plugin": "20.3.0",
     "@angular-eslint/eslint-plugin-template": "20.3.0",
     "@angular-eslint/schematics": "20.3.0",
     "@angular-eslint/template-parser": "20.3.0",
-    "@angular/cli": "20.3.32",
+    "@angular/cli": "20.3.37",
     "@angular/compiler": "20.3.31",
     "@angular/compiler-cli": "20.3.31",
     "@types/jasmine": "5.1.0",

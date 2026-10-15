@@ -131,7 +131,7 @@ export class RpxTranslationService {
             });
             this.load(phrase, lang);
           }
-        }),
+        })
       ).subscribe(() => ({}));
     }
 

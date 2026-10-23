@@ -7,7 +7,7 @@
   "author": "Ronald Mansveld <ronald.mansveld@atos.net>",
   "license": "MIT",
   "engines": {
-    "node": ">=24.18.0"
+    "node": ">=24.22.1"
   },
   "scripts": {
     "ng": "ng",

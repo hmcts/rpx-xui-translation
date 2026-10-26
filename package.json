@@ -1,13 +1,13 @@
 {
   "name": "rpx-xui-translation",
-  "version": "1.2.17-ts-node-update",
+  "version": "1.2.18-ts-node-update",
   "description": "Facilitate translations in Reform programme applications in Angular",
   "main": "index.js",
   "repository": "git@github.com:hmcts/rpx-xui-translation.git",
   "author": "Ronald Mansveld <ronald.mansveld@atos.net>",
   "license": "MIT",
   "engines": {
-    "node": ">=24.18.0"
+    "node": ">=24.22.1"
   },
   "scripts": {
     "ng": "ng",

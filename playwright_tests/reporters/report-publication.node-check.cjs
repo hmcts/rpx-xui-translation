@@ -36,8 +36,8 @@ test('Odhín source jobs are read-only and upload exact evidence only', () => {
   assert.doesNotMatch(accessibilityWorkflow, /publish-odhin|workflow_call/);
   assert.doesNotMatch(crossBrowserWorkflow, /publish-odhin|workflow_call/);
 
-  assert.match(functionalWorkflow, /name: translation-functional-report/); // ADAPTED: translation names/paths
-  assert.match(functionalWorkflow, /name: translation-playwright-evidence/); // ADAPTED: translation names/paths
+  assert.match(functionalWorkflow, /name: translation-functional-report\r?\n/); // ADAPTED: translation names/paths; anchored (upstream is unanchored)
+  assert.match(functionalWorkflow, /name: translation-playwright-evidence\r?\n/); // ADAPTED: translation names/paths; anchored (upstream is unanchored)
   assert.match(functionalBuildJob, /yarn playwright install --with-deps chromium\r?\n/);
   assert.ok(
     functionalBuildJob.indexOf('Install Playwright browsers') < functionalBuildJob.indexOf('yarn test:reporters'), // ADAPTED: translation names/paths
@@ -57,7 +57,9 @@ test('Odhín source jobs are read-only and upload exact evidence only', () => {
   } // ADAPTED
   assert.match(accessibilityWorkflow, /PW_ODHIN_OUTPUT: test-results\/odhin\/accessibility/); // ADAPTED
   assert.doesNotMatch(functionalBuildJob, /test:a11y|smoke-firefox|smoke-webkit/); // ADAPTED: advisory packs stay out of default CI
-  assert.match(accessibilityWorkflow, /name: translation-accessibility-report/); // ADAPTED: translation names/paths
+  assert.match(accessibilityWorkflow, /name: translation-accessibility-report\r?\n/); // ADAPTED: translation names/paths; anchored (upstream is unanchored)
+  assert.match(accessibilityWorkflow, /manifest-entry-\*\.json[\s\S]*test "\$manifests" -eq 2/); // ADAPTED: packaging requires the EN and CY evidence manifests
+  assert.match(accessibilityWorkflow, /grep -q 'id="TabAccessibility"' test-results\/odhin\/accessibility\/index\.html/); // ADAPTED: packaging requires the Accessibility evidence tab
   assert.match(accessibilityWorkflow, /odhin-source\.json/);
   assert.match(accessibilityWorkflow, /path: accessibility-odhin-artifact\//);
 
@@ -70,8 +72,8 @@ test('Odhín source jobs are read-only and upload exact evidence only', () => {
   assert.match(crossBrowserWorkflow, /yarn playwright install --with-deps chromium firefox webkit/);
   assert.match(crossBrowserWorkflow, /yarn playwright test --project=smoke-firefox --project=smoke-webkit/); // ADAPTED: translation names/paths
   assert.doesNotMatch(crossBrowserWorkflow, /yarn playwright test --project=chromium/);
-  assert.match(crossBrowserWorkflow, /name: translation-cross-browser-report/); // ADAPTED: translation names/paths
-  assert.match(crossBrowserWorkflow, /name: translation-cross-browser-evidence/); // ADAPTED: translation names/paths
+  assert.match(crossBrowserWorkflow, /name: translation-cross-browser-report\r?\n/); // ADAPTED: translation names/paths; anchored (upstream is unanchored)
+  assert.match(crossBrowserWorkflow, /name: translation-cross-browser-evidence\r?\n/); // ADAPTED: translation names/paths; anchored (upstream is unanchored)
   assert.match(crossBrowserWorkflow, /odhin-source\.json/);
   assert.match(crossBrowserWorkflow, /path: cross-browser-odhin-artifact\//);
   assert.match(crossBrowserWorkflow, /TARGET_SHA="\$\(git rev-parse HEAD\)"/);
@@ -102,9 +104,9 @@ test('publisher is a trusted workflow_run with a validated manual recovery path 
   assert.match(resolver, /run\.head_repository\?\.full_name !== process\.env\.GITHUB_REPOSITORY/);
   assert.match(resolver, /Unsupported Odhín source workflow/);
   assert.match(resolver, /\["success", "failure"\]\.includes\(run\.conclusion\)/);
-  assert.match(resolver, /translation-functional-report/); // ADAPTED: translation names/paths
-  assert.match(resolver, /translation-accessibility-report/); // ADAPTED: translation names/paths
-  assert.match(resolver, /translation-cross-browser-report/); // ADAPTED: translation names/paths
+  assert.match(resolver, /"translation-functional-report"/); // ADAPTED: translation names/paths; anchored (upstream is unanchored)
+  assert.match(resolver, /"translation-accessibility-report"/); // ADAPTED: translation names/paths; anchored (upstream is unanchored)
+  assert.match(resolver, /"translation-cross-browser-report"/); // ADAPTED: translation names/paths; anchored (upstream is unanchored)
 
   const download = publisherJob.match(/- name: Download exact upstream report[\s\S]*?(?=      - name: Prepare)/)?.[0] ?? '';
   assert.match(download, /name: \$\{\{ steps\.source\.outputs\.artifact_name \}\}/);
@@ -139,7 +141,7 @@ test('publisher is a trusted workflow_run with a validated manual recovery path 
   assert.match(publisherJob, /--report-type "\$ODHIN_REPORT_TYPE"/);
   assert.match(publisherJob, /evidence\/odhin-source\.json/);
   assert.match(publisherJob, /if \[ "\$ODHIN_REPORT_TYPE" != 'functional' \]; then/);
-  assert.match(publisherJob, /translation-cross-browser-report/); // ADAPTED: translation names/paths
+  assert.match(publisherJob, /"translation-cross-browser-report"/); // ADAPTED: translation names/paths; anchored (upstream is unanchored)
 });
 
 test('Pages publication uses a fresh latest-only site instead of copying the archive', () => {

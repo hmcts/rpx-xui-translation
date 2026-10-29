@@ -31,7 +31,6 @@ jobs:
       - run: corepack enable && yarn --version
       - run: yarn install
       - run: cd projects/rpx-xui-translation && yarn install && cd ../..
-      - run: yarn build:library
       - run: yarn lint:playwright
       - name: Install Playwright browsers
         run: yarn playwright install --with-deps chromium firefox webkit

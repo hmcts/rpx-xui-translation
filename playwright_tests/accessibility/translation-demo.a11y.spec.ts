@@ -28,7 +28,8 @@ test.describe('Translation demo accessibility (advisory)', () => {
     const langFindings: AdvisoryFinding[] = htmlLang === 'cy' ? [] : [{
       rule: 'translation-html-lang',
       impact: 'serious',
-      summary: `<html lang="${htmlLang}"> is not updated to "cy" after switching to Welsh (WCAG 3.1.1 Language of Page)`,
+      // Plain text only: Odhín renders annotation text as raw HTML.
+      summary: `document lang stays "${htmlLang}" instead of "cy" after switching to Welsh (WCAG 3.1.1 Language of Page)`,
       targets: ['html']
     }];
     if (langFindings.length) {
@@ -44,6 +45,5 @@ test.describe('Translation demo accessibility (advisory)', () => {
       findings: [...langFindings, ...axeFindings(axe)],
       axe
     });
-    await page.unrouteAll({ behavior: 'ignoreErrors' });
   });
 });

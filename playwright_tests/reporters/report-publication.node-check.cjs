@@ -1,5 +1,5 @@
 // Vendored from hmcts/rpx-xui-common-lib@b27d3cd20a9ed08cf2ba7fdf50926c59d4250393 e2e/reporters/report-publication.node-check.cjs; local edits marked ADAPTED
-// ADAPTED: diverges from common-lib@b27d3cd2 for F5 (functional provenance from odhin-source.json, merge-vs-head case) and F6 (identical re-publish skips the empty archive commit).
+// ADAPTED: functional artifact discovery, F5 (tested merge provenance) and F6 (identical re-publish skips the empty archive commit).
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -235,6 +235,48 @@ function stepRunScript(workflow, stepName) { // ADAPTED
   } // ADAPTED
   return body.join('\n'); // ADAPTED
 } // ADAPTED
+
+test('functional summary links uploaded artifacts before separate Pages publication', (t) => { // ADAPTED
+  const summary = functionalBuildJob.match(/- name: Link functional report in Actions[\s\S]*/)?.[0] ?? ''; // ADAPTED
+  assert.ok(summary, 'missing functional artifact summary'); // ADAPTED
+  assert.match(functionalBuildJob, /- name: Upload Playwright evidence\r?\n        id: evidence_artifact/); // ADAPTED
+  assert.match(functionalBuildJob, /- name: Upload functional report\r?\n        id: functional_artifact\r?\n        if: \$\{\{ !cancelled\(\) && steps\.odhin_browser\.outcome == 'success' \}\}/); // ADAPTED
+  assert.ok(functionalBuildJob.indexOf('- name: Upload Playwright evidence') < functionalBuildJob.indexOf('- name: Link functional report in Actions')); // ADAPTED
+  assert.ok(functionalBuildJob.indexOf('- name: Upload functional report') < functionalBuildJob.indexOf('- name: Link functional report in Actions')); // ADAPTED
+  assert.match(summary, /REPORT_ARTIFACT_URL: \$\{\{ steps\.functional_artifact\.outputs\.artifact-url \}\}/); // ADAPTED
+  assert.match(summary, /EVIDENCE_ARTIFACT_URL: \$\{\{ steps\.evidence_artifact\.outputs\.artifact-url \}\}/); // ADAPTED
+  const condition = new Script(`(${summary.match(/if: \$\{\{ (.*) \}\}/)?.[1]})`); // ADAPTED
+  for (const scenario of [ // ADAPTED
+    { functional: 'success', upload: 'success', cancelled: false, want: true }, // ADAPTED
+    { functional: 'failure', upload: 'success', cancelled: false, want: true }, // ADAPTED
+    { functional: 'success', upload: 'failure', cancelled: false, want: false }, // ADAPTED
+    { functional: 'failure', upload: 'skipped', cancelled: false, want: false }, // ADAPTED
+    { functional: 'success', upload: 'success', cancelled: true, want: false }, // ADAPTED
+  ]) { // ADAPTED
+    assert.equal(condition.runInNewContext({ // ADAPTED
+      cancelled: () => scenario.cancelled, // ADAPTED
+      steps: { functional: { outcome: scenario.functional }, functional_artifact: { outcome: scenario.upload } }, // ADAPTED
+    }), scenario.want, JSON.stringify(scenario)); // ADAPTED
+  } // ADAPTED
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'translation-odhin-summary-')); // ADAPTED
+  t.after(() => fs.rmSync(root, { recursive: true, force: true })); // ADAPTED
+  const summaryPath = path.join(root, 'summary.md'); // ADAPTED
+  const reportUrl = 'https://github.example.test/hmcts/rpx-xui-translation/actions/runs/123/artifacts/456'; // ADAPTED
+  const script = stepRunScript(functionalWorkflow, 'Link functional report in Actions'); // ADAPTED
+  for (const evidenceUrl of ['https://github.example.test/hmcts/rpx-xui-translation/actions/runs/123/artifacts/789', '']) { // ADAPTED
+    fs.writeFileSync(summaryPath, 'Existing summary\n'); // ADAPTED
+    execFileSync('bash', ['-c', script], { cwd: root, env: { ...process.env, GITHUB_STEP_SUMMARY: summaryPath, REPORT_ARTIFACT_URL: reportUrl, EVIDENCE_ARTIFACT_URL: evidenceUrl } }); // ADAPTED
+    const rendered = fs.readFileSync(summaryPath, 'utf8'); // ADAPTED
+    assert.ok(rendered.startsWith('Existing summary\n')); // ADAPTED
+    assert.ok(rendered.includes(`[Download browser-verified Odhín report](${reportUrl})`)); // ADAPTED
+    assert.match(rendered, /Extract the whole ZIP, then open `translation-playwright\.html`/); // ADAPTED
+    assert.match(rendered, /GitHub Pages publication runs separately/); // ADAPTED
+    assert.match(rendered, /workflow is merged to `master`/); // ADAPTED
+    if (evidenceUrl) assert.ok(rendered.includes(`[Download Playwright evidence](${evidenceUrl})`)); // ADAPTED
+    else assert.doesNotMatch(rendered, /\[Download Playwright evidence\]/); // ADAPTED
+    assert.doesNotMatch(rendered, /\]\(\)/); // ADAPTED
+  } // ADAPTED
+}); // ADAPTED
 
 test('functional report provenance is the tested merge checkout, not the PR head', (t) => { // ADAPTED
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'translation-odhin-provenance-')); // ADAPTED

@@ -16,11 +16,16 @@ on:
 env:
   NODE_VERSION: 24.22.1
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
       - run: corepack enable
       - uses: actions/setup-node@v5
         with:
@@ -30,18 +35,37 @@ jobs:
       - run: yarn lint
       - run: yarn test
       - run: yarn build:library
-      - run: yarn playwright install --with-deps chromium
-      - run: yarn test:e2e
-      - name: Upload Playwright reports
-        if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+      - name: Install Playwright browsers
+        run: yarn playwright install --with-deps chromium
+      - run: yarn test:reporters
+      - name: Run Playwright functional coverage
+        id: functional
+        env:
+          PLAYWRIGHT_REPORTERS: dot,html,junit,odhin
+          PW_ODHIN_OUTPUT: test-results/odhin
+          PW_ODHIN_INDEX: translation-playwright.html
+        run: yarn playwright test --project=chromium
+      - name: Verify rendered Odhín dashboard
+        id: odhin_browser
+        if: ${{ !cancelled() && (steps.functional.outcome == 'success' || steps.functional.outcome == 'failure') }}
+        run: yarn test:e2e:odhin-check
+      - name: Upload Playwright evidence
+        if: always()
+        uses: actions/upload-artifact@v7
         with:
-          name: playwright-report
+          name: translation-playwright-evidence
           path: |
             playwright-report/
             test-results/
-          if-no-files-found: ignore
-          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Upload functional report
+        if: ${{ !cancelled() && steps.odhin_browser.outcome == 'success' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: translation-functional-report
+          path: test-results/odhin/
+          if-no-files-found: error
 
   publish-npm:
     if: github.event_name == 'release'

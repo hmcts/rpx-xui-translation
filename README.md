@@ -1,102 +1,344 @@
-# RpxTranslation
+# RPX XUI Translation
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.6.
+Angular translation library for Reform applications, with a small browser demo and automated checks. The library provides the `rpxTranslate` pipe, `RpxTranslationService`, language selection, batched translation requests and a browser cache. The demo exercises the library source directly; it is not a translation backend or a complete XUI application.
 
-## Development server
+This guide covers a clean checkout, the demo, builds, unit tests, Playwright coverage and generated evidence. Run commands from the repository root unless stated otherwise. Examples use Bash or Zsh; `open` is a macOS convenience.
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+## What lives where
 
-## Code scaffolding
+| Path | Purpose |
+| --- | --- |
+| `projects/rpx-xui-translation/src/` | Library implementation, Jasmine specs and public exports in `public-api.ts` |
+| `projects/rpx-xui-translation/package.json` | Published library dependency and peer-dependency contract |
+| `projects/rpx-xui-translation-demo/` | Angular demo that imports the library source |
+| `angular.json` | Explicit library build/test and demo build/serve targets |
+| `playwright.config.ts` | Functional browser projects, demo server and reporters |
+| `playwright.accessibility.config.ts` | Separate Chromium accessibility advisory |
+| `playwright_tests/` | Browser specs, translation API fake, reporter checks and publication support |
+| `.github/workflows/` | Build, release, advisory and report-publication workflows |
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## 1. Select the checkout and toolchain
 
-## Build
+You need Git, network access to the source/package/browser registries, and an installed Node version manager or a managed Node installation. The commands below select the project toolchain; they do not install Git or a Node manager on an empty machine.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
+Clone the repository, or use your existing checkout:
 
-## Running unit tests
+~~~bash
+git clone https://github.com/hmcts/rpx-xui-translation.git
+cd rpx-xui-translation
+git status --short
+git branch --show-current
+~~~
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+The Playwright/reporting work is carried by PR [#91](https://github.com/hmcts/rpx-xui-translation/pull/91). When validating that PR before merge, select its code rather than assuming a clone of `master` contains its scripts:
 
-## Running end-to-end tests
+~~~bash
+git fetch origin pull/91/head:review/pr-91
+git switch review/pr-91
+~~~
 
-The demo app (`projects/rpx-xui-translation-demo`) is the end-to-end harness. Playwright smoke tests live in `playwright_tests/` and fake the translation API with route handlers, so no backend is needed.
+Use that switch only in a clean checkout. For ordinary development after merge, select the intended branch and check its `package.json`. An absent `test:e2e` script means you have a different revision; installing more packages will not add the branch's infrastructure.
 
-```bash
-yarn playwright install chromium   # first run only
-yarn test:e2e                      # starts the demo on http://127.0.0.1:4300 and runs the Chromium smoke
-yarn lint:playwright               # eslint + typecheck of the Playwright sources
-```
+Use the pinned toolchain:
 
-Set `PLAYWRIGHT_TEST_BASE_URL` to run against an already running demo instead of starting one. Reports are written to `playwright-report/` and `test-results/`.
+| Tool | Version / source |
+| --- | --- |
+| Node.js | `24.22.1` in `.nvmrc` and CI; root engine requirement `>=24.22.1` |
+| Yarn | `4.5.3` through the root `packageManager` field |
+| Angular / CLI | Angular `20.3.31`, CLI `20.3.32`, installed locally |
+| Playwright | `1.64.1`, installed locally |
 
-## Playwright reporting
+Select Node **before** running Corepack or Yarn. With an existing nvm installation:
 
-Reporting follows the `rpx-xui-common-lib` standard (fail-closed Odhín reporter, browser-verified dashboard, GitHub Pages publication) with the current `rpx-xui-webapp` Odhín styling.
+~~~bash
+nvm install
+nvm use
+node --version
+corepack enable
+yarn --version
+~~~
 
-```bash
-yarn test:e2e                      # Chromium smoke only (--project=chromium); list,html,junit,odhin locally
-yarn test:e2e:crossbrowser         # advisory: the same smoke on smoke-firefox and smoke-webkit
-yarn test:a11y                     # advisory: axe scans of the EN and CY demo states (playwright.accessibility.config.ts)
-PLAYWRIGHT_REPORTERS=list yarn test:e2e
-yarn test:e2e:odhin-check          # opens the generated Odhín report in Chromium and checks the dashboard
-yarn test:reporters                # node --test checks (playwright_tests/**/*.node-check.cjs): reporter, publisher, workflow contract, reporter selection, a11y evidence
-```
+Expected: `v24.22.1` and `4.5.3`. With another Node manager, select the same version there. Corepack must be available in that Node installation; follow your managed environment's setup if it is absent or cannot write its shims. Use `yarn ng` rather than a global Angular CLI.
 
-- `PLAYWRIGHT_REPORTERS`: a comma-separated subset of `dot,list,html,junit,odhin`. If it is unset or empty, `PLAYWRIGHT_DEFAULT_REPORTER` (the estate-wide override) is used; if that is also unset, the built-in default applies: `list,html,junit,odhin` locally and `dot,html,junit,odhin` in CI. An unknown name, or a list with no names, fails the run.
-- `PW_ODHIN_OUTPUT` (default `test-results/odhin`) and `PW_ODHIN_INDEX` (default `translation-playwright.html`) set the Odhín output folder and index file. `yarn test:e2e:odhin-check` reads the same variables.
-- Outputs: Odhín `test-results/odhin/translation-playwright.html` (its assets and failure logs sit beside it), HTML `playwright-report/`, JUnit `test-results/junit.xml`, traces and screenshots of failures under `test-results/`.
-- The Odhín reporter fails the run if the report is missing or empty, if enhancement throws, or if a reporter hook fails or times out. A green test run with a broken report exits nonzero.
+## 2. Install both dependency trees
 
-### Advisory packs
+The root Angular workspace and the library folder have separate tracked lockfiles. Install both:
 
-Neither pack runs in the default `yarn test:e2e` or in the `Node.js Package` workflow.
+~~~bash
+yarn install --immutable
+(cd projects/rpx-xui-translation && yarn install --immutable)
+~~~
 
-- **Cross-browser:** the smoke spec runs on the `smoke-firefox` and `smoke-webkit` projects. Install those browsers first with `yarn playwright install firefox webkit`. The Odhín report goes to `test-results/odhin/translation-playwright.html`.
-- **Accessibility:** `playwright_tests/accessibility/translation-demo.a11y.spec.ts` runs axe on the English default state and on the Welsh state. The Welsh state uses the same `/cy` route fake as the smoke (`playwright_tests/fixtures/translation-api.fake.ts`).
-  - Findings are advisory. Each test attaches its axe JSON, and the findings appear in the Odhín Accessibility tab at `test-results/odhin/accessibility/index.html`, with the raw files under `accessibility-evidence/`.
-  - Findings never fail the run. Execution, fake or report errors still do.
-  - The spec also records whether `<html lang>` follows the switch to Welsh. At present it stays `en`, which is reported as the advisory finding `translation-html-lang`.
-  - To check that report, run `PW_ODHIN_OUTPUT=test-results/odhin/accessibility PW_ODHIN_INDEX=index.html yarn test:e2e:odhin-check`.
+Immutable installs reject changes to the committed dependency graph. The child folder is a separate Yarn project. Its own dependencies include Luxon 2 and matching types, while the root uses Luxon 3; skipping its install can affect library compilation. Keep both lockfiles and use Yarn for both.
 
-Both packs have a manual GitHub workflow. The `ref` input selects the code under test, and `--ref master` selects the trusted workflow definition:
+Check that installation preserved them:
 
-```bash
-gh workflow run cross-browser-odhin.yml -R hmcts/rpx-xui-translation --ref master -f ref=<branch-or-sha>
-gh workflow run accessibility-odhin.yml -R hmcts/rpx-xui-translation --ref master -f ref=<branch-or-sha>
-```
+~~~bash
+git diff --exit-code -- yarn.lock projects/rpx-xui-translation/yarn.lock
+~~~
 
-GitHub only lets you dispatch a workflow that exists on the default branch, so both workflows become runnable after merge.
-- Cross-browser reports from successful or failed test runs publish to `reports/<branch-slug>/cross-browser/runs/...`.
-- Successful accessibility runs publish to `reports/<branch-slug>/accessibility/runs/...`.
+The CI workflow and `yarn install-all` use ordinary installs for both folders. The explicit local commands above add lockfile enforcement. Investigate an immutable-lock failure against the selected revision and toolchain before changing dependencies. Existing peer-dependency warnings are separate from an install command failing.
 
-### Publication
+Install Chromium for the smoke tests, reporter checks and rendered-report checker:
 
-The `Node.js Package` build job is read-only. It runs the Chromium suite, verifies the rendered dashboard and uploads two artifacts: `translation-playwright-evidence` (upload attempted even on failure) and `translation-functional-report` (only when the dashboard check passed). Its Actions summary links the uploaded report and any retained evidence directly. The dashboard check also runs when tests fail, so a valid report of a failed run can be downloaded.
+~~~bash
+yarn playwright install chromium
+~~~
 
-To open the source report, follow **Download browser-verified Odhín report** in the source run's summary (or select `translation-functional-report` under **Artifacts**). Extract the whole ZIP and open `translation-playwright.html` in the extracted folder, keeping its assets beside it. Alternatively, replace `RUN_ID` with that exact `Node.js Package` run's numeric ID; `gh run download` extracts the whole artifact:
+For the advisory Firefox/WebKit pack:
 
-```bash
-gh run download RUN_ID -R hmcts/rpx-xui-translation \
+~~~bash
+yarn playwright install firefox webkit
+~~~
+
+On Linux runners needing browser system packages, use `yarn playwright install --with-deps chromium` (or include `firefox webkit`). This can require administrator access. Playwright browser downloads and system Google Chrome are separate installations.
+
+## 3. Start and inspect the demo
+
+Start the explicit application target in one terminal:
+
+~~~bash
+yarn ng serve rpx-xui-translation-demo --host 127.0.0.1 --port 4300
+~~~
+
+Open [http://127.0.0.1:4300/](http://127.0.0.1:4300/) after compilation finishes. A fresh browser context should show:
+
+- **Translation Demo App** and **Current language: en**.
+- **Untranslated text** and **Translated Text**.
+- **Newid i'r Gymraeg**; **Change to English** appears after switching.
+
+The server rebuilds on source changes. Stop it with `Ctrl+C`. A library build is not required first because the demo imports the library source. Prefer the explicit project command to unqualified `ng serve` or `yarn start`.
+
+### What a manual Welsh switch proves
+
+The demo uses `baseUrl: ''`, a 300 ms debounce, one-day cache validity and `testMode: true`. Switching to Welsh sends `POST /cy` to the demo origin with a body such as `{"phrases":["Translated Text"]}`. This repository supplies neither that translation service nor a demo proxy for it.
+
+On the standalone server, the request fails and the library displays **[Test translation for Translated Text]** after its in-progress text. The language can still become `cy`, and **Change to English** restores the source phrase. This is the configured fallback, not a live Welsh translation.
+
+Playwright supplies its own `POST /cy` route fake. Its success scenario returns **Testun wedi'i gyfieithu [fake translation API]**; a separate scenario deliberately returns HTTP 500 to check the fallback. No backend, login, environment file or application secret is needed for these browser tests.
+
+Language is persisted in the `exui-preferred-language` cookie and translations in IndexedDB database `RpxTranslations`. A reused browser may start in Welsh or show cached fallback text. Use a fresh profile, or clear this demo origin's cookie and IndexedDB for a clean manual check. Playwright uses isolated contexts. Stay on one hostname: `localhost` and `127.0.0.1` have different browser storage.
+
+## 4. Build and check the library
+
+~~~bash
+yarn build:library
+yarn ng build rpx-xui-translation-demo --configuration production
+~~~
+
+- `yarn build` aliases `yarn build:library`; library output is `dist/rpx-xui-translation/`.
+- The library production build then runs `scripts/sync-library-package.mjs` to copy dependency/peer-dependency declarations from the library manifest into its generated package.
+- The separate demo production output is `dist/rpx-xui-translation-demo/`.
+- `yarn build:library:watch` omits that manifest-sync step. Run the full library build before inspecting a final distributable.
+
+Use `--configuration production`; do not copy the obsolete `--prod` flag from older Angular instructions. The legacy `yarn package` script expects application-style bundles and is not the library build or release-validation command.
+
+Run lint and library unit tests:
+
+~~~bash
+yarn lint
+yarn test --watch=false --browsers=ChromeHeadless
+~~~
+
+`yarn lint` checks Angular project TypeScript and runs `yarn lint:playwright`. The latter also compiles Playwright sources using `playwright_tests/tsconfig.json`. Jasmine/Karma covers library services, the pipe and helpers without starting the demo. Karma listens on port 9876 and needs Chrome.
+
+If system Google Chrome is unavailable, use installed Playwright Chromium for this invocation:
+
+~~~bash
+export CHROME_BIN="$(yarn node -p 'require("@playwright/test").chromium.executablePath()')"
+yarn test --watch=false
+~~~
+
+A missing-browser launcher error is a setup failure, not a failed assertion. Install Chromium before resolving its executable path.
+
+## 5. Run browser checks
+
+The functional config starts the demo automatically at `http://127.0.0.1:4300/` with a three-minute startup budget. Locally it may reuse a server already at that URL; confirm that it is this checkout's demo. CI does not reuse it, so stop a manually started server before a `CI=1` run. Tests have zero retries.
+
+| Command | Scope | Expected executions |
+| --- | --- | --- |
+| `yarn test:e2e` | Four functional smoke scenarios on Chromium; default local/CI lane | 4 |
+| `yarn playwright test` | Same scenarios on all three functional projects | 12 |
+| `yarn test:e2e:crossbrowser` | Advisory smoke on `smoke-firefox` and `smoke-webkit` | 8 |
+| `yarn test:a11y` | Separate EN/CY axe advisory on `chromium-a11y` | 2 |
+| `yarn test:reporters` | Node checks for reporters, publisher, workflow contracts, selection and accessibility evidence | See runner summary |
+
+Twelve functional executions are four scenarios across three browsers, not twelve distinct scenarios. Accessibility is excluded from the functional config.
+
+The smoke covers English defaults; the Welsh request/in-progress/fake-success states; cookie/cache restoration after reload without another translation request, followed by returning to English; and fallback after a faked API failure. Unexpected page/console errors also fail the specs. This is demo/library integration evidence, not deployed-service validation.
+
+`yarn test:reporters` also launches Chromium. Some checks deliberately run a failing inner test to prove error handling; judge the outer Node test summary and command exit status, not that controlled inner failure in isolation.
+
+To use a demo you started yourself:
+
+~~~bash
+PLAYWRIGHT_TEST_BASE_URL=http://127.0.0.1:4300 yarn test:e2e
+~~~
+
+When set, this variable disables Playwright server management. It must identify a running compatible demo; translation route fakes still apply. Unset it to restore automatic startup. Browser-free discovery is available with `yarn test:e2e --list`.
+
+## 6. Generate, verify and read reports
+
+Default local reporters are `list,html,junit,odhin`; CI uses `dot,html,junit,odhin`. Generate the functional report and verify its rendered dashboard:
+
+~~~bash
+yarn test:e2e
+yarn test:e2e:odhin-check
+~~~
+
+| Evidence | Default path |
+| --- | --- |
+| Odhín dashboard and companion assets | `test-results/odhin/translation-playwright.html` |
+| Playwright HTML report | `playwright-report/index.html` |
+| JUnit XML | `test-results/junit.xml` |
+| Failure traces/screenshots | Per-test folders under `test-results/` |
+| Reporter failure logs | Beside Odhín, including its `logs/` folder |
+
+The Odhín checker launches Chromium even for a Firefox/WebKit report. It checks dashboard metrics, panels, feature drill-down, native result details/steps and browser console/page errors. A written HTML file alone is not equivalent evidence.
+
+Open reports on macOS:
+
+~~~bash
+open test-results/odhin/translation-playwright.html
+yarn playwright show-report playwright-report
+~~~
+
+Keep the whole Odhín folder together because assets/attachments are external. To inspect a failure trace, replace this example assignment with an actual retained file:
+
+~~~bash
+TRACE_FILE=test-results/example-failed-test/trace.zip
+yarn playwright show-trace "$TRACE_FILE"
+~~~
+
+Traces and screenshots are retained on failure; a green run need not contain them. Inspect available evidence before changing assertions, routes or waits.
+
+### Reporter selection and separate runs
+
+`PLAYWRIGHT_REPORTERS` overrides the whole reporter set. If unset/empty, `PLAYWRIGHT_DEFAULT_REPORTER` is used; if both are unset/empty, the built-in set applies. Supported comma-separated names are `dot,list,html,junit,odhin`. Unknown names or a nonempty value containing no names fail configuration.
+
+~~~bash
+PLAYWRIGHT_REPORTERS=list,html,junit,odhin yarn test:e2e
+~~~
+
+A `list`-only run produces no new HTML, JUnit or Odhín report. Do not validate a stale dashboard as evidence for it. Odhín fails the command when generation, enhancement or a reporter hook fails/times out, or the report is missing/empty. Passing scenarios with broken reporting still give a nonzero run.
+
+Successive browser runs reuse output locations. A distinct Odhín folder alone does not preserve HTML/JUnit/browser output, and a later run can clear subfolders of `test-results/`. Archive complete evidence **before** starting the next lane:
+
+~~~bash
+EVIDENCE_ARCHIVE="${TMPDIR:-/tmp}/translation-functional-$(date +%Y%m%d-%H%M%S).tar.gz"
+tar -czf "$EVIDENCE_ARCHIVE" playwright-report test-results
+printf '%s\n' "$EVIDENCE_ARCHIVE"
+~~~
+
+Use another archive label for other lanes. Keep generated artifacts out of commits and share sanitized evidence.
+
+`PW_ODHIN_OUTPUT` and `PW_ODHIN_INDEX` override the Odhín folder/filename. After archiving the functional evidence, run cross-browser generation and its browser check with identical values:
+
+~~~bash
+PW_ODHIN_OUTPUT=test-results/odhin/cross-browser PW_ODHIN_INDEX=index.html \
+  yarn test:e2e:crossbrowser
+PW_ODHIN_OUTPUT=test-results/odhin/cross-browser PW_ODHIN_INDEX=index.html \
+  yarn test:e2e:odhin-check
+~~~
+
+Archive these outputs with a cross-browser label before running accessibility.
+
+### Accessibility advisory
+
+~~~bash
+yarn test:a11y
+PW_ODHIN_OUTPUT=test-results/odhin/accessibility PW_ODHIN_INDEX=index.html \
+  yarn test:e2e:odhin-check
+yarn node playwright_tests/accessibility/verify-evidence.cjs test-results/odhin/accessibility
+open test-results/odhin/accessibility/index.html
+~~~
+
+The config writes HTML to `playwright-report/accessibility/`, JUnit to `test-results/accessibility/junit.xml`, browser artifacts to `test-results/accessibility/browser/` and Odhín to `test-results/odhin/accessibility/index.html`. Axe JSON/HTML/manifests are in its `accessibility-evidence/` folder and linked from its Accessibility tab.
+
+Violations and incomplete checks are advisory evidence to review; they do not fail the pack. Execution, fake and reporting errors still fail it. The Welsh check also records the current document-language limitation: `<html lang>` stays `en`, reported as `translation-html-lang`. Two passed executions do not certify accessibility compliance.
+
+The verifier requires exactly one EN and one CY axe record, nonempty linked JSON/HTML and an Accessibility tab. It accepts a positional folder and always checks `index.html`. Keep that filename if overriding the advisory folder; its folder is not selected through `PW_ODHIN_OUTPUT` automatically.
+
+## 7. Complete local validation pass
+
+After setup, stop any manually started demo with `Ctrl+C` so this pass starts the server from the intended checkout. Run these in order. The first two lines remove ambient reporter/server/output overrides from this shell. Stop on a failed command and inspect the evidence before proceeding.
+
+~~~bash
+unset PLAYWRIGHT_REPORTERS PLAYWRIGHT_DEFAULT_REPORTER PW_ODHIN_OUTPUT PW_ODHIN_INDEX PLAYWRIGHT_TEST_BASE_URL
+unset PLAYWRIGHT_HTML_OUTPUT_DIR PLAYWRIGHT_HTML_REPORT PLAYWRIGHT_JUNIT_OUTPUT_FILE
+yarn lint
+export CHROME_BIN="$(yarn node -p 'require("@playwright/test").chromium.executablePath()')"
+yarn test --watch=false
+yarn build:library
+yarn ng build rpx-xui-translation-demo --configuration production
+yarn test:reporters
+yarn test:e2e
+yarn test:e2e:odhin-check
+~~~
+
+Expect successful lint/typecheck, unit/build and Node checks, four passing Chromium scenarios, then a passing dashboard check. Archive functional evidence using the command above. Run the optional cross-browser commands with their matched dashboard check, archive those outputs, then run the accessibility commands. The 12-execution all-project command is an alternative to separate functional/cross-browser runs for a combined functional report.
+
+Record `git rev-parse HEAD`, tool versions, commands, exit statuses and archive paths with review evidence. A browser pack alone does not prove packaging, unit coverage, report rendering or live-service compatibility.
+
+## Troubleshooting
+
+| Symptom | Check / action |
+| --- | --- |
+| Engine or Angular tooling error | Select Node `24.22.1` and Yarn `4.5.3`, then install against this revision's locks. |
+| Missing Luxon types/build resolution errors | Confirm root and child installs; inspect their separate manifests/locks before changing versions. |
+| Startup fails on port 4300 | Identify the process; stop your stale demo or explicitly target the correct server. Do not let reuse hide another application. |
+| Browser starts in Welsh/shows old text | Use a fresh profile or clear only this demo origin's cookie/IndexedDB. |
+| Manual Welsh request fails | No standalone `/cy` backend is supplied; fallback is expected. Use fake-backed tests for deterministic success coverage. |
+| Karma cannot find Chrome | Install Chromium and use `CHROME_BIN` above, or supply managed Google Chrome. |
+| Playwright executable/system library missing | Install the relevant browsers; Linux may need system dependencies and appropriate access. |
+| macOS Chromium exits with `mach_port_rendezvous ... Permission denied (1100)` | Use an unrestricted local terminal; sandbox launch failure is not product behavior. |
+| Tests pass but command exits nonzero | Inspect reporter finalization errors/Odhín logs; reporting intentionally fails closed. |
+| Dashboard missing, stale or from another lane | Check selection, matched Odhín variables, current outputs and prior archives. |
+| Accessibility executions pass with findings | Advisory policy permits findings; review JSON, incomplete checks and the Accessibility tab. |
+
+Do not start with force installs, dependency upgrades, broad retries or weaker assertions. Retain the failure and identify whether setup, the demo, tests or reporting failed.
+
+## CI and optional publication
+
+Local validation ends before publication. Remote dispatch, release and Pages setup require repository access and workflows on the default branch; they are not local prerequisites.
+
+The `Node.js Package` workflow's build job has read-only repository permissions. It installs both trees, runs lint, Karma, the library build, Node reporter checks and Chromium smoke, then checks the rendered dashboard. It attempts `translation-playwright-evidence` upload even on failure. `translation-functional-report` is uploaded only after the dashboard check passes; a valid report of failed tests can still be downloaded. Separate release-only jobs publish the package/attach a tarball after build success.
+
+In the source run summary, follow **Download browser-verified Odhín report**, or download the artifact. Replace this example ID with the exact numeric `Node.js Package` source run:
+
+~~~bash
+SOURCE_RUN_ID=123456789
+gh run download "$SOURCE_RUN_ID" -R hmcts/rpx-xui-translation \
   -n translation-functional-report --dir translation-functional-report
 open translation-functional-report/translation-playwright.html
-```
+~~~
 
-The source artifact is available independently of GitHub Pages. `Publish Translation Odhín evidence` (`.github/workflows/publish-odhin.yml`) becomes active only after it is merged to the default branch, `master`. A successful source run does not prove that a Pages report exists; the first successful publisher deployment is required. Check the publisher run's summary for the deployed report link.
+Extract the whole artifact. Source artifacts are independent of Pages. Source build success does not prove Pages configuration or publication.
 
-Once active, the publisher runs on `workflow_run` after `Node.js Package` finishes with success or failure, for same-repository pull requests and for pushes to `master` or `Release`. It also runs after the two advisory workflows, as described above. It appends the exact report to the immutable history on the `odhin-reports` branch at `reports/<branch-slug>/runs/<run-id>-attempt-<attempt>/`. A successful Pages deployment serves the current run only. Cancelled runs, missing artifacts and fork pull requests are not published.
+### Activate and use Pages after merge
 
-- Prerequisite: a repository admin enables GitHub Pages with source **GitHub Actions** and allows `master` in the `github-pages` environment.
-- Both `workflow_run` and `workflow_dispatch` require the workflow file to exist on the default branch. Publication therefore starts only after this workflow is merged to `master`.
-- To re-publish an exact run, open **Actions** → **Publish Translation Odhín evidence**, keep **Use workflow from** on `master`, enter the numeric source run ID and choose **Run workflow**. Re-publishing a run that is already archived with byte-identical content is accepted. The archive commit is skipped and Pages is deployed again, so a failed Pages deployment can be recovered. Different content under the same run key is still rejected.
-- Every report records the commit that was actually tested in `odhin-source.json`. For a pull request, that is the merge checkout, not the PR head. The PR head and base SHAs are also recorded in the file.
+`Publish Translation Odhín evidence` (`.github/workflows/publish-odhin.yml`) activates after its workflow is merged to `master`. A repository administrator must enable Pages with source **GitHub Actions** and allow `master` in the `github-pages` environment. Both `workflow_run` and manual dispatch depend on default-branch workflow availability.
 
-After the publisher is merged to `master`, the same exact source run can be published from the CLI:
+Once active, the publisher handles `Node.js Package` success/failure for same-repository PRs and pushes to `master`/`Release`, plus the advisory workflows. Cancelled runs, fork PRs and missing artifacts are excluded. It archives reports on `odhin-reports` at `reports/<branch-slug>/runs/<run-id>-attempt-<attempt>/`; advisory history uses `cross-browser/runs/` or `accessibility/runs/` beneath the branch slug. A successful Pages deployment serves the current run only. Follow the deployed link in the publisher summary.
 
-```bash
+To dispatch advisory workflows after merge, use `master` below or replace it with an existing remote branch, tag or commit SHA. `--ref master` chooses the trusted workflow definition; `-f ref` chooses the code:
+
+~~~bash
+TARGET_REF=master
+gh workflow run cross-browser-odhin.yml -R hmcts/rpx-xui-translation --ref master -f ref="$TARGET_REF"
+gh workflow run accessibility-odhin.yml -R hmcts/rpx-xui-translation --ref master -f ref="$TARGET_REF"
+~~~
+
+Neither advisory pack runs in the default build. Cross-browser reports can publish after successful/failed tests; accessibility publication requires a successful advisory run and verified evidence.
+
+Republish an exact source run after merge:
+
+~~~bash
 gh workflow run publish-odhin.yml -R hmcts/rpx-xui-translation \
-  --ref master -f source_run_id=RUN_ID
-```
+  --ref master -f source_run_id="$SOURCE_RUN_ID"
+~~~
+
+The Actions UI provides the same operation: select **Publish Translation Odhín evidence**, keep **Use workflow from** on `master` and enter the numeric source ID. Byte-identical republication skips an empty archive commit and redeploys Pages; different content under an existing run key is rejected. Reports record the tested commit in `odhin-source.json`. For PRs this is the merge checkout, with PR head/base SHAs recorded separately.
 
 ### Vendored reporter sources
 
@@ -113,12 +355,9 @@ gh workflow run publish-odhin.yml -R hmcts/rpx-xui-translation \
 To re-sync, check out the new upstream SHA. For each file, compare the upstream file with the vendored file minus its header line, for example:
 
 ```bash
-diff <(git -C ../rpx-xui-webapp show <sha>:playwright_tests_new/common/reporters/presentation/report.css) \
+UPSTREAM_SHA=2caeccf903473116a3e74bd703fc1233e84be89f
+diff <(git -C ../rpx-xui-webapp show "$UPSTREAM_SHA":playwright_tests_new/common/reporters/presentation/report.css) \
      <(tail -n +2 playwright_tests/reporters/presentation/report.css)
 ```
 
 For runtime files, only `ADAPTED` lines may differ. Node-checks also differ by whole upstream cases that were removed or adapted; each node-check lists these in the `ADAPTED` lines under its header. Copy the upstream file, re-apply the `ADAPTED` edits, update the SHA in the header and in this table, then run `yarn test:reporters`, `yarn test:e2e` and `yarn test:e2e:odhin-check`.
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).

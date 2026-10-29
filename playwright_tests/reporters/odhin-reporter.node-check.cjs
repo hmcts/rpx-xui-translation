@@ -1,4 +1,5 @@
 // Vendored from hmcts/rpx-xui-common-lib@b27d3cd20a9ed08cf2ba7fdf50926c59d4250393 e2e/reporters/odhin-report-enhancer.node-check.cjs; local edits marked ADAPTED
+// ADAPTED: diverges from common-lib@b27d3cd2 for F4: adds a real-CLI never-settling hook regression (upstream tests delayed resolution only).
 // ADAPTED: renamed from odhin-report-enhancer.node-check.cjs; keeps the fail-closed, CLI exit, real failed-report and feature-name checks. Dropped CommonLib-enhancer-specific checks (external presentation/ assets, verifier source regexes, log/lightweight trimming, WebApp layout/a11y markup) and their unused node-html-parser require.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -181,4 +182,24 @@ test('reporter groups results by feature annotation or spec file name', async ()
   await reporter.flushInnerCallbacks(); // ADAPTED
   assert.deepEqual(reporter.testMetadata.map((entry) => entry.feature), ['Translation', 'translation-demo.spec']); // ADAPTED
   assert.deepEqual([...reporter.featureStats.keys()], ['Translation', 'translation-demo.spec']); // ADAPTED
+}); // ADAPTED
+
+// ADAPTED (F4): a hook that never settles must fail the real CLI within the deadline (upstream only tests delayed resolution).
+test('Playwright CLI exits nonzero when a reporter hook never settles', () => { // ADAPTED
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'odhin-hang-proof-')); // ADAPTED
+  try { // ADAPTED
+    const reporterPath = require.resolve('./odhin-adaptive.reporter.cjs'); // ADAPTED
+    const testPath = require.resolve('@playwright/test'); // ADAPTED
+    fs.writeFileSync(path.join(root, 'probe.spec.cjs'), `const { test, expect } = require(${JSON.stringify(testPath)}); test('passing contract', () => expect(2 + 2).toBe(4));`); // ADAPTED
+    fs.writeFileSync(path.join(root, 'reporter.cjs'), `const fs = require('node:fs'); const path = require('node:path'); const Reporter = require(${JSON.stringify(reporterPath)}); const hang = () => new Promise(() => {}); module.exports = class extends Reporter { constructor(options) { super({ outputFolder: options.outputFolder, profile: false, runtimeHookTimeoutMs: 250, finalizationTimeoutMs: 250, createInnerReporter: () => ({ onTestEnd() { if (options.mode === 'test-end') return hang(); }, onEnd() { if (options.mode === 'end') return hang(); fs.mkdirSync(options.outputFolder); fs.writeFileSync(path.join(options.outputFolder, 'index.html'), '<html><body>Report</body></html>'); } }) }); } };`); // ADAPTED
+    for (const mode of ['healthy', 'test-end', 'end']) { // ADAPTED
+      fs.writeFileSync(path.join(root, 'playwright.config.cjs'), `module.exports = { testDir: ${JSON.stringify(root)}, testMatch: 'probe.spec.cjs', outputDir: ${JSON.stringify(path.join(root, 'results'))}, reporter: [['./reporter.cjs', {mode:${JSON.stringify(mode)},outputFolder:${JSON.stringify(path.join(root, mode))}}]] };`); // ADAPTED
+      const result = spawnSync(process.execPath, [require.resolve('@playwright/test/cli'), 'test', '-c', path.join(root, 'playwright.config.cjs')], { cwd: root, encoding: 'utf8', timeout: 60_000 }); // ADAPTED
+      assert.equal(result.error, undefined, `${mode}: CLI did not finish within 60s`); // ADAPTED
+      assert.equal(result.status, mode === 'healthy' ? 0 : 1, `${mode}\n${result.stdout}${result.stderr}`); // ADAPTED
+      if (mode !== 'healthy') assert.match(result.stderr, /timed out after 250ms/, mode); // ADAPTED
+    } // ADAPTED
+  } finally { // ADAPTED
+    fs.rmSync(root, { recursive: true, force: true }); // ADAPTED
+  } // ADAPTED
 }); // ADAPTED

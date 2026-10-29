@@ -137,12 +137,12 @@ jobs:
           ODHIN_REPORT_TYPE: ${{ steps.source.outputs.report_type }}
         run: |
           set -euo pipefail
-          if [ "$ODHIN_REPORT_TYPE" != 'functional' ]; then
-            test -s evidence/odhin-source.json
-            ODHIN_BRANCH="$(node -e 'const fs = require("node:fs"); process.stdout.write(JSON.parse(fs.readFileSync(0, "utf8")).rawBranch)' < evidence/odhin-source.json)"
-            ODHIN_SHA="$(node -e 'const fs = require("node:fs"); process.stdout.write(JSON.parse(fs.readFileSync(0, "utf8")).sha)' < evidence/odhin-source.json)"
-            rm evidence/odhin-source.json
-          fi
+          # ADAPTED (F5): every report type, functional included, carries the exact tested checkout in odhin-source.json
+          # (upstream only reads it for advisory reports and labels functional PR reports with the PR head SHA).
+          test -s evidence/odhin-source.json
+          ODHIN_BRANCH="$(node -e 'const fs = require("node:fs"); process.stdout.write(JSON.parse(fs.readFileSync(0, "utf8")).rawBranch)' < evidence/odhin-source.json)"
+          ODHIN_SHA="$(node -e 'const fs = require("node:fs"); process.stdout.write(JSON.parse(fs.readFileSync(0, "utf8")).sha)' < evidence/odhin-source.json)"
+          rm evidence/odhin-source.json
           report_repo_url="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY.git"
           auth_header="AUTHORIZATION: basic $(printf 'x-access-token:%s' "$GITHUB_TOKEN" | base64 | tr -d '\n')"
           if git -c http.extraheader="$auth_header" ls-remote --exit-code --heads "$report_repo_url" odhin-reports >/dev/null 2>&1; then
@@ -184,8 +184,13 @@ jobs:
           git -C odhin-site config user.name github-actions[bot]
           git -C odhin-site config user.email 41898282+github-actions[bot]@users.noreply.github.com
           git -C odhin-site add .nojekyll reports index.html
-          git -C odhin-site commit -m "ci: publish Odhín $ODHIN_BRANCH $ODHIN_RUN_KEY"
-          git -c http.extraheader="$auth_header" -C odhin-site push origin HEAD:odhin-reports
+          # ADAPTED (F6): a recovery re-publish of an identical archived run stages nothing; skip the empty commit and push.
+          if git -C odhin-site diff --cached --quiet; then
+            echo "Archive already contains $ODHIN_RUN_KEY; continuing to the Pages deployment."
+          else
+            git -C odhin-site commit -m "ci: publish Odhín $ODHIN_BRANCH $ODHIN_RUN_KEY"
+            git -c http.extraheader="$auth_header" -C odhin-site push origin HEAD:odhin-reports
+          fi
       - name: Configure GitHub Pages
         if: ${{ steps.upstream_report.outputs.available == 'true' }}
         id: configure_pages

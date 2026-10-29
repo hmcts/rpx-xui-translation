@@ -1,4 +1,5 @@
 // Vendored from hmcts/rpx-xui-common-lib@b27d3cd20a9ed08cf2ba7fdf50926c59d4250393 e2e/reporters/odhin-site-publisher.cjs; local edits marked ADAPTED
+// ADAPTED: diverges from common-lib@b27d3cd2 for F6: re-publishing a byte-identical archived run is idempotent; conflicting content still throws.
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -192,6 +193,26 @@ function readBranches(reportsDir) {
     }).filter(Boolean).sort((left, right) => left.rawBranch.localeCompare(right.rawBranch));
 }
 
+// ADAPTED (F6): content digest of a staged or archived run, ignoring only odhin-run.json createdAt.
+function runDigest(dir) { // ADAPTED
+  const hash = crypto.createHash('sha256'); // ADAPTED
+  const walk = (current) => fs.readdirSync(current, { withFileTypes: true }) // ADAPTED
+    .sort((left, right) => left.name.localeCompare(right.name)) // ADAPTED
+    .forEach((entry) => { // ADAPTED
+      const file = path.join(current, entry.name); // ADAPTED
+      const relative = path.relative(dir, file).split(path.sep).join('/'); // ADAPTED
+      if (entry.isDirectory()) return walk(file); // ADAPTED
+      let content = fs.readFileSync(file); // ADAPTED
+      if (relative === 'odhin-run.json') { // ADAPTED
+        const { createdAt: _createdAt, ...identity } = JSON.parse(content.toString('utf8')); // ADAPTED
+        content = Buffer.from(JSON.stringify(identity)); // ADAPTED
+      } // ADAPTED
+      hash.update(`${relative}\0${content.length}\0`).update(content); // ADAPTED
+    }); // ADAPTED
+  walk(dir); // ADAPTED
+  return hash.digest('hex'); // ADAPTED
+} // ADAPTED
+
 function publishReport({ sourceDir, siteDir, rawBranch, runKey, runId, runAttempt, sha, runUrl, reportType = 'functional', latestOnly = false }) {
   const type = normaliseReportType(reportType);
   const definition = reportDefinition(type);
@@ -209,7 +230,8 @@ function publishReport({ sourceDir, siteDir, rawBranch, runKey, runId, runAttemp
   }
   fs.mkdirSync(siteDir, { recursive: true });
   ensureBranchIdentity(branchDir, rawBranch, branchSlug);
-  if (fs.existsSync(runDir)) throw new Error(`Odhín run already exists and will not be overwritten: ${runDir}`);
+  // ADAPTED (F6): an existing run is accepted only if the incoming run is byte-identical (recovery re-publish); upstream always throws.
+  const existingRun = fs.existsSync(runDir); // ADAPTED
   fs.mkdirSync(path.dirname(runDir), { recursive: true });
   let stagingDir;
   try {
@@ -231,8 +253,12 @@ function publishReport({ sourceDir, siteDir, rawBranch, runKey, runId, runAttemp
       schemaVersion: 2, reportType: type, rawBranch: String(rawBranch), branchSlug, runKey: safeRunKey,
       runId: String(runId), runAttempt: String(runAttempt), sha: String(sha), runUrl: String(runUrl), createdAt: new Date().toISOString()
     });
-    fs.renameSync(stagingDir, runDir);
-    stagingDir = undefined;
+    if (existingRun) { // ADAPTED
+      if (runDigest(stagingDir) !== runDigest(runDir)) throw new Error(`Odhín run already exists and will not be overwritten: ${runDir}`); // ADAPTED
+    } else { // ADAPTED
+      fs.renameSync(stagingDir, runDir); // ADAPTED: upstream line, now inside the new-run branch
+      stagingDir = undefined; // ADAPTED: upstream line, now inside the new-run branch
+    } // ADAPTED
   } finally {
     if (stagingDir && fs.existsSync(stagingDir)) fs.rmSync(stagingDir, { recursive: true, force: true });
   }
@@ -256,7 +282,7 @@ function publishReport({ sourceDir, siteDir, rawBranch, runKey, runId, runAttemp
   fs.writeFileSync(path.join(siteDir, '.nojekyll'), '');
   fs.writeFileSync(path.join(siteDir, 'index.html'), renderRootIndex(readBranches(reportsDir), latestOnly, type));
   const relativeHistory = definition.historyDirectory ? `${definition.historyDirectory}/` : '';
-  return { reportType: type, branchSlug, branchUrlPath: `reports/${branchSlug}/${relativeHistory}`,
+  return { reportType: type, branchSlug, reused: existingRun, branchUrlPath: `reports/${branchSlug}/${relativeHistory}`, // ADAPTED (F6): reused
     runUrlPath: `reports/${branchSlug}/${relativeHistory}runs/${safeRunKey}/` };
 }
 

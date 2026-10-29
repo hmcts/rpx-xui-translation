@@ -4,6 +4,10 @@ import { fakeTranslationApi, sourcePhrase, translationApiPath, welshPhrase } fro
 const inProgressPhrase = `${sourcePhrase} [Translation in progress]`;
 const testModeFallbackPhrase = `[Test translation for ${sourcePhrase}]`;
 const languageCookie = 'exui-preferred-language';
+// The demo debounces translation requests by debounceTimeMs = 300 (projects/rpx-xui-translation-demo/src/app/app.module.ts).
+const demoTranslationDebounceMs = 300;
+// No-POST observation window after the cached Welsh render: the full debounce plus a scheduling allowance.
+const noTranslationRequestWindowMs = demoTranslationDebounceMs + 400;
 
 async function languageCookieValue(page: Page): Promise<string | undefined> {
   const cookies = await page.context().cookies();
@@ -100,6 +104,16 @@ test.describe('Translation demo smoke', () => {
       await page.reload();
       await expect(page.getByText('Current language: cy', { exact: true })).toBeVisible();
       await expect(page.getByText(welshPhrase, { exact: true })).toBeVisible();
+
+      // Event-bound negative window: any translation POST within the debounce window after the cached render fails.
+      const translationPost = await page.waitForRequest(
+        (request) => request.method() === 'POST' && new URL(request.url()).pathname === translationApiPath,
+        { timeout: noTranslationRequestWindowMs }
+      ).then(
+        (request) => `unexpected ${request.method()} ${new URL(request.url()).pathname} after reload`,
+        (error: Error) => (error.name === 'TimeoutError' ? 'none' : `request observer failed: ${error.message}`)
+      );
+      expect(translationPost, 'translation POSTs within the debounce window after reload').toBe('none');
       expect(api.requestBodies).toHaveLength(1);
     });
 

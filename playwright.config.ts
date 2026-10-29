@@ -26,8 +26,9 @@ const functionalReports: ReportLocations = {
 };
 
 export function buildReporters(locations: ReportLocations): ReporterDescription[] {
-  const defaultReporters = isCi ? 'dot,html,junit,odhin' : 'list,html,junit,odhin';
-  const reporterNames = (process.env.PLAYWRIGHT_REPORTERS || defaultReporters)
+  const builtInReporters = isCi ? 'dot,html,junit,odhin' : 'list,html,junit,odhin';
+  // Precedence: PLAYWRIGHT_REPORTERS, then the estate-wide PLAYWRIGHT_DEFAULT_REPORTER, then the built-in set.
+  const reporterNames = (process.env.PLAYWRIGHT_REPORTERS || process.env.PLAYWRIGHT_DEFAULT_REPORTER || builtInReporters)
     .split(',')
     .map((name) => name.trim())
     .filter(Boolean);

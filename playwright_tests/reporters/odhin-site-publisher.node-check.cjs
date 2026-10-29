@@ -1,4 +1,5 @@
 // Vendored from hmcts/rpx-xui-common-lib@b27d3cd20a9ed08cf2ba7fdf50926c59d4250393 e2e/reporters/odhin-site-publisher.node-check.cjs; local edits marked ADAPTED
+// ADAPTED: adds the F6 recovery case (identical archived run re-publishes; conflicting content still throws), which upstream lacks.
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
@@ -354,3 +355,35 @@ test('keeps three type-specific histories separate and links only matching repor
     fs.rmSync(root, { recursive: true, force: true });
   }
 });
+
+// ADAPTED (F6): archive already persisted, Pages still needs deployment (job re-run or manual recovery with the same run key).
+test('re-publishing a byte-identical archived run is idempotent and conflicting content still throws', () => { // ADAPTED
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'translation-odhin-recovery-')); // ADAPTED
+  const source = path.join(root, 'source'); // ADAPTED
+  const archive = path.join(root, 'archive'); // ADAPTED
+  try { // ADAPTED
+    createSource(source, 'run-60'); // ADAPTED
+    const first = publish({ source, site: archive, branch: 'master', runId: '60' }); // ADAPTED
+    const runDir = path.join(archive, first.runUrlPath); // ADAPTED
+    const metadata = fs.readFileSync(path.join(runDir, 'odhin-run.json'), 'utf8'); // ADAPTED
+    const before = Object.fromEntries(assetPaths.map((assetPath) => [assetPath, digest(path.join(runDir, assetPath))])); // ADAPTED
+
+    const retry = publish({ source, site: archive, branch: 'master', runId: '60' }); // ADAPTED
+    assert.equal(first.reused, false); // ADAPTED
+    assert.equal(retry.reused, true); // ADAPTED
+    assert.equal(retry.runUrlPath, first.runUrlPath); // ADAPTED
+    assert.equal(fs.readFileSync(path.join(runDir, 'odhin-run.json'), 'utf8'), metadata, 'archived metadata is not rewritten'); // ADAPTED
+    assetPaths.forEach((assetPath) => assert.equal(digest(path.join(runDir, assetPath)), before[assetPath], assetPath)); // ADAPTED
+    assert.equal(fs.readdirSync(path.dirname(runDir)).some((name) => name.startsWith('.odhin-run-')), false, 'no staging directory remains'); // ADAPTED
+    const pages = publish({ source, site: path.join(root, 'pages'), branch: 'master', runId: '60', latestOnly: true }); // ADAPTED
+    assert.ok(fs.existsSync(path.join(root, 'pages', pages.runUrlPath, 'index.html')), 'Pages projection can still be built'); // ADAPTED
+
+    createSource(source, 'different content'); // ADAPTED
+    assert.throws(() => publish({ source, site: archive, branch: 'master', runId: '60' }), /will not be overwritten/); // ADAPTED
+    createSource(source, 'run-60'); // ADAPTED
+    assert.throws(() => publish({ source, site: archive, branch: 'master', runId: '60', sha: 'b'.repeat(40) }), /will not be overwritten/); // ADAPTED
+    assert.equal(fs.readFileSync(path.join(runDir, 'odhin-run.json'), 'utf8'), metadata); // ADAPTED
+  } finally { // ADAPTED
+    fs.rmSync(root, { recursive: true, force: true }); // ADAPTED
+  } // ADAPTED
+}); // ADAPTED

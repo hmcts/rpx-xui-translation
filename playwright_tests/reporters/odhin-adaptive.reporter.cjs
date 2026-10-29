@@ -1,4 +1,5 @@
 // Vendored from hmcts/rpx-xui-common-lib@b27d3cd20a9ed08cf2ba7fdf50926c59d4250393 e2e/reporters/odhin-adaptive.reporter.cjs; local edits marked ADAPTED
+// ADAPTED: diverges from common-lib@b27d3cd2 for F4: the reporting deadline timer stays referenced (upstream unrefs it).
 /* global clearTimeout, process, require, module, setTimeout */
 
 const fs = require('node:fs');
@@ -407,7 +408,7 @@ const withTimeout = async (promise, timeoutMs) => {
           () => reject(Object.assign(new Error(`Timed out after ${timeoutMs}ms`), { code: 'ODHIN_TIMEOUT' })),
           timeoutMs
         );
-        timer.unref?.();
+        // ADAPTED (F4): upstream calls timer.unref?.() here, which lets Node exit 0 while a reporter hook never settles.
       }),
     ]);
   } finally {

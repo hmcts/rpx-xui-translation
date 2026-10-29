@@ -25,7 +25,7 @@
     "test:e2e:crossbrowser": "playwright test --project=smoke-firefox --project=smoke-webkit",
     "test:a11y": "playwright test -c playwright.accessibility.config.ts",
     "test:e2e:odhin-check": "node playwright_tests/reporters/odhin-report.browser-check.cjs",
-    "test:reporters": "node --test playwright_tests/reporters/*.node-check.cjs",
+    "test:reporters": "node --test 'playwright_tests/**/*.node-check.cjs'",
     "install-all": "yarn install && cd projects/rpx-xui-translation && yarn install && cd ../.."
   },
   "dependencies": {

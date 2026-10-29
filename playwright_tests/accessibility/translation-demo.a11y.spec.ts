@@ -1,7 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import { fakeTranslationApi, welshPhrase } from '../fixtures/translation-api.fake';
-import { axeFindings, recordAdvisoryEvidence, type AdvisoryFinding } from './axe-evidence';
+import { axeFindings, axeReviewItems, recordAdvisoryEvidence, type AdvisoryFinding } from './axe-evidence';
 
 const feature = 'Translation demo';
 
@@ -12,7 +12,7 @@ test.describe('Translation demo accessibility (advisory)', () => {
 
     const axe = await new AxeBuilder({ page }).analyze();
 
-    await recordAdvisoryEvidence(testInfo, { feature, pageState: 'English default', language: 'en', findings: axeFindings(axe), axe });
+    await recordAdvisoryEvidence(testInfo, { feature, pageState: 'English default', language: 'en', findings: axeFindings(axe), review: axeReviewItems(axe), axe });
   });
 
   test('A2 Welsh state via the faked translation API', async ({ page }, testInfo) => {
@@ -43,6 +43,7 @@ test.describe('Translation demo accessibility (advisory)', () => {
       pageState: 'Welsh via translation API',
       language: 'cy',
       findings: [...langFindings, ...axeFindings(axe)],
+      review: axeReviewItems(axe),
       axe
     });
   });

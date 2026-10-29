@@ -1,4 +1,5 @@
 // Vendored from hmcts/rpx-xui-common-lib@b27d3cd20a9ed08cf2ba7fdf50926c59d4250393 e2e/reporters/report-publication.node-check.cjs; local edits marked ADAPTED
+// ADAPTED: diverges from common-lib@b27d3cd2 for F5 (functional provenance from odhin-source.json, merge-vs-head case) and F6 (identical re-publish skips the empty archive commit).
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -58,8 +59,7 @@ test('Odhín source jobs are read-only and upload exact evidence only', () => {
   assert.match(accessibilityWorkflow, /PW_ODHIN_OUTPUT: test-results\/odhin\/accessibility/); // ADAPTED
   assert.doesNotMatch(functionalBuildJob, /test:a11y|smoke-firefox|smoke-webkit/); // ADAPTED: advisory packs stay out of default CI
   assert.match(accessibilityWorkflow, /name: translation-accessibility-report\r?\n/); // ADAPTED: translation names/paths; anchored (upstream is unanchored)
-  assert.match(accessibilityWorkflow, /manifest-entry-\*\.json[\s\S]*test "\$manifests" -eq 2/); // ADAPTED: packaging requires the EN and CY evidence manifests
-  assert.match(accessibilityWorkflow, /grep -q 'id="TabAccessibility"' test-results\/odhin\/accessibility\/index\.html/); // ADAPTED: packaging requires the Accessibility evidence tab
+  assert.match(accessibilityWorkflow, /set -euo pipefail\r?\n\s+node playwright_tests\/accessibility\/verify-evidence\.cjs test-results\/odhin\/accessibility\r?\n\s+rm -rf accessibility-odhin-artifact/); // ADAPTED: packaging first verifies one EN and one CY axe record, their linked files and the Accessibility tab
   assert.match(accessibilityWorkflow, /odhin-source\.json/);
   assert.match(accessibilityWorkflow, /path: accessibility-odhin-artifact\//);
 
@@ -140,7 +140,10 @@ test('publisher is a trusted workflow_run with a validated manual recovery path 
   assert.match(publisherJob, /--run-attempt "\$ODHIN_SOURCE_RUN_ATTEMPT"/);
   assert.match(publisherJob, /--report-type "\$ODHIN_REPORT_TYPE"/);
   assert.match(publisherJob, /evidence\/odhin-source\.json/);
-  assert.match(publisherJob, /if \[ "\$ODHIN_REPORT_TYPE" != 'functional' \]; then/);
+  // ADAPTED (F5): odhin-source.json is required for every report type; upstream reads it for advisory reports only.
+  assert.doesNotMatch(publisherJob, /if \[ "\$ODHIN_REPORT_TYPE" != 'functional' \]; then/); // ADAPTED
+  assert.match(publisherJob, /^          test -s evidence\/odhin-source\.json$/m); // ADAPTED
+  assert.match(publisherJob, /if git -C odhin-site diff --cached --quiet; then[\s\S]*?else\r?\n\s+git -C odhin-site commit[^\n]*\r?\n\s+git [^\n]*push origin HEAD:odhin-reports\r?\n\s+fi/); // ADAPTED (F6): identical recovery re-publish skips the empty commit
   assert.match(publisherJob, /"translation-cross-browser-report"/); // ADAPTED: translation names/paths; anchored (upstream is unanchored)
 });
 
@@ -214,3 +217,54 @@ for (const scenario of cases) {
     assert.equal(publisherCondition.runInNewContext(context), scenario.want);
   });
 }
+
+// ADAPTED (F5): provenance of the functional report. Runs the real workflow scripts against a pull-request merge checkout.
+const { execFileSync } = require('node:child_process'); // ADAPTED
+const os = require('node:os'); // ADAPTED
+
+function stepRunScript(workflow, stepName) { // ADAPTED
+  const lines = workflow.split(/\r?\n/); // ADAPTED
+  const start = lines.findIndex((line) => line.trim() === `- name: ${stepName}`); // ADAPTED
+  assert.ok(start >= 0, `missing step ${stepName}`); // ADAPTED
+  const runLine = lines.findIndex((line, index) => index > start && /^\s+run: \|$/.test(line)); // ADAPTED
+  const indent = lines[runLine].indexOf('run:') + 2; // ADAPTED
+  const body = []; // ADAPTED
+  for (const line of lines.slice(runLine + 1)) { // ADAPTED
+    if (line.trim() && line.length - line.trimStart().length < indent) break; // ADAPTED
+    body.push(line.slice(indent)); // ADAPTED
+  } // ADAPTED
+  return body.join('\n'); // ADAPTED
+} // ADAPTED
+
+test('functional report provenance is the tested merge checkout, not the PR head', (t) => { // ADAPTED
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'translation-odhin-provenance-')); // ADAPTED
+  t.after(() => fs.rmSync(root, { recursive: true, force: true })); // ADAPTED
+  const git = (...args) => execFileSync('git', ['-C', root, '-c', 'user.name=probe', '-c', 'user.email=probe@example.invalid', ...args], { encoding: 'utf8' }).trim(); // ADAPTED
+  git('init', '-q', '-b', 'master'); // ADAPTED
+  git('commit', '-q', '--allow-empty', '-m', 'base'); // ADAPTED
+  const baseSha = git('rev-parse', 'HEAD'); // ADAPTED
+  git('checkout', '-q', '-b', 'feature/pr'); // ADAPTED
+  git('commit', '-q', '--allow-empty', '-m', 'pr head'); // ADAPTED
+  const headSha = git('rev-parse', 'HEAD'); // ADAPTED
+  git('checkout', '-q', 'master'); // ADAPTED
+  git('commit', '-q', '--allow-empty', '-m', 'master moved'); // ADAPTED
+  git('merge', '-q', '--no-ff', '--no-edit', 'feature/pr'); // ADAPTED
+  const mergeSha = git('rev-parse', 'HEAD'); // ADAPTED
+  assert.notEqual(mergeSha, headSha); // ADAPTED
+  fs.mkdirSync(path.join(root, 'test-results', 'odhin'), { recursive: true }); // ADAPTED
+
+  const record = stepRunScript(functionalWorkflow, 'Record tested revision for the functional report'); // ADAPTED
+  execFileSync('bash', ['-c', record], { cwd: root, env: { ...process.env, SOURCE_BRANCH: 'feature/pr', PR_HEAD_SHA: headSha, PR_BASE_SHA: baseSha } }); // ADAPTED
+  const source = JSON.parse(fs.readFileSync(path.join(root, 'test-results', 'odhin', 'odhin-source.json'), 'utf8')); // ADAPTED
+  assert.deepEqual(source, { rawBranch: 'feature/pr', sha: mergeSha, headSha, baseSha }); // ADAPTED
+
+  // ADAPTED: the publisher's identity block, with the API head SHA as its starting value.
+  const prepare = stepRunScript(publisherWorkflow, 'Prepare and persist immutable Odhín history'); // ADAPTED
+  const identity = prepare.slice(0, prepare.indexOf('report_repo_url=')); // ADAPTED
+  fs.mkdirSync(path.join(root, 'evidence')); // ADAPTED
+  fs.copyFileSync(path.join(root, 'test-results', 'odhin', 'odhin-source.json'), path.join(root, 'evidence', 'odhin-source.json')); // ADAPTED
+  const published = execFileSync('bash', ['-c', `${identity}\nprintf '%s %s' "$ODHIN_BRANCH" "$ODHIN_SHA"`], { cwd: root, encoding: 'utf8', // ADAPTED
+    env: { ...process.env, ODHIN_REPORT_TYPE: 'functional', ODHIN_BRANCH: 'feature/pr', ODHIN_SHA: headSha } }); // ADAPTED
+  assert.equal(published, `feature/pr ${mergeSha}`); // ADAPTED
+  assert.equal(fs.existsSync(path.join(root, 'evidence', 'odhin-source.json')), false, 'identity file is not published'); // ADAPTED
+}); // ADAPTED

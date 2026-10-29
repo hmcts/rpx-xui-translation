@@ -52,9 +52,7 @@ jobs:
           TARGET_REF: ${{ inputs.ref }}
         run: |
           set -euo pipefail
-          manifests="$(find test-results/odhin/accessibility/accessibility-evidence -maxdepth 1 -name 'manifest-entry-*.json' | wc -l | tr -d ' ')"
-          test "$manifests" -eq 2 || { echo "Expected 2 accessibility evidence manifests (EN, CY), found $manifests" >&2; exit 1; }
-          grep -q 'id="TabAccessibility"' test-results/odhin/accessibility/index.html || { echo 'Accessibility evidence tab missing from the Odhín report' >&2; exit 1; }
+          node playwright_tests/accessibility/verify-evidence.cjs test-results/odhin/accessibility
           rm -rf accessibility-odhin-artifact
           mkdir -p accessibility-odhin-artifact
           cp -R test-results/odhin/accessibility/. accessibility-odhin-artifact/

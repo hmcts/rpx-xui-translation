@@ -1,12 +1,11 @@
 // Vendored from hmcts/rpx-xui-common-lib@b27d3cd20a9ed08cf2ba7fdf50926c59d4250393 e2e/reporters/odhin-report-enhancer.node-check.cjs; local edits marked ADAPTED
-// ADAPTED: renamed from odhin-report-enhancer.node-check.cjs; keeps the fail-closed, CLI exit, real failed-report and feature-name checks. Dropped CommonLib-enhancer-specific checks (external presentation/ assets, verifier source regexes, log/lightweight trimming, WebApp layout/a11y markup).
+// ADAPTED: renamed from odhin-report-enhancer.node-check.cjs; keeps the fail-closed, CLI exit, real failed-report and feature-name checks. Dropped CommonLib-enhancer-specific checks (external presentation/ assets, verifier source regexes, log/lightweight trimming, WebApp layout/a11y markup) and their unused node-html-parser require.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
 const test = require('node:test');
-const { parse } = require('node-html-parser');
 const { chromium } = require('@playwright/test');
 const { pathToFileURL } = require('node:url');
 
@@ -141,6 +140,9 @@ test('controlled Odhín failure', async () => {
   const browser = await chromium.launch();
   try {
     const page = await browser.newPage();
+    const pageErrors = []; // ADAPTED: the external js/chartjs.js must load without the removed file-chart initializer
+    page.on('pageerror', (error) => pageErrors.push(error.message)); // ADAPTED
+    page.on('console', (message) => { if (message.type() === 'error') pageErrors.push(`console: ${message.text()}`); }); // ADAPTED
     await page.goto(pathToFileURL(report).href);
     await page.locator('#odhin-feature-summary .feature-toggle').click();
     await page.locator('#feature-tests-0 .feature-test-steps').click();
@@ -151,6 +153,7 @@ test('controlled Odhín failure', async () => {
     const visibleSteps = modal.locator('.result-tabcontent[style*="display: block"] .stepLine');
     assert.ok(await visibleSteps.count(), 'failed result renders native step evidence');
     assert.match((await visibleSteps.allTextContents()).join(' '), /failure step retained in report/, 'failed result retains the original step');
+    assert.deepEqual(pageErrors, [], 'failed report renders without page or console errors'); // ADAPTED
   } finally {
     await browser.close();
   }
@@ -159,11 +162,23 @@ test('controlled Odhín failure', async () => {
 // ADAPTED: the WebApp enhancer derives features from a declared `feature` annotation or the spec file name,
 // ADAPTED: not from describe titles; assert that contract plus the empty feature-stat shape.
 test('derives features from annotations or the spec file name', () => { // ADAPTED
-  const titlePath = ['', 'chromium', 'smoke/translation-demo.spec.ts', 'Translation demo smoke', 'S1 renders English']; // ADAPTED
-  assert.equal(deriveFeatureName('/workspace/playwright_tests/smoke/translation-demo.spec.ts', titlePath), 'translation-demo.spec'); // ADAPTED
+  assert.equal(deriveFeatureName('/workspace/playwright_tests/smoke/translation-demo.spec.ts'), 'translation-demo.spec'); // ADAPTED
   assert.equal(deriveFeatureName('/workspace/playwright_tests/smoke/translation-demo.spec.ts', [{ type: 'feature', description: 'Translation' }]), 'Translation'); // ADAPTED
   assert.equal(deriveFeatureName(undefined), 'unknown'); // ADAPTED
   assert.deepEqual(createEmptyFeatureStat('Translation'), { // ADAPTED
     name: 'Translation', totalTests: 0, durationMs: 0, passed: 0, failed: 0, timedOut: 0, skipped: 0, interrupted: 0, flaky: 0 // ADAPTED
   }); // ADAPTED
+}); // ADAPTED
+
+// ADAPTED: the reporter passes test.annotations to deriveFeatureName (feature annotation first, spec basename fallback).
+test('reporter groups results by feature annotation or spec file name', async () => { // ADAPTED
+  const Reporter = require('./odhin-adaptive.reporter.cjs'); // ADAPTED
+  const reporter = new Reporter({ profile: false, createInnerReporter: () => ({ onTestEnd() {} }) }); // ADAPTED
+  const result = { status: 'passed', retry: 0, duration: 1, steps: [], attachments: [] }; // ADAPTED
+  const file = '/workspace/playwright_tests/smoke/translation-demo.spec.ts'; // ADAPTED
+  await reporter.onTestEnd({ id: 'annotated', location: { file }, retries: 0, annotations: [{ type: 'feature', description: 'Translation' }], titlePath: () => ['', 'chromium', 'Suite', 'annotated'] }, result); // ADAPTED
+  await reporter.onTestEnd({ id: 'plain', location: { file }, retries: 0, annotations: [], titlePath: () => ['', 'chromium', 'Suite', 'plain'] }, result); // ADAPTED
+  await reporter.flushInnerCallbacks(); // ADAPTED
+  assert.deepEqual(reporter.testMetadata.map((entry) => entry.feature), ['Translation', 'translation-demo.spec']); // ADAPTED
+  assert.deepEqual([...reporter.featureStats.keys()], ['Translation', 'translation-demo.spec']); // ADAPTED
 }); // ADAPTED

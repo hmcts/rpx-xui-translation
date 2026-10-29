@@ -2,5 +2,16 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "local>hmcts/.github:renovate-config"
+  ],
+  "packageRules": [
+    {
+      "groupName": "playwright",
+      "matchPackageNames": [
+        "@playwright/test",
+        "playwright",
+        "playwright-core",
+        "@axe-core/playwright"
+      ]
+    }
   ]
 }

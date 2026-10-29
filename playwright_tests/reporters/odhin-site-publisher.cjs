@@ -3,9 +3,10 @@ const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 
-// ADAPTED: translation publishes the functional Chromium report only (no accessibility or cross-browser lanes).
 const REPORT_TYPES = {
-  functional: { label: 'Functional Odhín', sourceIndex: 'translation-playwright.html', historyDirectory: '' }
+  functional: { label: 'Functional Odhín', sourceIndex: 'translation-playwright.html', historyDirectory: '' }, // ADAPTED: translation index name
+  accessibility: { label: 'Accessibility Odhín', sourceIndex: 'index.html', historyDirectory: 'accessibility' },
+  'cross-browser': { label: 'Cross-browser Odhín', sourceIndex: 'translation-playwright.html', historyDirectory: 'cross-browser' } // ADAPTED: translation index name
 };
 const REPORT_TYPE_NAMES = Object.keys(REPORT_TYPES);
 
@@ -98,7 +99,7 @@ function renderHistoryIndex(branch, reportType, runsByType, latestOnly = false) 
       .filter((counterpart) => counterpart.run);
     const exactMatch = counterparts.length
       ? counterparts.map(({ type, run: counterpart }) => ` · <a href="${counterpartRunHref(reportType, type, counterpart)}">Open matching ${escapeHtml(reportDefinition(type).label)} report</a>`).join('')
-      : ''; // ADAPTED: a single report type has no counterpart revision to link.
+      : ' · No matching report for this revision';
     return `<li><a href="./runs/${encodeURIComponent(run.runKey)}/">Run ${escapeHtml(run.runKey)}</a>
       <span>${escapeHtml(run.sha.slice(0, 8))} · ${escapeHtml(run.createdAt)}${exactMatch}</span></li>`;
   }).join('');
@@ -134,8 +135,8 @@ function renderRootIndex(branches, latestOnly = false, reportType = 'functional'
   const masterLink = master ? `<a href="./reports/${encodeURIComponent(master.slug)}/${latestReportPath}">Open master ${latestOnly ? 'report' : 'history'}</a>` : `Master ${latestOnly ? 'report' : 'history'} will appear after the next master publication.`;
   const description = latestOnly
     ? 'Only the current report is published on this Pages site.'
-    : 'Functional reports are retained per source branch.'; // ADAPTED: functional report type only.
-  const title = latestOnly ? 'Translation latest Odhín report' : 'Translation Odhín report history'; // ADAPTED: repository name.
+    : 'Functional, cross-browser, and accessibility reports are retained separately per source branch.';
+  const title = latestOnly ? 'Translation latest Odhín report' : 'Translation Odhín report history'; // ADAPTED: repository name
   return `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><title>${title}</title></head>
 <body><main><h1>${title}</h1>
@@ -145,7 +146,23 @@ function renderRootIndex(branches, latestOnly = false, reportType = 'functional'
 `;
 }
 
-// ADAPTED: removed addCombinedReportNavigation (functional/accessibility cross-linking).
+function addCombinedReportNavigation(file, accessibility = false) {
+  const html = fs.readFileSync(file, 'utf8');
+  const body = /<body\b[^>]*>/i;
+  if (!body.test(html)) throw new Error('Odhín HTML body is missing');
+  const prefix = accessibility ? '../' : './';
+  const current = accessibility ? 'Accessibility' : 'Functional';
+  const target = accessibility ? 'Functional' : 'Accessibility';
+  const href = accessibility ? '../index.html' : './accessibility/index.html';
+  const navigation = `
+<link rel="stylesheet" href="${prefix}presentation/report-navigation.css">
+<nav class="odhin-report-navigation" aria-label="Odhín reports">
+  <div><strong>Two Odhín reports for this run</strong><span aria-current="page">${current} Odhín report</span></div>
+  <a class="odhin-report-navigation-link" href="${href}">Open ${target} Odhín report</a>
+  <p>Accessibility findings are advisory; functional results are separate.</p>
+</nav>`;
+  fs.writeFileSync(file, html.replace(body, `$&${navigation}`));
+}
 
 function addHistoryNavigation(file, reportType, latestOnly = false) {
   const html = fs.readFileSync(file, 'utf8');
@@ -153,12 +170,11 @@ function addHistoryNavigation(file, reportType, latestOnly = false) {
   if (!body.test(html)) throw new Error('Odhín HTML body is missing');
   const links = REPORT_TYPE_NAMES.filter((type) => type !== reportType)
     .map((type) => `<a class="odhin-report-navigation-link" href="${runHistoryHref(reportType, type)}">Open ${escapeHtml(reportDefinition(type).label)} history</a>`).join('');
-  // ADAPTED: the history-links block below is omitted when there is no other report type to link (`!links`).
   const navigation = `
 <link rel="stylesheet" href="./presentation/report-navigation.css">
 <nav class="odhin-report-navigation" aria-label="Odhín reports">
   <div><strong>${latestOnly ? 'Current public' : ''} ${escapeHtml(reportDefinition(reportType).label)} report</strong><span aria-current="page">${latestOnly ? 'Full immutable history is retained on the Odhín archive branch' : 'This report is immutable'}</span></div>
-  ${latestOnly || !links ? '' : `<div>${links}</div><p>Reports are linked only when the history confirms the same revision.</p>`}
+  ${latestOnly ? '' : `<div>${links}</div><p>Reports are linked only when the history confirms the same revision.</p>`}
 </nav>`;
   fs.writeFileSync(file, html.replace(body, `$&${navigation}`));
 }
@@ -203,7 +219,13 @@ function publishReport({ sourceDir, siteDir, rawBranch, runKey, runId, runAttemp
     if (!fs.existsSync(stagedIndex) || !fs.statSync(stagedIndex).isFile()) throw new Error(`Odhín HTML index is missing: ${stagedIndex}`);
     fs.mkdirSync(path.join(stagingDir, 'presentation'), { recursive: true });
     fs.copyFileSync(path.join(__dirname, 'presentation', 'report-navigation.css'), path.join(stagingDir, 'presentation', 'report-navigation.css'));
-    addHistoryNavigation(stagedIndex, type, latestOnly); // ADAPTED: no nested accessibility report to cross-link.
+    const nestedAccessibilityIndex = path.join(stagingDir, 'accessibility', 'index.html');
+    if (type === 'functional' && fs.existsSync(nestedAccessibilityIndex)) {
+      addCombinedReportNavigation(stagedIndex);
+      addCombinedReportNavigation(nestedAccessibilityIndex, true);
+    } else {
+      addHistoryNavigation(stagedIndex, type, latestOnly);
+    }
     if (definition.sourceIndex !== 'index.html') fs.copyFileSync(stagedIndex, path.join(stagingDir, 'index.html'));
     writeJson(path.join(stagingDir, 'odhin-run.json'), {
       schemaVersion: 2, reportType: type, rawBranch: String(rawBranch), branchSlug, runKey: safeRunKey,

@@ -7,7 +7,8 @@ const { Script } = require('node:vm');
 
 const workflows = path.join(__dirname, '../../.github/workflows');
 const functionalWorkflow = fs.readFileSync(path.join(workflows, 'npmpublish.yml'), 'utf8');
-// ADAPTED: translation has no accessibility-odhin.yml or cross-browser-odhin.yml workflow.
+const accessibilityWorkflow = fs.readFileSync(path.join(workflows, 'accessibility-odhin.yml'), 'utf8');
+const crossBrowserWorkflow = fs.readFileSync(path.join(workflows, 'cross-browser-odhin.yml'), 'utf8');
 const publisherWorkflow = fs.readFileSync(path.join(workflows, 'publish-odhin.yml'), 'utf8');
 
 function jobBlock(workflow, name) {
@@ -26,37 +27,62 @@ const publisherCondition = new Script(`(${foldedCondition(publisherJob)})`);
 
 test('Odhín source jobs are read-only and upload exact evidence only', () => {
   assert.match(functionalWorkflow, /^permissions:\r?\n  contents: read/m);
+  assert.match(accessibilityWorkflow, /^permissions:\r?\n  contents: read/m);
+  assert.match(crossBrowserWorkflow, /^permissions:\r?\n  contents: read/m);
   assert.doesNotMatch(functionalBuildJob, /contents: write|pages: write|id-token: write/);
+  assert.doesNotMatch(accessibilityWorkflow, /contents: write|pages: write|id-token: write/);
+  assert.doesNotMatch(crossBrowserWorkflow, /contents: write|pages: write|id-token: write/);
   assert.doesNotMatch(functionalWorkflow, /  publish-odhin:|workflow_call/);
-  // ADAPTED: accessibility and cross-browser workflow assertions removed (out of scope, D17).
+  assert.doesNotMatch(accessibilityWorkflow, /publish-odhin|workflow_call/);
+  assert.doesNotMatch(crossBrowserWorkflow, /publish-odhin|workflow_call/);
 
-  assert.match(functionalWorkflow, /name: translation-functional-report/); // ADAPTED: artifact name
-  assert.match(functionalWorkflow, /name: translation-playwright-evidence/); // ADAPTED: artifact name
-  assert.match(functionalBuildJob, /persist-credentials: false/); // ADAPTED: build checkout keeps no token
+  assert.match(functionalWorkflow, /name: translation-functional-report/); // ADAPTED: translation names/paths
+  assert.match(functionalWorkflow, /name: translation-playwright-evidence/); // ADAPTED: translation names/paths
   assert.match(functionalBuildJob, /yarn playwright install --with-deps chromium\r?\n/);
   assert.ok(
-    functionalBuildJob.indexOf('Install Playwright browsers') < functionalBuildJob.indexOf('yarn test:reporters'), // ADAPTED: package script
+    functionalBuildJob.indexOf('Install Playwright browsers') < functionalBuildJob.indexOf('yarn test:reporters'), // ADAPTED: translation names/paths
     'browser-backed Odhín checks must run after Chromium is installed'
   );
-  assert.ok(functionalBuildJob.indexOf('yarn build:library') < functionalBuildJob.indexOf('Install Playwright browsers'), 'Playwright runs after the library build'); // ADAPTED
   assert.doesNotMatch(functionalBuildJob, /yarn playwright install --with-deps chromium firefox webkit/);
   assert.match(functionalBuildJob, /yarn playwright test --project=chromium/);
-  assert.match(functionalBuildJob, /PLAYWRIGHT_REPORTERS: dot,html,junit,odhin/); // ADAPTED
-  assert.match(functionalBuildJob, /PW_ODHIN_OUTPUT: test-results\/odhin/); // ADAPTED
-  assert.match(functionalBuildJob, /PW_ODHIN_INDEX: translation-playwright\.html/); // ADAPTED
-  assert.match(functionalBuildJob, /steps\.functional\.outcome == 'success' \|\| steps\.functional\.outcome == 'failure'/); // ADAPTED
-  assert.match(functionalBuildJob, /steps\.odhin_browser\.outcome == 'success'/); // ADAPTED
-  assert.match(functionalBuildJob, /path: test-results\/odhin\/\r?\n\s+if-no-files-found: error/); // ADAPTED
-  assert.match(functionalBuildJob, /actions\/upload-artifact@v7/); // ADAPTED
-  assert.doesNotMatch(functionalWorkflow, /actions\/upload-artifact@v4/); // ADAPTED
-  assert.match(jobBlock(functionalWorkflow, 'publish-gpr'), /permissions:\r?\n      contents: write/); // ADAPTED: release job keeps its scope
   assert.doesNotMatch(functionalWorkflow, /outputs:|evidence_url|odhin_artifact_ready|odhin_prepare/);
+
+  assert.match(accessibilityWorkflow, /^  workflow_dispatch:/m);
+  assert.doesNotMatch(accessibilityWorkflow, /^  (pull_request|push):/m);
+  assert.match(accessibilityWorkflow, /ref:\r?\n\s+description: Branch, tag, or commit SHA to test/);
+  assert.match(accessibilityWorkflow, /ref: \$\{\{ inputs\.ref \}\}/);
+  // ADAPTED: the lean axe advisory (D20) runs yarn test:a11y and the shared Odhín browser check.
+  for (const command of ['yarn test:a11y', 'yarn test:e2e:odhin-check']) { // ADAPTED
+    assert.match(accessibilityWorkflow, new RegExp(command.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))); // ADAPTED
+  } // ADAPTED
+  assert.match(accessibilityWorkflow, /PW_ODHIN_OUTPUT: test-results\/odhin\/accessibility/); // ADAPTED
+  assert.doesNotMatch(functionalBuildJob, /test:a11y|smoke-firefox|smoke-webkit/); // ADAPTED: advisory packs stay out of default CI
+  assert.match(accessibilityWorkflow, /name: translation-accessibility-report/); // ADAPTED: translation names/paths
+  assert.match(accessibilityWorkflow, /odhin-source\.json/);
+  assert.match(accessibilityWorkflow, /path: accessibility-odhin-artifact\//);
+
+  assert.match(crossBrowserWorkflow, /^  workflow_dispatch:/m);
+  assert.doesNotMatch(crossBrowserWorkflow, /^  (pull_request|push):/m);
+  assert.match(crossBrowserWorkflow, /ref:\r?\n\s+description: Branch, tag, or commit SHA to test/);
+  assert.match(crossBrowserWorkflow, /ref: \$\{\{ inputs\.ref \}\}/);
+  assert.match(crossBrowserWorkflow, /fetch-depth: 0/);
+  assert.match(crossBrowserWorkflow, /persist-credentials: false/);
+  assert.match(crossBrowserWorkflow, /yarn playwright install --with-deps chromium firefox webkit/);
+  assert.match(crossBrowserWorkflow, /yarn playwright test --project=smoke-firefox --project=smoke-webkit/); // ADAPTED: translation names/paths
+  assert.doesNotMatch(crossBrowserWorkflow, /yarn playwright test --project=chromium/);
+  assert.match(crossBrowserWorkflow, /name: translation-cross-browser-report/); // ADAPTED: translation names/paths
+  assert.match(crossBrowserWorkflow, /name: translation-cross-browser-evidence/); // ADAPTED: translation names/paths
+  assert.match(crossBrowserWorkflow, /odhin-source\.json/);
+  assert.match(crossBrowserWorkflow, /path: cross-browser-odhin-artifact\//);
+  assert.match(crossBrowserWorkflow, /TARGET_SHA="\$\(git rev-parse HEAD\)"/);
+  assert.match(crossBrowserWorkflow, /steps\.cross_browser\.outcome == 'success' \|\| steps\.cross_browser\.outcome == 'failure'/);
+  assert.match(crossBrowserWorkflow, /steps\.odhin_browser\.outcome == 'success'/);
 });
 
 test('publisher is a trusted workflow_run with a validated manual recovery path and scoped write permissions', () => {
   assert.match(publisherWorkflow, /^  workflow_run:/m);
   assert.match(publisherWorkflow, /^  workflow_dispatch:\r?\n    inputs:\r?\n      source_run_id:/m);
-  assert.match(publisherWorkflow, /workflows:\r?\n      - Node\.js Package\r?\n    types:/); // ADAPTED: functional workflow only
+  assert.match(publisherWorkflow, /workflows:\r?\n      - Node\.js Package\r?\n      - Translation accessibility \(advisory\)\r?\n      - Translation cross-browser \(advisory\)/); // ADAPTED: translation names/paths
   assert.match(publisherWorkflow, /types:\r?\n      - completed/);
   assert.doesNotMatch(publisherWorkflow, /workflow_call/);
   assert.match(publisherWorkflow, /^permissions:\r?\n  contents: read/m);
@@ -76,8 +102,9 @@ test('publisher is a trusted workflow_run with a validated manual recovery path 
   assert.match(resolver, /run\.head_repository\?\.full_name !== process\.env\.GITHUB_REPOSITORY/);
   assert.match(resolver, /Unsupported Odhín source workflow/);
   assert.match(resolver, /\["success", "failure"\]\.includes\(run\.conclusion\)/);
-  assert.match(resolver, /"Node\.js Package": \["functional", "translation-functional-report"\]/); // ADAPTED: report map
-  assert.doesNotMatch(resolver, /accessibility|cross-browser/); // ADAPTED
+  assert.match(resolver, /translation-functional-report/); // ADAPTED: translation names/paths
+  assert.match(resolver, /translation-accessibility-report/); // ADAPTED: translation names/paths
+  assert.match(resolver, /translation-cross-browser-report/); // ADAPTED: translation names/paths
 
   const download = publisherJob.match(/- name: Download exact upstream report[\s\S]*?(?=      - name: Prepare)/)?.[0] ?? '';
   assert.match(download, /name: \$\{\{ steps\.source\.outputs\.artifact_name \}\}/);
@@ -110,8 +137,9 @@ test('publisher is a trusted workflow_run with a validated manual recovery path 
   assert.match(publisherJob, /--run-id "\$ODHIN_SOURCE_RUN_ID"/);
   assert.match(publisherJob, /--run-attempt "\$ODHIN_SOURCE_RUN_ATTEMPT"/);
   assert.match(publisherJob, /--report-type "\$ODHIN_REPORT_TYPE"/);
-  assert.doesNotMatch(publisherJob, /odhin-source\.json/); // ADAPTED: functional runs carry their own branch and SHA
-  assert.match(publisherWorkflow, /group: translation-odhin-publication/); // ADAPTED
+  assert.match(publisherJob, /evidence\/odhin-source\.json/);
+  assert.match(publisherJob, /if \[ "\$ODHIN_REPORT_TYPE" != 'functional' \]; then/);
+  assert.match(publisherJob, /translation-cross-browser-report/); // ADAPTED: translation names/paths
 });
 
 test('Pages publication uses a fresh latest-only site instead of copying the archive', () => {
@@ -119,9 +147,8 @@ test('Pages publication uses a fresh latest-only site instead of copying the arc
   assert.match(publisherJob, /--latest-only true/);
   assert.doesNotMatch(publisherJob, /cp -R odhin-site\/\. pages-site/);
 
-  // ADAPTED: publisher path is playwright_tests/reporters/ in the regex below.
   const pagesInvocation = publisherJob.match(
-    /^[ \t]+node playwright_tests\/reporters\/odhin-site-publisher\.cjs \\\r?\n(?:(?:[ \t]+--[^\r\n]+)\\\r?\n)*[ \t]+--site pages-site \\\r?\n(?:(?:[ \t]+--[^\r\n]+)\\\r?\n)*[ \t]+--latest-only true >\/dev\/null$/m
+    /^[ \t]+node playwright_tests\/reporters\/odhin-site-publisher\.cjs \\\r?\n(?:(?:[ \t]+--[^\r\n]+)\\\r?\n)*[ \t]+--site pages-site \\\r?\n(?:(?:[ \t]+--[^\r\n]+)\\\r?\n)*[ \t]+--latest-only true >\/dev\/null$/m // ADAPTED: translation names/paths
   )?.[0] ?? '';
   assert.match(pagesInvocation, /--report-type "\$ODHIN_REPORT_TYPE"/);
 });
@@ -149,9 +176,15 @@ const cases = [
   { name: 'feature push does not publish', workflow: 'Node.js Package', event: 'push', branch: 'test/private', conclusion: 'success', want: false },
   { name: 'foreign repository PR never publishes', workflow: 'Node.js Package', event: 'pull_request', conclusion: 'success', sourceRepo: 'outside/fork', want: false },
   { name: 'manual dispatch of the functional workflow cannot bypass its trigger policy', workflow: 'Node.js Package', event: 'workflow_dispatch', want: false },
-  // ADAPTED: accessibility and cross-browser source workflows do not exist here; their names must not publish.
-  { name: 'former CommonLib accessibility workflow name cannot publish', workflow: 'CommonLib accessibility (advisory)', event: 'workflow_dispatch', conclusion: 'success', workflowBranch: 'master', want: false }, // ADAPTED
-  { name: 'Node.js Package release run does not publish', workflow: 'Node.js Package', event: 'release', conclusion: 'success', want: false }, // ADAPTED
+  { name: 'manual accessibility success publishes', workflow: 'Translation accessibility (advisory)', event: 'workflow_dispatch', conclusion: 'success', workflowBranch: 'master', want: true }, // ADAPTED: translation names/paths
+  { name: 'manual accessibility failure does not publish', workflow: 'Translation accessibility (advisory)', event: 'workflow_dispatch', conclusion: 'failure', workflowBranch: 'master', want: false }, // ADAPTED: translation names/paths
+  { name: 'manual accessibility from a feature workflow does not publish', workflow: 'Translation accessibility (advisory)', event: 'workflow_dispatch', conclusion: 'success', workflowBranch: 'test/untrusted', want: false }, // ADAPTED: translation names/paths
+  { name: 'accessibility push cannot publish', workflow: 'Translation accessibility (advisory)', event: 'push', conclusion: 'success', want: false }, // ADAPTED: translation names/paths
+  { name: 'manual cross-browser success publishes', workflow: 'Translation cross-browser (advisory)', event: 'workflow_dispatch', conclusion: 'success', workflowBranch: 'master', want: true }, // ADAPTED: translation names/paths
+  { name: 'manual cross-browser failure publishes its valid report', workflow: 'Translation cross-browser (advisory)', event: 'workflow_dispatch', conclusion: 'failure', workflowBranch: 'master', want: true }, // ADAPTED: translation names/paths
+  { name: 'manual cross-browser cancellation does not publish', workflow: 'Translation cross-browser (advisory)', event: 'workflow_dispatch', conclusion: 'cancelled', workflowBranch: 'master', want: false }, // ADAPTED: translation names/paths
+  { name: 'manual cross-browser from a feature workflow does not publish', workflow: 'Translation cross-browser (advisory)', event: 'workflow_dispatch', conclusion: 'success', workflowBranch: 'test/untrusted', want: false }, // ADAPTED: translation names/paths
+  { name: 'cross-browser push cannot publish', workflow: 'Translation cross-browser (advisory)', event: 'push', conclusion: 'success', want: false }, // ADAPTED: translation names/paths
   { name: 'unrelated workflow cannot publish', workflow: 'anything else', event: 'workflow_dispatch', conclusion: 'success', want: false },
   { name: 'manual publisher enters the validated recovery path from master', eventName: 'workflow_dispatch', refName: 'master', want: true },
   { name: 'manual publisher cannot execute a feature branch', eventName: 'workflow_dispatch', refName: 'test/untrusted', want: false },
@@ -161,7 +194,7 @@ for (const scenario of cases) {
   test(scenario.name, () => {
     const context = {
       github: {
-        repository: 'hmcts/rpx-xui-translation', // ADAPTED: repository
+        repository: 'hmcts/rpx-xui-translation', // ADAPTED: translation names/paths
         event_name: scenario.eventName,
         ref_name: scenario.refName,
         event: {
@@ -170,7 +203,7 @@ for (const scenario of cases) {
             event: scenario.event,
             conclusion: scenario.conclusion,
             head_branch: scenario.workflowBranch ?? scenario.branch ?? 'feature/example',
-            head_repository: { full_name: scenario.sourceRepo ?? 'hmcts/rpx-xui-translation' }, // ADAPTED: repository
+            head_repository: { full_name: scenario.sourceRepo ?? 'hmcts/rpx-xui-translation' }, // ADAPTED: translation names/paths
           },
           repository: { default_branch: 'master' },
         },

@@ -48,7 +48,10 @@ async function main() {
     }
     assert.equal(groupedTests, reportedRows, 'feature groups account for every rendered report result row');
     // ADAPTED: wait for Bootstrap's shown/hidden events. A dismiss click during the fade-in is ignored, which leaves the modal over the tabs.
-    const bootstrapModalEvent = (name) => page.evaluate((eventName) => new Promise((resolve) => document.addEventListener(eventName, () => resolve(true), { once: true })), name); // ADAPTED
+    const bootstrapModalEvent = (name) => Promise.race([ // ADAPTED
+      page.evaluate((eventName) => new Promise((resolve) => document.addEventListener(eventName, () => resolve(true), { once: true })), name), // ADAPTED
+      new Promise((_, reject) => setTimeout(() => reject(new Error(`Bootstrap ${name} event not received within 10s`)), 10_000).unref()), // ADAPTED
+    ]); // ADAPTED
     const detailShown = bootstrapModalEvent('shown.bs.modal'); // ADAPTED
     await page.locator('#feature-tests-0 .test-detail-link').first().click();
     const modal = page.locator('.modal.show').last();

@@ -17,6 +17,7 @@
   },
   "include": [
     "**/*.ts",
-    "../playwright.config.ts"
+    "../playwright.config.ts",
+    "../playwright.accessibility.config.ts"
   ]
 }

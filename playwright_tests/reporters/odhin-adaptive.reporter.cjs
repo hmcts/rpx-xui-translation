@@ -139,7 +139,7 @@ class OdhinAdaptiveReporter {
     const titlePath = typeof test?.titlePath === 'function' ? test.titlePath() : [];
     this.testMetadata.push({
       target: `#${test.id}-${result.retry}`,
-      feature: deriveFeatureName(test?.location?.file, titlePath),
+      feature: deriveFeatureName(test?.location?.file, test?.annotations ?? []), // ADAPTED: the WebApp enhancer reads `feature` annotations, not titlePath
       tags: test.tags ?? [],
       durationMs: result.duration || 0,
       retry: result.retry,
@@ -232,7 +232,7 @@ class OdhinAdaptiveReporter {
       return;
     }
 
-    const featureName = deriveFeatureName(test?.location?.file, titlePath);
+    const featureName = deriveFeatureName(test?.location?.file, test?.annotations ?? []); // ADAPTED: the WebApp enhancer reads `feature` annotations, not titlePath
     const current = this.featureStats.get(featureName) ?? createEmptyFeatureStat(featureName);
     current.totalTests += 1;
     current.durationMs += Number(result?.duration ?? 0);

@@ -35,7 +35,9 @@ Set `PLAYWRIGHT_TEST_BASE_URL` to run against an already running demo instead of
 Reporting follows the `rpx-xui-common-lib` standard (fail-closed Odhín reporter, browser-verified dashboard, GitHub Pages publication) with the current `rpx-xui-webapp` Odhín styling.
 
 ```bash
-yarn test:e2e                      # list,html,junit,odhin locally
+yarn test:e2e                      # Chromium smoke only (--project=chromium); list,html,junit,odhin locally
+yarn test:e2e:crossbrowser         # advisory: the same smoke on smoke-firefox and smoke-webkit
+yarn test:a11y                     # advisory: axe scans of the EN and CY demo states (playwright.accessibility.config.ts)
 PLAYWRIGHT_REPORTERS=list yarn test:e2e
 yarn test:e2e:odhin-check          # opens the generated Odhín report in Chromium and checks the dashboard
 yarn test:reporters                # node --test checks for the reporter, publisher and workflow contract
@@ -46,11 +48,33 @@ yarn test:reporters                # node --test checks for the reporter, publis
 - Outputs: Odhín `test-results/odhin/translation-playwright.html` (its assets and failure logs sit beside it), HTML `playwright-report/`, JUnit `test-results/junit.xml`, traces and screenshots of failures under `test-results/`.
 - The Odhín reporter fails the run if the report is missing or empty, if enhancement throws, or if a reporter hook fails or times out. A green test run with a broken report exits nonzero.
 
+### Advisory packs
+
+Neither pack runs in the default `yarn test:e2e` or in the `Node.js Package` workflow.
+
+- **Cross-browser:** the smoke spec runs on the `smoke-firefox` and `smoke-webkit` projects. Install those browsers first with `yarn playwright install firefox webkit`. The Odhín report goes to `test-results/odhin/translation-playwright.html`.
+- **Accessibility:** `playwright_tests/accessibility/translation-demo.a11y.spec.ts` runs axe on the English default state and on the Welsh state. The Welsh state uses the same `/cy` route fake as the smoke (`playwright_tests/fixtures/translation-api.fake.ts`).
+  - Findings are advisory. Each test attaches its axe JSON, and the findings appear in the Odhín Accessibility tab at `test-results/odhin/accessibility/index.html`, with the raw files under `accessibility-evidence/`.
+  - Findings never fail the run. Execution, fake or report errors still do.
+  - The spec also records whether `<html lang>` follows the switch to Welsh. At present it stays `en`, which is reported as the advisory finding `translation-html-lang`.
+  - To check that report, run `PW_ODHIN_OUTPUT=test-results/odhin/accessibility PW_ODHIN_INDEX=index.html yarn test:e2e:odhin-check`.
+
+Both packs have a manual GitHub workflow. The `ref` input selects the code under test, and `--ref master` selects the trusted workflow definition:
+
+```bash
+gh workflow run cross-browser-odhin.yml -R hmcts/rpx-xui-translation --ref master -f ref=<branch-or-sha>
+gh workflow run accessibility-odhin.yml -R hmcts/rpx-xui-translation --ref master -f ref=<branch-or-sha>
+```
+
+GitHub only lets you dispatch a workflow that exists on the default branch, so both workflows become runnable after merge.
+- Cross-browser reports from successful or failed test runs publish to `reports/<branch-slug>/cross-browser/runs/...`.
+- Successful accessibility runs publish to `reports/<branch-slug>/accessibility/runs/...`.
+
 ### Publication
 
 The `Node.js Package` workflow is read-only. It runs the Chromium suite, verifies the rendered dashboard and uploads two artifacts: `translation-playwright-evidence` (always) and `translation-functional-report` (only when the dashboard check passed). It still runs the dashboard check when tests fail, so a valid report of a failed run is published.
 
-`Publish Translation Odhín evidence` (`.github/workflows/publish-odhin.yml`) runs on `workflow_run` after `Node.js Package` finishes with success or failure, for same-repository pull requests and for pushes to `master` or `Release`. It appends the exact report to the immutable history on the `odhin-reports` branch at `reports/<branch-slug>/runs/<run-id>-attempt-<attempt>/`. GitHub Pages serves the current run only. Cancelled runs, missing artifacts and fork pull requests are not published.
+`Publish Translation Odhín evidence` (`.github/workflows/publish-odhin.yml`) runs on `workflow_run` after `Node.js Package` finishes with success or failure, for same-repository pull requests and for pushes to `master` or `Release`. It also runs after the two advisory workflows, as described above. It appends the exact report to the immutable history on the `odhin-reports` branch at `reports/<branch-slug>/runs/<run-id>-attempt-<attempt>/`. GitHub Pages serves the current run only. Cancelled runs, missing artifacts and fork pull requests are not published.
 
 - Prerequisite: a repository admin enables GitHub Pages with source **GitHub Actions** and allows `master` in the `github-pages` environment.
 - GitHub loads `workflow_run` and `workflow_dispatch` workflows from the default branch. Publication therefore starts only after this workflow is merged to `master`.
@@ -64,6 +88,7 @@ The `Node.js Package` workflow is read-only. It runs the Chromium suite, verifie
 | --- | --- |
 | `odhin-report-enhancer.cjs`, `failure-context.cjs`, `presentation/enhance.cjs`, `presentation/accessibility.cjs`, `presentation/accessibility.js`, `presentation/report.css`, `presentation/report.js` | `hmcts/rpx-xui-webapp@2caeccf903473116a3e74bd703fc1233e84be89f` `playwright_tests_new/common/reporters/` |
 | `odhin-adaptive.reporter.cjs`, `odhin-site-publisher.cjs`, `odhin-report.browser-check.cjs`, `presentation/report-navigation.css` | `hmcts/rpx-xui-common-lib@b27d3cd20a9ed08cf2ba7fdf50926c59d4250393` `e2e/reporters/` |
+| `.github/workflows/publish-odhin.yml`, `cross-browser-odhin.yml`, `accessibility-odhin.yml` (translation names; the accessibility workflow runs the lean axe pack) | `hmcts/rpx-xui-common-lib@b27d3cd20a9ed08cf2ba7fdf50926c59d4250393` `.github/workflows/` |
 | `odhin-reporter.node-check.cjs` (from `odhin-report-enhancer.node-check.cjs`), `odhin-site-publisher.node-check.cjs`, `report-publication.node-check.cjs` | `hmcts/rpx-xui-common-lib@b27d3cd20a9ed08cf2ba7fdf50926c59d4250393` `e2e/reporters/` |
 | `.yarn/patches/odhin-reports-playwright-npm-1.1.8-a445ed88b7.patch` | `hmcts/rpx-xui-webapp@2caeccf903473116a3e74bd703fc1233e84be89f` (identical in common-lib) |
 
@@ -74,7 +99,7 @@ diff <(git -C ../rpx-xui-webapp show <sha>:playwright_tests_new/common/reporters
      <(tail -n +2 playwright_tests/reporters/presentation/report.css)
 ```
 
-Only `ADAPTED` lines may differ. Copy the upstream file, re-apply the `ADAPTED` edits, update the SHA in the header and in this table, then run `yarn test:reporters`, `yarn test:e2e` and `yarn test:e2e:odhin-check`.
+For runtime files, only `ADAPTED` lines may differ. Node-checks also differ by whole upstream cases that were removed or adapted; each node-check lists these in the `ADAPTED` lines under its header. Copy the upstream file, re-apply the `ADAPTED` edits, update the SHA in the header and in this table, then run `yarn test:reporters`, `yarn test:e2e` and `yarn test:e2e:odhin-check`.
 
 ## Further help
 

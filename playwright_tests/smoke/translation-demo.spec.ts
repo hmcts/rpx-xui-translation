@@ -1,39 +1,9 @@
 import { expect, test, type ConsoleMessage, type Page } from '@playwright/test';
+import { fakeTranslationApi, sourcePhrase, translationApiPath, welshPhrase } from '../fixtures/translation-api.fake';
 
-const sourcePhrase = 'Translated Text';
-const welshPhrase = 'Testun wedi\'i gyfieithu [fake translation API]';
 const inProgressPhrase = `${sourcePhrase} [Translation in progress]`;
 const testModeFallbackPhrase = `[Test translation for ${sourcePhrase}]`;
 const languageCookie = 'exui-preferred-language';
-const translationApiPath = '/cy';
-
-type TranslationApiFake = {
-  requestBodies: unknown[];
-  release: () => void;
-};
-
-async function fakeTranslationApi(page: Page, options: { status?: number; hold?: boolean } = {}): Promise<TranslationApiFake> {
-  const { status = 200, hold = false } = options;
-  const requestBodies: unknown[] = [];
-  let release: () => void = () => undefined;
-  const released = hold ? new Promise<void>((resolve) => {
-    release = resolve;
-  }) : Promise.resolve();
-
-  await page.route((url) => url.pathname === translationApiPath, async (route) => {
-    if (route.request().method() !== 'POST') {
-      return route.fallback();
-    }
-    requestBodies.push(route.request().postDataJSON());
-    await released;
-    if (status === 200) {
-      return route.fulfill({ json: { translations: { [sourcePhrase]: welshPhrase } } });
-    }
-    return route.fulfill({ status, json: { message: 'fake translation API failure' } });
-  });
-
-  return { requestBodies, release };
-}
 
 async function languageCookieValue(page: Page): Promise<string | undefined> {
   const cookies = await page.context().cookies();

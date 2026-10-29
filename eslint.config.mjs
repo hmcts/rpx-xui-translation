@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 export default [
   { ignores: ['dist/**', 'out-tsc/**', '.angular/**', 'coverage/**', 'playwright-report/**', 'test-results/**', 'playwright_tests/reporters/**'] },
   {
-    files: ['projects/**/*.ts', 'playwright.config.ts', 'playwright_tests/**/*.ts'],
+    files: ['projects/**/*.ts', 'playwright.config.ts', 'playwright.accessibility.config.ts', 'playwright_tests/**/*.ts'],
     languageOptions: {
       parser: tsParser,
       parserOptions: {

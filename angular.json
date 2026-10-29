@@ -127,38 +127,6 @@
           "options": {
             "buildTarget": "rpx-xui-translation-demo:build"
           }
-        },
-        "test": {
-          "builder": "@angular-devkit/build-angular:karma",
-          "options": {
-            "main": "projects/rpx-xui-translation-demo/src/test.ts",
-            "polyfills": [
-              "zone.js",
-              "zone.js/testing"
-            ],
-            "tsConfig": "projects/rpx-xui-translation-demo/tsconfig.spec.json",
-            "karmaConfig": "projects/rpx-xui-translation-demo/karma.conf.js",
-            "assets": [
-              "projects/rpx-xui-translation-demo/src/favicon.ico",
-              "projects/rpx-xui-translation-demo/src/assets"
-            ],
-            "styles": [
-              "projects/rpx-xui-translation-demo/src/styles.scss"
-            ],
-            "scripts": []
-          }
-        },
-        "e2e": {
-          "builder": "@angular-devkit/build-angular:protractor",
-          "options": {
-            "protractorConfig": "projects/rpx-xui-translation-demo/e2e/protractor.conf.js",
-            "devServerTarget": "rpx-xui-translation-demo:serve"
-          },
-          "configurations": {
-            "production": {
-              "devServerTarget": "rpx-xui-translation-demo:serve:production"
-            }
-          }
         }
       }
     }

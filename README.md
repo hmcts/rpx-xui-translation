@@ -20,7 +20,15 @@ Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.
 
 ## Running end-to-end tests
 
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
+The demo app (`projects/rpx-xui-translation-demo`) is the end-to-end harness. Playwright smoke tests live in `playwright_tests/` and fake the translation API with route handlers, so no backend is needed.
+
+```bash
+yarn playwright install chromium   # first run only
+yarn test:e2e                      # starts the demo on http://127.0.0.1:4300 and runs the Chromium smoke
+yarn lint:playwright               # eslint + typecheck of the Playwright sources
+```
+
+Set `PLAYWRIGHT_TEST_BASE_URL` to run against an already running demo instead of starting one. Reports are written to `playwright-report/` and `test-results/`.
 
 ## Further help
 

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 2,
+  "reportType": "functional",
+  "rawBranch": "renovate/node-24.x",
+  "branchSlug": "renovate-node-24.x-c86cc79a7a748664",
+  "runKey": "41033170311-attempt-1",
+  "runId": "41033170311",
+  "runAttempt": "1",
+  "sha": "f26c883dd89ec7291e89ab6f12e193664625ad32",
+  "runUrl": "https://github.com/hmcts/rpx-xui-translation/actions/runs/41033170311/attempts/1",
+  "createdAt": "2026-10-30T09:26:28.909Z"
+}

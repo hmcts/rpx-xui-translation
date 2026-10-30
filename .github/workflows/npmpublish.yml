@@ -76,6 +76,9 @@ jobs:
             rawBranch: String(process.env.SOURCE_BRANCH),
             sha: String(process.env.TARGET_SHA),
             headSha: String(process.env.PR_HEAD_SHA),
+            // ADAPTED: bind the report to the source workflow attempt, including failed reruns.
+            runId: process.env.GITHUB_RUN_ID,
+            runAttempt: process.env.GITHUB_RUN_ATTEMPT,
             ...(process.env.PR_BASE_SHA ? { baseSha: String(process.env.PR_BASE_SHA) } : {}),
           };
           fs.writeFileSync('test-results/odhin/odhin-source.json', `${JSON.stringify(source)}\n`);

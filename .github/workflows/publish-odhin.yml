@@ -64,6 +64,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           SOURCE_RUN_ID: ${{ github.event_name == 'workflow_dispatch' && inputs.source_run_id || github.event.workflow_run.id }}
+          SOURCE_RUN_ATTEMPT: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.run_attempt || '' }}
         run: |
           set -euo pipefail
           gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN_ID" | node -e '
@@ -74,6 +75,10 @@ jobs:
               "Translation accessibility (advisory)": ["accessibility", "translation-accessibility-report"],
               "Translation cross-browser (advisory)": ["cross-browser", "translation-cross-browser-report"],
             };
+            // ADAPTED: queued automatic events must never adopt a newer rerun attempt from the API.
+            if (process.env.GITHUB_EVENT_NAME === "workflow_run" && String(run.run_attempt) !== process.env.SOURCE_RUN_ATTEMPT) {
+              throw new Error("Source run attempt no longer matches the triggering event");
+            }
             const report = reports[run.name];
             if (run.head_repository?.full_name !== process.env.GITHUB_REPOSITORY) {
               throw new Error("Source run must belong to this repository");
@@ -140,6 +145,15 @@ jobs:
           # ADAPTED (F5): every report type, functional included, carries the exact tested checkout in odhin-source.json
           # (upstream only reads it for advisory reports and labels functional PR reports with the PR head SHA).
           test -s evidence/odhin-source.json
+          # ADAPTED: fail closed before archive access or provenance removal; legacy artifacts have no proven attempt.
+          node <<'NODE'
+          const fs = require('node:fs');
+          const source = JSON.parse(fs.readFileSync('evidence/odhin-source.json', 'utf8'));
+          if (!/^[1-9]\d*$/.test(source.runId) || !/^[1-9]\d*$/.test(source.runAttempt) ||
+              source.runId !== process.env.ODHIN_SOURCE_RUN_ID || source.runAttempt !== process.env.ODHIN_SOURCE_RUN_ATTEMPT) {
+            throw new Error('Source report identity does not match the intended run attempt');
+          }
+          NODE
           ODHIN_BRANCH="$(node -e 'const fs = require("node:fs"); process.stdout.write(JSON.parse(fs.readFileSync(0, "utf8")).rawBranch)' < evidence/odhin-source.json)"
           ODHIN_SHA="$(node -e 'const fs = require("node:fs"); process.stdout.write(JSON.parse(fs.readFileSync(0, "utf8")).sha)' < evidence/odhin-source.json)"
           rm evidence/odhin-source.json

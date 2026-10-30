@@ -2,5 +2,18 @@
   "rawBranch": "master",
   "slug": "master",
   "reportType": "accessibility",
-  "runs": []
+  "runs": [
+    {
+      "schemaVersion": 2,
+      "reportType": "accessibility",
+      "rawBranch": "master",
+      "branchSlug": "master",
+      "runKey": "41058321587-attempt-1",
+      "runId": "41058321587",
+      "runAttempt": "1",
+      "sha": "6bb2bc0b35e5093aed97162e718c0965d70d1c4e",
+      "runUrl": "https://github.com/hmcts/rpx-xui-translation/actions/runs/41058321587/attempts/1",
+      "createdAt": "2026-10-30T12:52:05.913Z"
+    }
+  ]
 }

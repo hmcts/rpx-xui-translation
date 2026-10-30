@@ -36,12 +36,19 @@ speed-measure-plugin*.json
 /.sass-cache
 /connect.lock
 /coverage
+/playwright-report
+/test-results
 /libpeerconnection.log
 npm-debug.log
 yarn-error.log
 testem.log
 /typings
-/.yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
 
 # System Files
 .DS_Store

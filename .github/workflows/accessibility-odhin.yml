@@ -1,0 +1,76 @@
+name: Translation accessibility (advisory)
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag, or commit SHA to test
+        required: true
+        default: master
+
+concurrency:
+  group: translation-accessibility-${{ inputs.ref || github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  accessibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.22.1
+      - run: corepack enable && yarn --version
+      - run: yarn install
+      - run: cd projects/rpx-xui-translation && yarn install && cd ../..
+      - run: yarn lint:playwright
+      - name: Install Playwright Chromium
+        run: yarn playwright install --with-deps chromium
+      - run: yarn test:reporters
+      - name: Record advisory accessibility findings
+        env:
+          PLAYWRIGHT_REPORTERS: dot,html,junit,odhin
+          PW_ODHIN_OUTPUT: test-results/odhin/accessibility
+          PW_ODHIN_INDEX: index.html
+        # Product findings are advisory evidence and never fail this step; execution/report errors still fail.
+        run: yarn test:a11y
+      - name: Verify rendered accessibility Odhín dashboard
+        env:
+          PW_ODHIN_OUTPUT: test-results/odhin/accessibility
+          PW_ODHIN_INDEX: index.html
+        run: yarn test:e2e:odhin-check
+      - name: Package exact accessibility report and target identity
+        env:
+          TARGET_REF: ${{ inputs.ref }}
+        run: |
+          set -euo pipefail
+          node playwright_tests/accessibility/verify-evidence.cjs test-results/odhin/accessibility
+          rm -rf accessibility-odhin-artifact
+          mkdir -p accessibility-odhin-artifact
+          cp -R test-results/odhin/accessibility/. accessibility-odhin-artifact/
+          TARGET_SHA="$(git rev-parse HEAD)" node <<'NODE'
+          const fs = require('node:fs');
+          const ref = String(process.env.TARGET_REF || 'master');
+          const sha = String(process.env.TARGET_SHA);
+          const rawBranch = /^[0-9a-f]{7,40}$/i.test(ref)
+            ? `detached-${sha.slice(0, 12)}`
+            : ref.replace(/^refs\/(?:heads|tags)\//, '');
+          // ADAPTED: preserve the source attempt so a stale rerun artifact cannot be relabelled.
+          const runId = process.env.GITHUB_RUN_ID;
+          const runAttempt = process.env.GITHUB_RUN_ATTEMPT;
+          fs.writeFileSync('accessibility-odhin-artifact/odhin-source.json', `${JSON.stringify({ rawBranch, sha, runId, runAttempt })}\n`);
+          NODE
+      - name: Upload exact accessibility Odhín report
+        uses: actions/upload-artifact@v7
+        with:
+          name: translation-accessibility-report
+          path: accessibility-odhin-artifact/
+          if-no-files-found: error

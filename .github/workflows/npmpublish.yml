@@ -16,11 +16,17 @@ on:
 env:
   NODE_VERSION: 24.22.1
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
       - run: corepack enable
       - uses: actions/setup-node@v5
         with:
@@ -30,6 +36,75 @@ jobs:
       - run: yarn lint
       - run: yarn test
       - run: yarn build:library
+      - name: Install Playwright browsers
+        run: yarn playwright install --with-deps chromium
+      - run: yarn test:reporters
+      - name: Run Playwright functional coverage
+        id: functional
+        env:
+          PLAYWRIGHT_REPORTERS: dot,html,junit,odhin
+          PW_ODHIN_OUTPUT: test-results/odhin
+          PW_ODHIN_INDEX: translation-playwright.html
+        run: yarn playwright test --project=chromium
+      - name: Verify rendered Odhín dashboard
+        id: odhin_browser
+        if: ${{ !cancelled() && (steps.functional.outcome == 'success' || steps.functional.outcome == 'failure') }}
+        run: yarn test:e2e:odhin-check
+      - name: Upload Playwright evidence
+        id: evidence_artifact
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: translation-playwright-evidence
+          path: |
+            playwright-report/
+            test-results/
+          if-no-files-found: warn
+
+      - name: Record tested revision for the functional report
+        if: ${{ !cancelled() && steps.odhin_browser.outcome == 'success' }}
+        env:
+          SOURCE_BRANCH: ${{ github.head_ref || github.ref_name }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        # The pull_request checkout is the merge commit; publish that exact tested SHA, not the PR head.
+        run: |
+          set -euo pipefail
+          TARGET_SHA="$(git rev-parse HEAD)" node <<'NODE'
+          const fs = require('node:fs');
+          const source = {
+            rawBranch: String(process.env.SOURCE_BRANCH),
+            sha: String(process.env.TARGET_SHA),
+            headSha: String(process.env.PR_HEAD_SHA),
+            // ADAPTED: bind the report to the source workflow attempt, including failed reruns.
+            runId: process.env.GITHUB_RUN_ID,
+            runAttempt: process.env.GITHUB_RUN_ATTEMPT,
+            ...(process.env.PR_BASE_SHA ? { baseSha: String(process.env.PR_BASE_SHA) } : {}),
+          };
+          fs.writeFileSync('test-results/odhin/odhin-source.json', `${JSON.stringify(source)}\n`);
+          NODE
+      - name: Upload functional report
+        id: functional_artifact
+        if: ${{ !cancelled() && steps.odhin_browser.outcome == 'success' }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: translation-functional-report
+          path: test-results/odhin/
+          if-no-files-found: error
+      - name: Link functional report in Actions
+        if: ${{ !cancelled() && steps.functional_artifact.outcome == 'success' }}
+        env:
+          REPORT_ARTIFACT_URL: ${{ steps.functional_artifact.outputs.artifact-url }}
+          EVIDENCE_ARTIFACT_URL: ${{ steps.evidence_artifact.outputs.artifact-url }}
+        run: |
+          set -euo pipefail
+          printf '### Functional Playwright report\n\n' >> "$GITHUB_STEP_SUMMARY"
+          printf '[Download browser-verified Odhín report](%s)\n\n' "$REPORT_ARTIFACT_URL" >> "$GITHUB_STEP_SUMMARY"
+          printf 'Extract the whole ZIP, then open `translation-playwright.html` in the extracted folder.\n\n' >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$EVIDENCE_ARTIFACT_URL" ]; then
+            printf '[Download Playwright evidence](%s)\n\n' "$EVIDENCE_ARTIFACT_URL" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          printf 'This source artifact is available now. GitHub Pages publication runs separately through `Publish Translation Odhín evidence` after its workflow is merged to `master`; check that workflow for the deployed report link.\n' >> "$GITHUB_STEP_SUMMARY"
 
   publish-npm:
     if: github.event_name == 'release'

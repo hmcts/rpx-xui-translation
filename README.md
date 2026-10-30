@@ -4,6 +4,39 @@ Angular translation library for Reform applications, with a small browser demo a
 
 This guide covers a clean checkout, the demo, builds, unit tests, Playwright coverage and generated evidence. Run commands from the repository root unless stated otherwise. Examples use Bash or Zsh; `open` is a macOS convenience.
 
+## Integrate the library
+
+Import the module in a consuming application's root module with `forRoot`:
+
+~~~typescript
+import { RpxTranslationModule } from '@hmcts/rpx-xui-translation';
+
+@NgModule({
+  imports: [
+    RpxTranslationModule.forRoot({
+      baseUrl: '/api/translation',
+      validity: { hours: 24 }
+    })
+  ]
+})
+~~~
+
+Use `RpxTranslationModule.forChild()` in lazy-loaded modules. The configuration
+sets the translation backend (`baseUrl`), cache lifetime (`validity`), request
+coalescing delay (`debounceTimeMs`) and demo fallback (`testMode`). Use the
+`rpxTranslate` pipe in templates:
+
+~~~html
+{{ 'case details' | rpxTranslate }}
+~~~
+
+The service supports English (`en`) and Welsh (`cy`), placeholder replacements
+and translated Yes and No values. It persists the selected language in the
+`exui-preferred-language` cookie and caches translations in the `RpxTranslations`
+IndexedDB database. Unavailable translations display a
+`[Translation in progress]` placeholder until a value is returned. Keep source
+phrases stable so the backend and browser cache can identify them reliably.
+
 ## What lives where
 
 | Path | Purpose |
@@ -30,14 +63,7 @@ git status --short
 git branch --show-current
 ~~~
 
-The Playwright/reporting work is carried by PR [#91](https://github.com/hmcts/rpx-xui-translation/pull/91). When validating that PR before merge, select its code rather than assuming a clone of `master` contains its scripts:
-
-~~~bash
-git fetch origin pull/91/head:review/pr-91
-git switch review/pr-91
-~~~
-
-Use that switch only in a clean checkout. For ordinary development after merge, select the intended branch and check its `package.json`. An absent `test:e2e` script means you have a different revision; installing more packages will not add the branch's infrastructure.
+Playwright and reporting were introduced in [PR #91](https://github.com/hmcts/rpx-xui-translation/pull/91) and are available on `master`. For an older branch, check its `package.json` before using the commands below; an absent `test:e2e` script means that revision predates the browser checks.
 
 Use the pinned toolchain:
 
@@ -361,3 +387,14 @@ diff <(git -C ../rpx-xui-webapp show "$UPSTREAM_SHA":playwright_tests_new/common
 ```
 
 For runtime files, only `ADAPTED` lines may differ. Node-checks also differ by whole upstream cases that were removed or adapted; each node-check lists these in the `ADAPTED` lines under its header. Copy the upstream file, re-apply the `ADAPTED` edits, update the SHA in the header and in this table, then run `yarn test:reporters`, `yarn test:e2e` and `yarn test:e2e:odhin-check`.
+
+## UK English and technical terminology
+
+Use UK English in documentation, examples, translation source phrases and
+support responses: organisation, authorise, behaviour, centre, colour,
+customise, licence (noun), license (verb), and prioritise. Keep language codes,
+cookie names, API fields, package names and exported identifiers unchanged.
+
+## Licence
+
+This project is licensed under the MIT Licence. See [LICENCE](LICENCE).

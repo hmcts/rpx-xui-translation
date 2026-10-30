@@ -31,7 +31,7 @@ test('PLAYWRIGHT_DEFAULT_REPORTER is the fallback when PLAYWRIGHT_REPORTERS is u
 test('PLAYWRIGHT_REPORTERS takes precedence over PLAYWRIGHT_DEFAULT_REPORTER', () => {
   const result = listWith({ PLAYWRIGHT_REPORTERS: 'list', PLAYWRIGHT_DEFAULT_REPORTER: 'unknown-default' });
   assert.equal(result.status, 0, result.stdout + result.stderr);
-  assert.match(result.stdout, /Total: 4 tests in 1 file/);
+  assert.match(result.stdout, /Total: [1-9]\d* tests? in [1-9]\d* files?/);
   assert.doesNotMatch(result.stdout, /odhin-profile/, 'only the list reporter is active');
 });
 

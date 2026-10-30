@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 2,
+  "reportType": "functional",
+  "rawBranch": "test/translation-public-api",
+  "branchSlug": "test-translation-public-api-59326bc7115e4ac9",
+  "runKey": "41080841006-attempt-1",
+  "runId": "41080841006",
+  "runAttempt": "1",
+  "sha": "64db6d5fb20da97dcc8fe5ba8eae75c438032449",
+  "runUrl": "https://github.com/hmcts/rpx-xui-translation/actions/runs/41080841006/attempts/1",
+  "createdAt": "2026-10-30T15:29:27.806Z"
+}

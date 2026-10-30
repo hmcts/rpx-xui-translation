@@ -37,6 +37,10 @@ IndexedDB database. Unavailable translations display a
 `[Translation in progress]` placeholder until a value is returned. Keep source
 phrases stable so the backend and browser cache can identify them reliably.
 
+Changing language retires the previous cache observers. Delayed responses for
+an earlier language can still populate its cache, but cannot replace the
+currently selected language’s displayed phrase.
+
 ## What lives where
 
 | Path | Purpose |
@@ -168,6 +172,8 @@ yarn test --watch=false --browsers=ChromeHeadless
 
 `yarn lint` checks Angular project TypeScript and runs `yarn lint:playwright`. The latter also compiles Playwright sources using `playwright_tests/tsconfig.json`. Jasmine/Karma covers library services, the pipe and helpers without starting the demo. Karma listens on port 9876 and needs Chrome.
 
+Service regressions cover request batching and normalized-phrase deduplication, production-mode fallback and recovery, and delayed cache/HTTP results after returning to English. Public API tests cover repeated numeric placeholder replacements, Yes/No metadata and initial-letter case, and original-input fallback when answer metadata is missing. These tests use controlled cache/HTTP boundaries with the real service and composition helpers.
+
 If system Google Chrome is unavailable, use installed Playwright Chromium for this invocation:
 
 ~~~bash
@@ -183,15 +189,15 @@ The functional config starts the demo automatically at `http://127.0.0.1:4300/` 
 
 | Command | Scope | Expected executions |
 | --- | --- | --- |
-| `yarn test:e2e` | Five functional smoke scenarios on Chromium; default local/CI lane | 5 |
-| `yarn playwright test` | Same scenarios on all three functional projects | 15 |
-| `yarn test:e2e:crossbrowser` | Advisory smoke on `smoke-firefox` and `smoke-webkit` | 10 |
+| `yarn test:e2e` | Seven functional smoke scenarios on Chromium; default local/CI lane | 7 |
+| `yarn playwright test` | Same scenarios on all three functional projects | 21 |
+| `yarn test:e2e:crossbrowser` | Advisory smoke on `smoke-firefox` and `smoke-webkit` | 14 |
 | `yarn test:a11y` | Separate EN/CY axe advisory on `chromium-a11y` | 2 |
 | `yarn test:reporters` | Node checks for reporters, publisher, workflow contracts, selection and accessibility evidence | See runner summary |
 
-Fifteen functional executions are five scenarios across three browsers, not fifteen distinct scenarios. Accessibility is excluded from the functional config.
+Twenty-one functional executions are seven scenarios across three browsers, not twenty-one distinct scenarios. Accessibility is excluded from the functional config.
 
-The smoke covers English defaults; the Welsh request/in-progress/fake-success states; cookie/cache restoration after reload without another translation request, followed by returning to English; fallback after a faked API failure; and refresh of an expired Welsh IndexedDB entry. Unexpected page/console errors also fail the specs. This is demo/library integration evidence, not deployed-service validation.
+The smoke covers English defaults; the Welsh request/in-progress/fake-success states; cookie/cache restoration after reload without another translation request, followed by returning to English; fallback after a faked API failure; refresh of an expired Welsh IndexedDB entry; and retaining English after delayed Welsh success/failure, with cached Welsh reuse on returning. Unexpected page/console errors also fail the specs. This is demo/library integration evidence, not deployed-service validation.
 
 `yarn test:reporters` also launches Chromium. Some checks deliberately run a failing inner test to prove error handling; judge the outer Node test summary and command exit status, not that controlled inner failure in isolation.
 
@@ -302,7 +308,7 @@ yarn test:e2e
 yarn test:e2e:odhin-check
 ~~~
 
-Expect successful lint/typecheck, unit/build and Node checks, five passing Chromium scenarios, then a passing dashboard check. Archive functional evidence using the command above. Run the optional cross-browser commands with their matched dashboard check, archive those outputs, then run the accessibility commands. The 15-execution all-project command is an alternative to separate functional/cross-browser runs for a combined functional report.
+Expect successful lint/typecheck, unit/build and Node checks, seven passing Chromium scenarios, then a passing dashboard check. Archive functional evidence using the command above. Run the optional cross-browser commands with their matched dashboard check, archive those outputs, then run the accessibility commands. The 21-execution all-project command is an alternative to separate functional/cross-browser runs for a combined functional report.
 
 Record `git rev-parse HEAD`, tool versions, commands, exit statuses and archive paths with review evidence. A browser pack alone does not prove packaging, unit coverage, report rendering or live-service compatibility.
 

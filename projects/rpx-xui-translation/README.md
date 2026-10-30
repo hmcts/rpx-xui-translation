@@ -1,24 +1,16 @@
-# RpxTranslation
+# RPX XUI Translation library
 
-This library was generated with [Angular CLI](https://github.com/angular/angular-cli) version 9.1.13.
+Angular library providing the `rpxTranslate` pipe, translation service, English/Welsh language selection and browser translation cache.
 
-## Code scaffolding
+Use the [repository guide](../../README.md) for integration examples, the current Node/Yarn toolchain, both dependency installations, the demo, Playwright coverage and reports, and the CI/release workflow.
 
-Run `ng generate component component-name --project rpx-translation` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module --project rpx-translation`.
-> Note: Don't forget to add `--project rpx-translation` or else it will be added to the default project in your `angular.json` file. 
+## Build and unit tests
 
-## Build
+Run these commands from the **repository root**, after completing the setup in the repository guide:
 
-Run `ng build rpx-translation` to build the project. The build artifacts will be stored in the `dist/` directory.
+```bash
+yarn build:library
+yarn test --watch=false --browsers=ChromeHeadless
+```
 
-## Publishing
-
-After building your library with `ng build rpx-translation`, go to the dist folder `cd dist/rpx-translation` and run `npm publish`.
-
-## Running unit tests
-
-Run `ng test rpx-translation` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
+The production build writes to `dist/rpx-xui-translation/`. Library unit tests use Jasmine/Karma and require Chrome; browser setup alternatives are covered in the repository guide.

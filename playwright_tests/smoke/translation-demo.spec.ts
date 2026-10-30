@@ -1,5 +1,6 @@
 import { expect, test, type ConsoleMessage, type Page } from '@playwright/test';
 import { fakeTranslationApi, sourcePhrase, translationApiPath, welshPhrase } from '../fixtures/translation-api.fake';
+import { expireWelshTranslation, readTranslationCache } from '../fixtures/translation-cache';
 
 const inProgressPhrase = `${sourcePhrase} [Translation in progress]`;
 const testModeFallbackPhrase = `[Test translation for ${sourcePhrase}]`;
@@ -12,29 +13,6 @@ const noTranslationRequestWindowMs = demoTranslationDebounceMs + 400;
 async function languageCookieValue(page: Page): Promise<string | undefined> {
   const cookies = await page.context().cookies();
   return cookies.find((cookie) => cookie.name === languageCookie)?.value;
-}
-
-async function cachedWelshTranslations(page: Page): Promise<string[]> {
-  return page.evaluate(() => new Promise<string[]>((resolve, reject) => {
-    const request = indexedDB.open('RpxTranslations');
-    request.onerror = () => reject(request.error);
-    request.onsuccess = () => {
-      const database = request.result;
-      if (!database.objectStoreNames.contains('translations')) {
-        database.close();
-        resolve([]);
-        return;
-      }
-      const getAll = database.transaction('translations', 'readonly').objectStore('translations').getAll();
-      getAll.onerror = () => reject(getAll.error);
-      getAll.onsuccess = () => {
-        database.close();
-        resolve(getAll.result
-          .filter((row: { lang: string }) => row.lang === 'cy')
-          .map((row: { translation: { translation: string } }) => row.translation.translation));
-      };
-    };
-  }));
 }
 
 test.describe('Translation demo smoke', () => {
@@ -98,7 +76,9 @@ test.describe('Translation demo smoke', () => {
     await page.goto('/');
     await page.getByRole('button', { name: 'Newid i\'r Gymraeg' }).click();
     await expect(page.getByText(welshPhrase, { exact: true })).toBeVisible();
-    await expect.poll(() => cachedWelshTranslations(page)).toEqual([welshPhrase]);
+    await expect.poll(async () => (await readTranslationCache(page))
+      .filter((row) => row.lang === 'cy')
+      .map((row) => row.translation.translation)).toEqual([welshPhrase]);
 
     await test.step('reload restores Welsh without a second API call', async () => {
       await page.reload();
@@ -136,5 +116,42 @@ test.describe('Translation demo smoke', () => {
     await expect(page.getByText(testModeFallbackPhrase, { exact: true })).toBeVisible();
     expect(api.requestBodies).toEqual([{ phrases: [sourcePhrase] }]);
     await expect.poll(() => languageCookieValue(page)).toBe('cy');
+  });
+
+  test('refreshes an expired Welsh cache entry instead of rendering its stale translation', async ({ page }) => {
+    await fakeTranslationApi(page);
+    await page.goto('/');
+    expect(await readTranslationCache(page)).toEqual([]);
+    await page.getByRole('button', { name: 'Newid i\'r Gymraeg' }).click();
+    await expect(page.getByText(welshPhrase, { exact: true })).toBeVisible();
+    await expect.poll(() => readTranslationCache(page)).toEqual([
+      expect.objectContaining({ phrase: sourcePhrase, lang: 'cy', translation: { translation: welshPhrase } })
+    ]);
+
+    const expiredPhrase = 'Expired Welsh cache fixture';
+    await expireWelshTranslation(page, expiredPhrase);
+    await expect.poll(() => readTranslationCache(page)).toEqual([
+      expect.objectContaining({ validity: '2000-01-01T00:00:00.000Z', translation: { translation: expiredPhrase } })
+    ]);
+    const refresh = await fakeTranslationApi(page, { hold: true });
+    try {
+      await page.goto('/');
+      await expect(page.getByText('Current language: cy', { exact: true })).toBeVisible();
+      await expect.poll(() => refresh.requestBodies).toEqual([{ phrases: [sourcePhrase] }]);
+      await expect(page.getByText(`${sourcePhrase} [Translation in progress]`, { exact: true })).toBeVisible();
+      await expect(page.getByText(expiredPhrase, { exact: true })).toHaveCount(0);
+      refresh.release();
+      await expect(page.getByText(welshPhrase, { exact: true })).toBeVisible();
+      await expect.poll(async () => (await readTranslationCache(page)).map((row) => ({
+        phrase: row.phrase,
+        lang: row.lang,
+        translation: row.translation.translation,
+        valid: Date.parse(row.validity) > Date.now()
+      }))).toEqual([{ phrase: sourcePhrase, lang: 'cy', translation: welshPhrase, valid: true }]);
+      expect(refresh.requestBodies).toEqual([{ phrases: [sourcePhrase] }]);
+    } finally {
+      refresh.release();
+      await page.unrouteAll({ behavior: 'wait' });
+    }
   });
 });

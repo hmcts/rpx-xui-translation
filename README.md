@@ -37,6 +37,10 @@ IndexedDB database. Unavailable translations display a
 `[Translation in progress]` placeholder until a value is returned. Keep source
 phrases stable so the backend and browser cache can identify them reliably.
 
+Changing language retires the previous cache observers. Delayed responses for
+an earlier language can still populate its cache, but cannot replace the
+currently selected language’s displayed phrase.
+
 ## What lives where
 
 | Path | Purpose |
@@ -167,6 +171,8 @@ yarn test --watch=false --browsers=ChromeHeadless
 ~~~
 
 `yarn lint` checks Angular project TypeScript and runs `yarn lint:playwright`. The latter also compiles Playwright sources using `playwright_tests/tsconfig.json`. Jasmine/Karma covers library services, the pipe and helpers without starting the demo. Karma listens on port 9876 and needs Chrome.
+
+Service regressions cover request batching and normalized-phrase deduplication, production-mode fallback and recovery, and delayed cache/HTTP results after returning to English. Public API tests cover repeated numeric placeholder replacements, Yes/No metadata and initial-letter case, and original-input fallback when answer metadata is missing. These tests use controlled cache/HTTP boundaries with the real service and composition helpers.
 
 If system Google Chrome is unavailable, use installed Playwright Chromium for this invocation:
 

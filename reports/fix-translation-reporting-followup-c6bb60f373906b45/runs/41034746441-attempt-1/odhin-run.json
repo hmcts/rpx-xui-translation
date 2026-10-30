@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 2,
+  "reportType": "functional",
+  "rawBranch": "fix/translation-reporting-followup",
+  "branchSlug": "fix-translation-reporting-followup-c6bb60f373906b45",
+  "runKey": "41034746441-attempt-1",
+  "runId": "41034746441",
+  "runAttempt": "1",
+  "sha": "6164e0a8fffef7cb820b7eedd60c335713977d3d",
+  "runUrl": "https://github.com/hmcts/rpx-xui-translation/actions/runs/41034746441/attempts/1",
+  "createdAt": "2026-10-30T09:39:42.887Z"
+}

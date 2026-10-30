@@ -63,7 +63,10 @@ jobs:
           const rawBranch = /^[0-9a-f]{7,40}$/i.test(ref)
             ? `detached-${sha.slice(0, 12)}`
             : ref.replace(/^refs\/(?:heads|tags)\//, '');
-          fs.writeFileSync('accessibility-odhin-artifact/odhin-source.json', `${JSON.stringify({ rawBranch, sha })}\n`);
+          // ADAPTED: preserve the source attempt so a stale rerun artifact cannot be relabelled.
+          const runId = process.env.GITHUB_RUN_ID;
+          const runAttempt = process.env.GITHUB_RUN_ATTEMPT;
+          fs.writeFileSync('accessibility-odhin-artifact/odhin-source.json', `${JSON.stringify({ rawBranch, sha, runId, runAttempt })}\n`);
           NODE
       - name: Upload exact accessibility Odhín report
         uses: actions/upload-artifact@v7

@@ -24,6 +24,11 @@ function applyPresentation(root, metadata = []) {
         `<td data-report-metadata>${escape(test?.feature ?? 'Uncategorised')}</td><td data-report-metadata>${escape((test?.tags ?? []).join(', '))}</td><td data-report-metadata>${escape((test?.retry ?? 0) + 1)}</td>`
       );
     });
+    // ADAPTED: restore CommonLib b27d3cd2 retained-output links for the hybrid reporter.
+    metadata.filter((test) => test.logFileName).forEach((test) => { // ADAPTED
+      const modal = root.querySelectorAll('[id]').find((node) => node.getAttribute('id') === test.target.slice(1)); // ADAPTED
+      modal?.querySelector('.modal-body')?.insertAdjacentHTML('beforeend', `<p><a href="./${escape(test.logFileName)}" download="test-output.log">Download test output</a></p>`); // ADAPTED
+    }); // ADAPTED
   }
   // Accessibility issue columns are inserted before duration; keep native footer column counts aligned.
   if (table?.querySelector('thead .odhin-a11y-issues-header')) {

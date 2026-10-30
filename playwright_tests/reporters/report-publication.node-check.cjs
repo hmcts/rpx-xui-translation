@@ -296,9 +296,9 @@ test('functional report provenance is the tested merge checkout, not the PR head
   fs.mkdirSync(path.join(root, 'test-results', 'odhin'), { recursive: true }); // ADAPTED
 
   const record = stepRunScript(functionalWorkflow, 'Record tested revision for the functional report'); // ADAPTED
-  execFileSync('bash', ['-c', record], { cwd: root, env: { ...process.env, SOURCE_BRANCH: 'feature/pr', PR_HEAD_SHA: headSha, PR_BASE_SHA: baseSha } }); // ADAPTED
+  execFileSync('bash', ['-c', record], { cwd: root, env: { ...process.env, SOURCE_BRANCH: 'feature/pr', PR_HEAD_SHA: headSha, PR_BASE_SHA: baseSha, GITHUB_RUN_ID: '900001', GITHUB_RUN_ATTEMPT: '2' } }); // ADAPTED
   const source = JSON.parse(fs.readFileSync(path.join(root, 'test-results', 'odhin', 'odhin-source.json'), 'utf8')); // ADAPTED
-  assert.deepEqual(source, { rawBranch: 'feature/pr', sha: mergeSha, headSha, baseSha }); // ADAPTED
+  assert.deepEqual(source, { rawBranch: 'feature/pr', sha: mergeSha, headSha, baseSha, runId: '900001', runAttempt: '2' }); // ADAPTED
 
   // ADAPTED: the publisher's identity block, with the API head SHA as its starting value.
   const prepare = stepRunScript(publisherWorkflow, 'Prepare and persist immutable Odhín history'); // ADAPTED
@@ -306,7 +306,92 @@ test('functional report provenance is the tested merge checkout, not the PR head
   fs.mkdirSync(path.join(root, 'evidence')); // ADAPTED
   fs.copyFileSync(path.join(root, 'test-results', 'odhin', 'odhin-source.json'), path.join(root, 'evidence', 'odhin-source.json')); // ADAPTED
   const published = execFileSync('bash', ['-c', `${identity}\nprintf '%s %s' "$ODHIN_BRANCH" "$ODHIN_SHA"`], { cwd: root, encoding: 'utf8', // ADAPTED
-    env: { ...process.env, ODHIN_REPORT_TYPE: 'functional', ODHIN_BRANCH: 'feature/pr', ODHIN_SHA: headSha } }); // ADAPTED
+    env: { ...process.env, ODHIN_REPORT_TYPE: 'functional', ODHIN_BRANCH: 'feature/pr', ODHIN_SHA: headSha, ODHIN_SOURCE_RUN_ID: '900001', ODHIN_SOURCE_RUN_ATTEMPT: '2' } }); // ADAPTED
   assert.equal(published, `feature/pr ${mergeSha}`); // ADAPTED
   assert.equal(fs.existsSync(path.join(root, 'evidence', 'odhin-source.json')), false, 'identity file is not published'); // ADAPTED
 }); // ADAPTED
+
+// ADAPTED: execute source identity and attempt checks, including stale artifacts and automatic-event races.
+const { spawnSync } = require('node:child_process');
+
+for (const [workflow, stepName, artifact] of [
+  [functionalWorkflow, 'Record tested revision for the functional report', 'test-results/odhin'],
+  [accessibilityWorkflow, 'Package exact accessibility report and target identity', 'accessibility-odhin-artifact'],
+  [crossBrowserWorkflow, 'Package exact cross-browser report and target identity', 'cross-browser-odhin-artifact'],
+]) {
+  test(`${artifact} manifest binds the tested revision to its source attempt`, (t) => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'translation-source-attempt-'));
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+    fs.mkdirSync(path.join(root, artifact), { recursive: true });
+    const script = stepRunScript(workflow, stepName).match(/node <<'NODE'\n([\s\S]*?)\nNODE/)[1];
+    execFileSync(process.execPath, ['-e', script], { cwd: root, env: { ...process.env,
+      TARGET_SHA: 'a'.repeat(40), TARGET_REF: 'refs/heads/test/provenance', SOURCE_BRANCH: 'test/provenance',
+      PR_HEAD_SHA: 'b'.repeat(40), GITHUB_RUN_ID: '900001', GITHUB_RUN_ATTEMPT: '2',
+    } });
+    const source = JSON.parse(fs.readFileSync(path.join(root, artifact, 'odhin-source.json'), 'utf8'));
+    assert.equal(source.runId, '900001');
+    assert.equal(source.runAttempt, '2');
+    assert.equal(source.rawBranch, 'test/provenance');
+    assert.equal(source.sha, 'a'.repeat(40));
+  });
+}
+
+test('source resolver freezes manual identity and rejects a newer attempt than the automatic event', (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'translation-resolve-attempt-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const runPath = path.join(root, 'run.json');
+  const output = path.join(root, 'output');
+  const run = { id: 900001, run_attempt: 2, name: 'Node.js Package', head_branch: 'test/provenance',
+    head_sha: 'a'.repeat(40), conclusion: 'failure', head_repository: { full_name: 'hmcts/rpx-xui-translation' } };
+  fs.writeFileSync(runPath, JSON.stringify(run));
+  const script = `gh() { cat "$RUN_FIXTURE"; }\n${stepRunScript(publisherWorkflow, 'Resolve and validate exact source run')}`;
+  for (const [event, attempt, accepted] of [['workflow_run', '1', false], ['workflow_run', '2', true], ['workflow_dispatch', '', true]]) {
+    fs.writeFileSync(output, '');
+    const child = spawnSync('bash', ['-c', script], { cwd: root, encoding: 'utf8', env: { ...process.env,
+      GITHUB_EVENT_NAME: event, SOURCE_RUN_ATTEMPT: attempt, SOURCE_RUN_ID: '900001', RUN_FIXTURE: runPath,
+      GITHUB_REPOSITORY: 'hmcts/rpx-xui-translation', GITHUB_SERVER_URL: 'https://github.example.test', GITHUB_OUTPUT: output,
+    } });
+    assert.equal(child.status, accepted ? 0 : 1, `${event} attempt ${attempt}: ${child.stderr}`);
+    if (accepted) {
+      assert.match(fs.readFileSync(output, 'utf8'), /source_run_attempt=2\n/);
+      assert.match(fs.readFileSync(output, 'utf8'), /actions\/runs\/900001\/attempts\/2/);
+    } else {
+      assert.match(child.stderr, /attempt/i);
+      assert.equal(fs.readFileSync(output, 'utf8'), '');
+    }
+  }
+  assert.match(publisherWorkflow, /SOURCE_RUN_ATTEMPT: \$\{\{ github\.event_name == 'workflow_run' && github\.event\.workflow_run\.run_attempt \|\| '' \}\}/);
+});
+
+test('publisher rejects stale or unbound artifacts before any archive or Pages writes', (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'translation-validate-attempt-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  fs.mkdirSync(path.join(root, 'evidence'));
+  const file = path.join(root, 'evidence/odhin-source.json');
+  const prepare = stepRunScript(publisherWorkflow, 'Prepare and persist immutable Odhín history');
+  const identity = prepare.slice(0, prepare.indexOf('report_repo_url='));
+  for (const [label, fields, accepted] of [
+    ['matching', { runId: '900001', runAttempt: '2' }, true],
+    ['attempt-1 artifact after attempt-2 setup failure', { runId: '900001', runAttempt: '1' }, false],
+    ['wrong run', { runId: '900002', runAttempt: '2' }, false],
+    ['legacy manifest', {}, false],
+    ['numeric identity', { runId: 900001, runAttempt: 2 }, false],
+    ['malformed identity', { runId: '900001', runAttempt: '02' }, false],
+  ]) {
+    fs.writeFileSync(file, JSON.stringify({ rawBranch: 'test/provenance', sha: 'a'.repeat(40), ...fields }));
+    const child = spawnSync('bash', ['-c', `${identity}\nprintf 'publication reached: %s %s' "$ODHIN_BRANCH" "$ODHIN_SHA"`], {
+      cwd: root, encoding: 'utf8', env: { ...process.env, ODHIN_SOURCE_RUN_ID: '900001', ODHIN_SOURCE_RUN_ATTEMPT: '2' },
+    });
+    assert.equal(child.status, accepted ? 0 : 1, `${label}: ${child.stderr}`);
+    if (accepted) assert.equal(child.stdout, `publication reached: test/provenance ${'a'.repeat(40)}`);
+    else {
+      assert.match(child.stderr, /source.*(identity|attempt)/i, label);
+      assert.doesNotMatch(child.stdout, /publication reached/);
+      assert.equal(fs.existsSync(file), true, 'rejected provenance stays available for diagnosis');
+    }
+    assert.equal(fs.existsSync(path.join(root, 'odhin-site')), false);
+    assert.equal(fs.existsSync(path.join(root, 'pages-site')), false);
+  }
+  fs.writeFileSync(file, '{broken');
+  assert.throws(() => execFileSync('bash', ['-c', identity], { cwd: root, stdio: 'pipe' }));
+});

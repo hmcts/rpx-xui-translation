@@ -1,6 +1,6 @@
 // Vendored from hmcts/rpx-xui-common-lib@b27d3cd20a9ed08cf2ba7fdf50926c59d4250393 e2e/reporters/odhin-report-enhancer.node-check.cjs; local edits marked ADAPTED
 // ADAPTED: diverges from common-lib@b27d3cd2 for F4: adds a real-CLI never-settling hook regression (upstream tests delayed resolution only).
-// ADAPTED: renamed from odhin-report-enhancer.node-check.cjs; keeps the fail-closed, CLI exit, real failed-report and feature-name checks. Dropped CommonLib-enhancer-specific checks (external presentation/ assets, verifier source regexes, log/lightweight trimming, WebApp layout/a11y markup) and their unused node-html-parser require.
+// ADAPTED: renamed from odhin-report-enhancer.node-check.cjs; keeps the fail-closed, CLI exit, real failed-report and feature-name checks. Dropped CommonLib-enhancer-specific layout/verifier checks. ADAPTED: adds retained-output, suppression and lane-specific screenshot/trace checks for the hybrid presentation.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -203,3 +203,99 @@ test('Playwright CLI exits nonzero when a reporter hook never settles', () => { 
     fs.rmSync(root, { recursive: true, force: true }); // ADAPTED
   } // ADAPTED
 }); // ADAPTED
+
+// ADAPTED: exercise real failed/timed-out result output and diagnostics from a nondefault lane directory.
+const { parse } = require('node-html-parser');
+
+function diagnosticReport(t, testOutput) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'translation-report-diagnostics-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const outputFolder = path.join(root, 'report');
+  const laneOutput = path.join(root, 'cross-browser-lane-results');
+  const stdoutMarker = `stdout-${path.basename(root)}`;
+  const stderrMarker = `stderr-${path.basename(root)}`;
+  fs.writeFileSync(path.join(root, 'diagnostics.spec.cjs'), `
+const { test, expect } = require(${JSON.stringify(require.resolve('@playwright/test'))});
+for (const status of ['failed', 'timedOut']) {
+  test(status, async ({ page }) => {
+    test.setTimeout(3000);
+    await page.setContent('<h1>Synthetic diagnostic fixture</h1>');
+    console.log(process.env.OUTPUT_MARKER + ':' + status);
+    console.error(process.env.ERROR_MARKER + ':' + status);
+    if (status === 'failed') expect(1).toBe(2);
+    else await new Promise(() => {});
+  });
+}
+test('passed', () => { console.log(process.env.OUTPUT_MARKER); });
+test.skip('skipped', () => {});
+test('empty-output', () => { expect(1).toBe(2); });
+`);
+  fs.writeFileSync(path.join(root, 'playwright.config.cjs'), `module.exports = {
+    testDir: ${JSON.stringify(root)}, testMatch: 'diagnostics.spec.cjs', workers: 1, retries: 0,
+    outputDir: ${JSON.stringify(laneOutput)},
+    use: { screenshot: 'only-on-failure', trace: 'retain-on-failure', video: 'off' },
+    reporter: [[${JSON.stringify(require.resolve('./odhin-adaptive.reporter.cjs'))}, {
+      outputFolder: ${JSON.stringify(outputFolder)}, profile: false, lightweight: true, embedAssets: false,
+      startServer: false, ${testOutput === false ? 'testOutput: false,' : ''}
+    }]],
+  };`);
+  const child = spawnSync(process.execPath, [require.resolve('@playwright/test/cli'), 'test', '-c', path.join(root, 'playwright.config.cjs')], {
+    cwd: root, encoding: 'utf8', timeout: 60_000, env: { ...process.env, OUTPUT_MARKER: stdoutMarker, ERROR_MARKER: stderrMarker },
+  });
+  assert.equal(child.error, undefined, child.stdout + child.stderr);
+  assert.equal(child.status, 1, child.stdout + child.stderr);
+  const html = fs.readFileSync(path.join(outputFolder, 'index.html'), 'utf8');
+  return { root: parse(html), outputFolder, laneOutput, html, stdoutMarker, stderrMarker };
+}
+
+function resultModal(root, title) {
+  const row = root.querySelectorAll('#test-list-table tbody tr').find((node) => node.querySelector('td')?.textContent.trim() === title);
+  assert.ok(row, `missing result ${title}`);
+  const target = row.getAttribute('data-bs-target').slice(1);
+  const modal = root.querySelectorAll('[id]').find((node) => node.getAttribute('id') === target);
+  assert.ok(modal, `missing modal ${title}`);
+  return modal;
+}
+
+test('failed and timed-out results link their retained output, screenshot and trace from the lane folder', (t) => {
+  const { root, outputFolder, laneOutput, html, stdoutMarker, stderrMarker } = diagnosticReport(t);
+  const laneFiles = fs.readdirSync(laneOutput, { recursive: true }).map((file) => path.join(laneOutput, file));
+  for (const status of ['failed', 'timedOut']) {
+    const modal = resultModal(root, status);
+    for (const [name, extension] of [['screenshot', '.png'], ['trace', '.zip']]) {
+      const link = modal.querySelectorAll('a[href]').find((node) => node.getAttribute('href').endsWith(extension));
+      assert.ok(link, `${status}: missing ${name} link`);
+      const copied = path.resolve(outputFolder, link.getAttribute('href'));
+      assert.ok(fs.statSync(copied).size > 0, `${status}: missing copied ${name}`);
+      const laneFile = laneFiles.find((file) => path.relative(laneOutput, file).split(path.sep)[0].includes(status) &&
+        file.endsWith(extension) && fs.readFileSync(file).equals(fs.readFileSync(copied)));
+      assert.ok(laneFile, `${status}: report ${name} must match the actual lane attachment bytes`);
+    }
+    const link = modal.querySelector('a[download="test-output.log"]');
+    assert.ok(link, `${status}: missing retained-output download link`);
+    const log = fs.readFileSync(path.resolve(outputFolder, link.getAttribute('href')), 'utf8');
+    assert.ok(log.includes(`${stdoutMarker}:${status}`));
+    assert.ok(log.includes(`${stderrMarker}:${status}`));
+  }
+  for (const status of ['passed', 'skipped', 'empty-output']) {
+    assert.equal(resultModal(root, status).querySelector('a[download="test-output.log"]'), null, `${status}: no invented output link`);
+  }
+  assert.ok(!html.includes(stdoutMarker) && !html.includes(stderrMarker), 'output stays external to HTML');
+  assert.equal(root.querySelectorAll('a[href$=".webm"]').length, 0, 'video remains disabled');
+});
+
+test('testOutput false suppresses failure logs and their links', (t) => {
+  const { root, outputFolder, html, stdoutMarker, stderrMarker } = diagnosticReport(t, false);
+  assert.equal(root.querySelectorAll('a[download="test-output.log"]').length, 0);
+  assert.equal(fs.existsSync(path.join(outputFolder, 'logs')), false);
+  assert.ok(!html.includes(stdoutMarker) && !html.includes(stderrMarker));
+});
+
+test('presentation escapes each result log link and targets only its own modal', () => {
+  const { applyPresentation } = require('./presentation/enhance.cjs');
+  const root = parse('<html><head></head><body><table id="test-list-table"><thead><tr></tr></thead><tbody></tbody></table><div id="failed"><div class="modal-body"></div></div><div id="timedOut"><div class="modal-body"></div></div><div id="empty"><div class="modal-body"></div></div></body></html>');
+  applyPresentation(root, [{ target: '#failed', logFileName: 'logs/failed&\"<x>.log' }, { target: '#timedOut', logFileName: 'logs/timedOut.log' }, { target: '#empty' }]);
+  assert.match(root.querySelector('#failed .modal-body').innerHTML, /href="\.\/logs\/failed&amp;&quot;&lt;x&gt;\.log" download="test-output.log"/);
+  assert.equal(root.querySelector('#timedOut a').getAttribute('href'), './logs/timedOut.log');
+  assert.equal(root.querySelector('#empty a'), null);
+});

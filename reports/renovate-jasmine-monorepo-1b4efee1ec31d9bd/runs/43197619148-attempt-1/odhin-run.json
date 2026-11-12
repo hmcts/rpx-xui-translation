@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 2,
+  "reportType": "functional",
+  "rawBranch": "renovate/jasmine-monorepo",
+  "branchSlug": "renovate-jasmine-monorepo-1b4efee1ec31d9bd",
+  "runKey": "43197619148-attempt-1",
+  "runId": "43197619148",
+  "runAttempt": "1",
+  "sha": "fb2ba4fbdcf33e3c06adfc2a464fa51d39eecc8a",
+  "runUrl": "https://github.com/hmcts/rpx-xui-translation/actions/runs/43197619148/attempts/1",
+  "createdAt": "2026-11-12T10:10:21.416Z"
+}

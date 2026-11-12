@@ -1,13 +1,13 @@
 {
   "name": "rpx-xui-translation",
-  "version": "1.2.18",
+  "version": "1.2.18-5543",
   "repository": {
     "type": "git",
     "url": "https://github.com/hmcts/rpx-xui-translation"
   },
   "peerDependencies": {
-    "@angular/common": "^20.3.27",
-    "@angular/core": "^20.3.27",
+    "@angular/common": "^20.3.35",
+    "@angular/core": "^20.3.35",
     "rxjs": "^7.8.0"
   },
   "dependencies": {

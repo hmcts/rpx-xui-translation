@@ -1,0 +1,18 @@
+{
+  "rawBranch": "renovate/qs-6.x",
+  "slug": "renovate-qs-6.x-5c8b4a345689fe24",
+  "runs": [
+    {
+      "schemaVersion": 2,
+      "reportType": "functional",
+      "rawBranch": "renovate/qs-6.x",
+      "branchSlug": "renovate-qs-6.x-5c8b4a345689fe24",
+      "runKey": "43197644825-attempt-1",
+      "runId": "43197644825",
+      "runAttempt": "1",
+      "sha": "827d99dc04093619873c5c70539b78d1d3543756",
+      "runUrl": "https://github.com/hmcts/rpx-xui-translation/actions/runs/43197644825/attempts/1",
+      "createdAt": "2026-11-12T10:10:55.975Z"
+    }
+  ]
+}

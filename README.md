@@ -73,7 +73,7 @@ Use the pinned toolchain:
 
 | Tool | Version / source |
 | --- | --- |
-| Node.js | `24.22.1` in `.nvmrc` and CI; root engine requirement `>=24.22.1` |
+| Node.js | `24.22.2` in `.nvmrc` and CI; root engine requirement `>=24.22.2` |
 | Yarn | `4.5.3` through the root `packageManager` field |
 | Angular / CLI | Angular `20.3.31`, CLI `20.3.32`, installed locally |
 | Playwright | `1.64.1`, installed locally |
@@ -88,7 +88,7 @@ corepack enable
 yarn --version
 ~~~
 
-Expected: `v24.22.1` and `4.5.3`. With another Node manager, select the same version there. Corepack must be available in that Node installation; follow your managed environment's setup if it is absent or cannot write its shims. Use `yarn ng` rather than a global Angular CLI.
+Expected: `v24.22.2` and `4.5.3`. With another Node manager, select the same version there. Corepack must be available in that Node installation; follow your managed environment's setup if it is absent or cannot write its shims. Use `yarn ng` rather than a global Angular CLI.
 
 ## 2. Install both dependency trees
 
@@ -316,7 +316,7 @@ Record `git rev-parse HEAD`, tool versions, commands, exit statuses and archive 
 
 | Symptom | Check / action |
 | --- | --- |
-| Engine or Angular tooling error | Select Node `24.22.1` and Yarn `4.5.3`, then install against this revision's locks. |
+| Engine or Angular tooling error | Select Node `24.22.2` and Yarn `4.5.3`, then install against this revision's locks. |
 | Missing Luxon types/build resolution errors | Confirm root and child installs; inspect their separate manifests/locks before changing versions. |
 | Startup fails on port 4300 | Identify the process; stop your stale demo or explicitly target the correct server. Do not let reuse hide another application. |
 | Browser starts in Welsh/shows old text | Use a fresh profile or clear only this demo origin's cookie/IndexedDB. |

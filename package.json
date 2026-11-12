@@ -69,7 +69,7 @@
     "@typescript-eslint/utils": "^8.71.1",
     "codelyzer": "^6.0.0",
     "eslint": "^9.39.5",
-    "jasmine-core": "~5.1.0",
+    "jasmine-core": "~5.13.0",
     "karma": "~6.4.2",
     "karma-chrome-launcher": "~3.1.0",
     "karma-coverage-istanbul-reporter": "~3.0.2",

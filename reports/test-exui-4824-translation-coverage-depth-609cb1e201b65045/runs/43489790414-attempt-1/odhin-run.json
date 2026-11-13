@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 2,
+  "reportType": "functional",
+  "rawBranch": "test/EXUI-4824-translation-coverage-depth",
+  "branchSlug": "test-exui-4824-translation-coverage-depth-609cb1e201b65045",
+  "runKey": "43489790414-attempt-1",
+  "runId": "43489790414",
+  "runAttempt": "1",
+  "sha": "480f2839eba8f0b7539dacaed7d4e3edd1b60164",
+  "runUrl": "https://github.com/hmcts/rpx-xui-translation/actions/runs/43489790414/attempts/1",
+  "createdAt": "2026-11-13T19:13:33.160Z"
+}

@@ -404,3 +404,52 @@ cookie names, API fields, package names and exported identifiers unchanged.
 ## Licence
 
 This project is licensed under the MIT Licence. See [LICENCE](LICENCE).
+
+
+## Private Core forwarding candidate
+
+The separate `projects/rpx-xui-translation-core-facade` project prepares the old
+`rpx-xui-translation` name to forward to `@hmcts/rpx-xui-core-lib/i18n`. Its runtime
+and declaration files are pure reexports: Core owns the implementation, classes
+and provider tokens. The candidate is private, versioned
+`0.0.0-core-preview.0`, and requires the exact local Core peer `0.0.0`. These are
+development coordinates, not agreed release versions. Do not publish them or
+substitute this candidate for the released 1.2.18 artifact in a production lock.
+
+With the pinned Node 24.22.2, test and pack it locally without installing this
+repository's Angular dependencies:
+
+~~~sh
+node --test scripts/core-facade.test.mjs
+node scripts/pack-core-facade.mjs dist/core-facade
+# Equivalent, once Yarn is available: yarn test:core-facade / yarn pack:core-facade
+~~~
+
+Packing uses the npm bundled with Node and `/usr/bin/tar`, works offline and
+disables lifecycle scripts. Supply a fresh output directory on subsequent runs,
+for example `dist/core-facade-review-2`; existing outputs are never overwritten.
+The output contains the tarball, a local npm cache and `provenance.json`. The
+provenance records the source commit, dirty-checkout status, each of the four
+input hashes, an aggregate input hash and the archive digest. Packing checks the
+inputs again afterwards and verifies that the archive contains exactly the
+unchanged runtime, declarations, package manifest and licence. A dirty candidate
+is local evidence, not proof of a reviewed immutable release.
+
+The existing build, demo, tests and release configuration still build the legacy
+implementation. Some demo/tests import legacy internals directly; running them
+does not test this forwarding candidate. Install its exact tarball alongside the
+exact tested Core tarball in a separate consumer. Verify old-name/direct-Core
+class and provider identity, root/child scope, lifecycle, cache continuity and
+loading using those installed bytes. Core's counterpart proof is a separate
+preparation lane; passing it cannot close full release-set or app acceptance.
+
+This is a temporary migration boundary, not a second permanent implementation.
+Translation maintainers and application owners must agree release versions,
+compatible viewer/payment counterparts, the supported framework cohort, real
+application journeys and rollback. The production legacy implementation remains
+authoritative until that accepted cutover. Afterwards, switch the old-name
+release build to the forwarding source, migrate the affected demo/test imports
+together and retire the duplicate implementation. Do not merely replace
+`public-api.ts` while leaving direct implementation imports and tests behind.
+Core behaviour changes and their adoption implications remain documented in
+[Core's README](https://github.com/hmcts/rpx-xui-core-lib/blob/master/README.md).

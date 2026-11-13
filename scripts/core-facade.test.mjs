@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
-import { spawnSync } from 'node:child_process';
+import childProcess, { spawnSync } from 'node:child_process';
+import { syncBuiltinESMExports } from 'node:module';
 import { createHash } from 'node:crypto';
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { test } from 'node:test';
 import { packCoreFacade } from './pack-core-facade.mjs';
 
@@ -16,7 +17,7 @@ function fixture(t) {
   cpSync(new URL(project, source), join(root, project), { recursive: true });
   cpSync(new URL('LICENCE', source), join(root, 'LICENCE'));
   for (const args of [['init', '-q'], ['add', '.'], ['-c', 'user.name=Synthetic fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'fixture']]) {
-    assert.equal(spawnSync('git', ['-c', 'core.hooksPath=/dev/null', '-c', 'commit.gpgsign=false', ...args], { cwd: root, encoding: 'utf8' }).status, 0);
+    assert.equal(spawnSync('/usr/bin/git', ['-c', 'core.hooksPath=/dev/null', '-c', 'commit.gpgsign=false', ...args], { cwd: root, encoding: 'utf8' }).status, 0);
   }
   return { root, output: join(root, 'dist/preview') };
 }
@@ -79,16 +80,39 @@ test('rejects a symlinked input before packing', t => {
 
 for (const timing of ['before', 'after']) {
   test(`rejects source mutation ${timing} npm packs the artifact`, t => {
-    const options = fixture(t), bin = join(options.root, 'bin');
+    const options = fixture(t), target = join(options.root, project, 'index.mjs');
+    const npm = resolve(dirname(process.execPath), '../lib/node_modules/npm/bin/npm-cli.js');
+    const original = childProcess.spawnSync;
+    childProcess.spawnSync = (command, args, options) => {
+      const packing = command === process.execPath && args[0] === npm;
+      if (packing && timing === 'before') writeFileSync(target, 'export const changed = true;\n');
+      const result = original(command, args, options);
+      if (packing && timing === 'after') writeFileSync(target, 'export const changed = true;\n');
+      return result;
+    };
+    syncBuiltinESMExports();
+    try {
+      assert.throws(() => packCoreFacade(options), timing === 'before' ? /Packed index.mjs differs from source/ : /input changed while packing/);
+      assert.equal(existsSync(join(options.output, 'provenance.json')), false);
+    } finally {
+      childProcess.spawnSync = original;
+      syncBuiltinESMExports();
+    }
+  });
+}
+
+for (const name of ['git', 'npm']) {
+  test(`does not execute ${name} PATH shadows`, t => {
+    const options = fixture(t), bin = join(options.root, 'shadow-bin'), marker = join(options.root, 'shadow-executed');
     mkdirSync(bin);
-    const target = join(options.root, project, 'index.mjs');
-    const npm = join(dirname(process.execPath), '../lib/node_modules/npm/bin/npm-cli.js');
-    const mutate = `writeFileSync(${JSON.stringify(target)}, 'export const changed = true;\\n');`;
-    writeFileSync(join(bin, 'npm'), `#!${process.execPath}\nimport {writeFileSync} from 'node:fs';import {spawnSync} from 'node:child_process';\n${timing === 'before' ? mutate : ''}\nconst result=spawnSync(process.execPath,[${JSON.stringify(npm)},...process.argv.slice(2)],{stdio:'inherit'});\n${timing === 'after' ? mutate : ''}\nprocess.exitCode=result.status??1;\n`, { mode: 0o755 });
+    const command = name === 'git' ? '/usr/bin/git' : process.execPath;
+    const args = name === 'git' ? [] : [join(dirname(process.execPath), '../lib/node_modules/npm/bin/npm-cli.js')];
+    writeFileSync(join(bin, name), `#!${process.execPath}\nimport {writeFileSync} from 'node:fs';import {spawnSync} from 'node:child_process';\nwriteFileSync(${JSON.stringify(marker)},'unexpected PATH resolution');\nconst result=spawnSync(${JSON.stringify(command)},[...${JSON.stringify(args)},...process.argv.slice(2)],{stdio:'inherit'});process.exitCode=result.status??1;\n`, { mode: 0o755 });
     const previous = process.env.PATH;
-    t.after(() => { process.env.PATH = previous; });
-    process.env.PATH = `${bin}:${previous}`;
-    assert.throws(() => packCoreFacade(options), timing === 'before' ? /Packed index.mjs differs from source/ : /input changed while packing/);
-    assert.equal(existsSync(join(options.output, 'provenance.json')), false);
+    try {
+      process.env.PATH = `${bin}:${previous}`;
+      packCoreFacade(options);
+      assert.equal(existsSync(marker), false, `Packer must not search PATH for ${name}`);
+    } finally { process.env.PATH = previous; }
   });
 }

@@ -425,8 +425,10 @@ node scripts/pack-core-facade.mjs dist/core-facade
 # Equivalent, once Yarn is available: yarn test:core-facade / yarn pack:core-facade
 ~~~
 
-Packing uses the npm bundled with Node and `/usr/bin/tar`, works offline and
-disables lifecycle scripts. Supply a fresh output directory on subsequent runs,
+Packing invokes `/usr/bin/git`, `/usr/bin/tar` and the npm CLI from the pinned
+Node installation directly, without searching PATH for these executables. It
+works offline and disables lifecycle scripts. A Node installation without its
+`lib/node_modules/npm/bin/npm-cli.js` fails with an explicit setup error. Supply a fresh output directory on subsequent runs,
 for example `dist/core-facade-review-2`; existing outputs are never overwritten.
 The output contains the tarball, a local npm cache and `provenance.json`. The
 provenance records the source commit, dirty-checkout status, each of the four

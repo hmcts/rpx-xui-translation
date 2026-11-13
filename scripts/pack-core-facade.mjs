@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { lstatSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -17,6 +17,8 @@ function run(command, args, cwd) {
 
 export function packCoreFacade({ root = repository, output = 'dist/core-facade' } = {}) {
   assert.equal(process.versions.node, '24.22.2', 'Use pinned Node 24.22.2');
+  const npm = resolve(dirname(process.execPath), '../lib/node_modules/npm/bin/npm-cli.js');
+  assert.ok(existsSync(npm) && lstatSync(npm).isFile(), 'Pinned Node installation must include its npm CLI');
   const project = join(root, 'projects/rpx-xui-translation-core-facade');
   assert.deepEqual(readdirSync(project).sort(), files, 'Facade must contain only its four declared files');
   for (const file of files) assert.ok(lstatSync(join(project, file)).isFile(), 'Facade inputs must be regular files');
@@ -31,13 +33,13 @@ export function packCoreFacade({ root = repository, output = 'dist/core-facade' 
   for (const file of ['index.mjs', 'index.d.ts']) assert.equal(readFileSync(join(project, file), 'utf8'), forwarding, 'Facade entries must be canonical pure reexports');
   const repositoryLicenceSha256 = hash(readFileSync(join(root, 'LICENCE')));
   assert.equal(before.LICENCE, repositoryLicenceSha256, 'Facade licence must match the repository licence');
-  const sourceSha = run('git', ['rev-parse', 'HEAD'], root).toString().trim();
-  const dirty = run('git', ['status', '--porcelain', '--untracked-files=all'], root).length > 0;
+  const sourceSha = run('/usr/bin/git', ['rev-parse', 'HEAD'], root).toString().trim();
+  const dirty = run('/usr/bin/git', ['status', '--porcelain', '--untracked-files=all'], root).length > 0;
   output = resolve(root, output);
   assert.ok(!output.startsWith(`${project}/`), 'Generated output must be outside facade source');
   mkdirSync(dirname(output), { recursive: true });
   mkdirSync(output);
-  const packed = JSON.parse(run('npm', ['pack', project, '--offline', '--ignore-scripts', '--json', '--pack-destination', output, '--cache', join(output, 'npm-cache')], root).toString());
+  const packed = JSON.parse(run(process.execPath, [npm, 'pack', project, '--offline', '--ignore-scripts', '--json', '--pack-destination', output, '--cache', join(output, 'npm-cache')], root).toString());
   assert.equal(packed.length, 1, 'Exactly one facade archive is required');
   assert.equal(packed[0].filename, 'rpx-xui-translation-0.0.0-core-preview.0.tgz');
   const tarball = join(output, packed[0].filename);

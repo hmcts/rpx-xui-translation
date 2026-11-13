@@ -2,5 +2,18 @@
   "rawBranch": "detached-677fbb8b7158",
   "slug": "detached-677fbb8b7158-4acb3e01b5df8bb5",
   "reportType": "cross-browser",
-  "runs": []
+  "runs": [
+    {
+      "schemaVersion": 2,
+      "reportType": "cross-browser",
+      "rawBranch": "detached-677fbb8b7158",
+      "branchSlug": "detached-677fbb8b7158-4acb3e01b5df8bb5",
+      "runKey": "43489814818-attempt-1",
+      "runId": "43489814818",
+      "runAttempt": "1",
+      "sha": "677fbb8b71581adc5612481d3186ccd5c9a2a65e",
+      "runUrl": "https://github.com/hmcts/rpx-xui-translation/actions/runs/43489814818/attempts/1",
+      "createdAt": "2026-11-13T19:14:00.122Z"
+    }
+  ]
 }

@@ -64,6 +64,22 @@ describe('RpxTranslationService public API composition', () => {
     expect(post).toHaveBeenCalledTimes(1);
   });
 
+  it('translates alphabetic replacement labels as well as static fragments', async () => {
+    const pending = firstValueFrom(requests);
+    const values: string[] = [];
+    subscriptions.push(service.getTranslationWithReplacements$('Case %STATUS%', { STATUS: 'Closed' })
+      .subscribe((value) => values.push(value)));
+
+    const request = await pending;
+    expect(request.url).toBe('/translations/cy');
+    expect(request.body).toEqual({ phrases: ['Case', 'Closed'] });
+    expect(post).toHaveBeenCalledTimes(1);
+    request.reply.next({ translations: { Case: 'Achos', Closed: 'Ar gau' } });
+
+    expect(values.at(-1)).toBe('Achos Ar gau');
+    expect(post).toHaveBeenCalledTimes(1);
+  });
+
   it('selects Yes/No metadata and matches each input’s initial letter case from one request', async () => {
     const phrase = 'Do you agree?';
     const pending = firstValueFrom(requests);

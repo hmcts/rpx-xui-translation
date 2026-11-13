@@ -118,6 +118,46 @@ test.describe('Translation demo smoke', () => {
     await expect.poll(() => languageCookieValue(page)).toBe('cy');
   });
 
+  test('switches both languages with the keyboard after the language control is replaced', async ({ page, browserName }) => {
+    const api = await fakeTranslationApi(page);
+    await page.goto('/');
+    await expect(page.getByRole('heading', { name: 'Translation Demo App' })).toBeVisible();
+    await expect(page.getByText('Current language: en', { exact: true })).toBeVisible();
+    // macOS WebKit uses Option+Tab to include buttons in keyboard navigation.
+    const nextControl = browserName === 'webkit' && process.platform === 'darwin' ? 'Alt+Tab' : 'Tab';
+
+    await page.keyboard.press(nextControl);
+    await expect(page.getByRole('button', { name: 'Newid i\'r Gymraeg' })).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.getByText(welshPhrase, { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Newid i\'r Gymraeg' })).toHaveCount(0);
+
+    await page.keyboard.press(nextControl);
+    await expect(page.getByRole('button', { name: 'Change to English' })).toBeFocused();
+    await page.keyboard.press('Space');
+    await expect(page.getByText('Current language: en', { exact: true })).toBeVisible();
+    await expect(page.getByText(sourcePhrase, { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Change to English' })).toHaveCount(0);
+    expect(api.requestBodies).toEqual([{ phrases: [sourcePhrase] }]);
+  });
+
+  test('restores the Welsh cookie through the API when the browser cache is empty', async ({ page, context, baseURL }) => {
+    await context.addCookies([{ name: languageCookie, value: 'cy', url: baseURL! }]);
+    const api = await fakeTranslationApi(page, { hold: true });
+    try {
+      await page.goto('/');
+      expect(await readTranslationCache(page)).toEqual([]);
+      await expect(page.getByText('Current language: cy', { exact: true })).toBeVisible();
+      await expect(page.getByText(inProgressPhrase, { exact: true })).toBeVisible();
+      await expect.poll(() => api.requestBodies).toEqual([{ phrases: [sourcePhrase] }]);
+      api.release();
+      await expect(page.getByText(welshPhrase, { exact: true })).toBeVisible();
+      await expect.poll(() => languageCookieValue(page)).toBe('cy');
+    } finally {
+      api.release();
+    }
+  });
+
   test('refreshes an expired Welsh cache entry instead of rendering its stale translation', async ({ page }) => {
     await fakeTranslationApi(page);
     await page.goto('/');

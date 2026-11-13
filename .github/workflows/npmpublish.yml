@@ -36,6 +36,8 @@ jobs:
       - run: yarn lint
       - run: yarn test
       - run: yarn build:library
+      - name: Verify packed translation consumer
+        run: yarn test:package
       - name: Install Playwright browsers
         run: yarn playwright install --with-deps chromium
       - run: yarn test:reporters

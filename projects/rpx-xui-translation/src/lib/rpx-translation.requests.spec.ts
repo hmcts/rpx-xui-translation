@@ -1,4 +1,5 @@
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { fakeAsync, tick } from '@angular/core/testing';
 import { Subject, Subscription, firstValueFrom } from 'rxjs';
 import { db } from './db';
 import { RpxTranslationService } from './rpx-translation.service';
@@ -31,6 +32,7 @@ describe('RpxTranslationService request lifecycle', () => {
   });
 
   afterEach(() => {
+    service.language = 'en';
     subscriptions.forEach((subscription) => subscription.unsubscribe());
     requests.complete();
     document.cookie = 'exui-preferred-language=; Max-Age=0; SameSite=Strict;';
@@ -58,6 +60,32 @@ describe('RpxTranslationService request lifecycle', () => {
     expect(hearing.at(-1)).toBe('Dyddiad y gwrandawiad');
     expect(post).toHaveBeenCalledTimes(1);
   });
+
+  it('shares an in-flight request with a late subscriber and normalized alias', fakeAsync(() => {
+    const issued: TranslationRequest[] = [];
+    const original: string[] = [];
+    const alias: string[] = [];
+    const late: string[] = [];
+    subscriptions.push(requests.subscribe((request) => issued.push(request)));
+    subscriptions.push(service.getTranslation$('Notice of charge').subscribe((value) => original.push(value)));
+    tick(20);
+    expect(issued.length).toBe(1);
+    expect(issued[0].body).toEqual({ phrases: ['Notice of charge'] });
+
+    subscriptions.push(service.getTranslation$('Notice  of charge').subscribe((value) => alias.push(value)));
+    subscriptions.push(service.getTranslation$('Notice of charge').subscribe((value) => late.push(value)));
+    tick(20);
+    expect(alias.at(-1)).toBe('Notice  of charge [Translation in progress]');
+    expect(late.at(-1)).toBe('Notice of charge [Translation in progress]');
+    expect(post).toHaveBeenCalledTimes(1);
+
+    issued[0].reply.next({ translations: { 'Notice of charge': 'Hysbysiad o arwystl' } });
+    issued[0].reply.complete();
+    expect(original.at(-1)).toBe('Hysbysiad o arwystl');
+    expect(alias.at(-1)).toBe('Hysbysiad o arwystl');
+    expect(late.at(-1)).toBe('Hysbysiad o arwystl');
+    expect(post).toHaveBeenCalledTimes(1);
+  }));
 
   it('uses source fallback in production mode and allows a subsequent phrase to translate', async () => {
     const pendingFailure = firstValueFrom(requests);

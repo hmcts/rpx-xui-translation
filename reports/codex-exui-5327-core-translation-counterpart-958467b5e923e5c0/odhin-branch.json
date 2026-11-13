@@ -7,6 +7,18 @@
       "reportType": "functional",
       "rawBranch": "codex/EXUI-5327-core-translation-counterpart",
       "branchSlug": "codex-exui-5327-core-translation-counterpart-958467b5e923e5c0",
+      "runKey": "43468307809-attempt-1",
+      "runId": "43468307809",
+      "runAttempt": "1",
+      "sha": "3ca853d317e9d3a9c2e8f0d84b135caf239934cf",
+      "runUrl": "https://github.com/hmcts/rpx-xui-translation/actions/runs/43468307809/attempts/1",
+      "createdAt": "2026-11-13T17:02:35.171Z"
+    },
+    {
+      "schemaVersion": 2,
+      "reportType": "functional",
+      "rawBranch": "codex/EXUI-5327-core-translation-counterpart",
+      "branchSlug": "codex-exui-5327-core-translation-counterpart-958467b5e923e5c0",
       "runKey": "43461148282-attempt-1",
       "runId": "43461148282",
       "runAttempt": "1",

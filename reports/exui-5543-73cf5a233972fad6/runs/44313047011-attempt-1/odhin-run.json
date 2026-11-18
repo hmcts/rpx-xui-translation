@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 2,
+  "reportType": "functional",
+  "rawBranch": "exui-5543",
+  "branchSlug": "exui-5543-73cf5a233972fad6",
+  "runKey": "44313047011-attempt-1",
+  "runId": "44313047011",
+  "runAttempt": "1",
+  "sha": "cbf88cdfa85e876677b96ea6a1fb65fc4de8bf43",
+  "runUrl": "https://github.com/hmcts/rpx-xui-translation/actions/runs/44313047011/attempts/1",
+  "createdAt": "2026-11-18T13:24:59.273Z"
+}

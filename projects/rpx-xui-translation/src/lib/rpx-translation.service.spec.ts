@@ -4,7 +4,7 @@ import { BehaviorSubject } from 'rxjs';
 import { db } from './db';
 import { RpxTranslationConfig } from './rpx-translation.config';
 import { RpxTranslationService } from './rpx-translation.service';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 
 describe('RpxTranslationService', () => {
   let service: RpxTranslationService;
@@ -23,7 +23,7 @@ describe('RpxTranslationService', () => {
             validity: { days: 1 }
           }
         },
-        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClient(withXhr(), withInterceptorsFromDi()),
         provideHttpClientTesting()
       ]
     });

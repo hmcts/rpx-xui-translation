@@ -99,7 +99,7 @@ export function consume(service: RpxTranslationService, pipe: RpxTranslatePipe):
 }
 `);
   run(process.execPath, [
-    require.resolve('typescript/bin/tsc'), '--noEmit', '--strict', '--module', 'nodenext',
+    require.resolve('typescript/bin/tsc'), '--ignoreConfig', '--noEmit', '--strict', '--module', 'nodenext',
     '--moduleResolution', 'nodenext', '--target', 'es2022', '--lib', 'es2022,dom',
     '--types', 'node', 'consumer.mts'
   ]);

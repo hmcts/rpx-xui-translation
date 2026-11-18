@@ -2,7 +2,6 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { BehaviorSubject } from 'rxjs';
 import { db } from './db';
-import { YesOrNoValue } from './rpx-language.enum';
 import { RpxTranslationConfig } from './rpx-translation.config';
 import { RpxTranslationService } from './rpx-translation.service';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
@@ -84,19 +83,15 @@ describe('RpxTranslationService', () => {
     });
   }));
 
-  it('should not call load method with given phrase, language, and yesOrNo value when translation not found in DB', (done) => {
-    const spy = jasmine.createSpyObj('RpxTranslationService', ['load']);
-    const phrase = 'Hello, world!';
-    const language = 'en';
-    const yesOrNo = YesOrNoValue.YES;
+  it('returns the English source without loading translations', () => {
+    const load = spyOn(service as any, 'load').and.callThrough();
+    const values: string[] = [];
 
-    // @ts-ignore-error - private method
-    const observable = service.translate(phrase);
+    service.getTranslation$('Hello, world!').subscribe((value) => values.push(value)).unsubscribe();
 
-    observable.subscribe(() => {
-      expect(spy.load).not.toHaveBeenCalledWith(phrase, language, yesOrNo);
-      done();
-    });
+    expect(values).toEqual(['Hello, world!']);
+    expect(load).not.toHaveBeenCalled();
+    httpMock.expectNone('translations/cy');
   });
 
   describe('shouldTranslate', () => {
@@ -232,18 +227,20 @@ describe('RpxTranslationService', () => {
       expect((service as any).shouldTranslate('a')).toBe(true);
     });
 
-    it('should handle getTranslationWithYesOrNo$ with null yesOrNoValue', (done) => {
-      const phrase = 'Test';
-      service.getTranslationWithYesOrNo$(phrase, null as any).subscribe(
-        (translation) => {
-          expect(translation).toBeDefined();
-          done();
-        },
-        () => {
-          // Should not error, should handle gracefully
-          done();
-        }
-      );
+    it('rejects null outside the string-only Yes/No input contract', () => {
+      const next = jasmine.createSpy('next');
+      const error = jasmine.createSpy('error');
+
+      service.getTranslationWithYesOrNo$('Test', null as unknown as string).subscribe({ next, error });
+
+      expect(next).not.toHaveBeenCalled();
+      expect(error).toHaveBeenCalledOnceWith(jasmine.any(TypeError));
+    });
+
+    it('returns the exact source for an empty replacement map without whitespace', () => {
+      const values: string[] = [];
+      service.getTranslationWithReplacements$('Test', {}).subscribe((value) => values.push(value)).unsubscribe();
+      expect(values).toEqual(['Test']);
     });
 
     it('should handle getTranslationWithReplacements$ with empty replacements', (done) => {

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 2,
+  "reportType": "functional",
+  "rawBranch": "renovate/angular-monorepo",
+  "branchSlug": "renovate-angular-monorepo-92bb89973200c87a",
+  "runKey": "44316332374-attempt-1",
+  "runId": "44316332374",
+  "runAttempt": "1",
+  "sha": "2e5c0184411626d15e9e25d1fbe4c8c47f0e4056",
+  "runUrl": "https://github.com/hmcts/rpx-xui-translation/actions/runs/44316332374/attempts/1",
+  "createdAt": "2026-11-18T13:44:54.709Z"
+}

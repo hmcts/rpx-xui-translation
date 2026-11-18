@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 2,
+  "reportType": "functional",
+  "rawBranch": "CME-1201-angular-22-upgrade",
+  "branchSlug": "cme-1201-angular-22-upgrade-2c5d25085d75c328",
+  "runKey": "44304784386-attempt-1",
+  "runId": "44304784386",
+  "runAttempt": "1",
+  "sha": "c19d86ba9cb5e5f7e144fbc241c04f6b262f20b9",
+  "runUrl": "https://github.com/hmcts/rpx-xui-translation/actions/runs/44304784386/attempts/1",
+  "createdAt": "2026-11-18T12:34:20.743Z"
+}

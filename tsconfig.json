@@ -1,7 +1,6 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": "./",
     "outDir": "./dist/out-tsc",
     "noImplicitAny": true,
     "noImplicitReturns": true,
@@ -10,23 +9,19 @@
     "strictNullChecks": true,
     "sourceMap": true,
     "declaration": false,
-    "downlevelIteration": true,
     "experimentalDecorators": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "importHelpers": true,
     "target": "es2022",
-    "lib": [
-      "es2022",
-      "dom"
-    ],
     "paths": {
       "rpx-translation": [
-        "dist/rpx-xui-translation/rpx-xui-translation",
-        "dist/rpx-xui-translation"
+        "./dist/rpx-xui-translation/rpx-xui-translation",
+        "./dist/rpx-xui-translation"
       ]
     },
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "strict": false
   },
   "angularCompilerOptions": {
     "fullTemplateTypeCheck": true,

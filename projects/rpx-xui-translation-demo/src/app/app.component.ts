@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RpxTranslationService } from '../../../rpx-xui-translation/src/lib/rpx-translation.service';
 import { RpxLanguage } from '../../../rpx-xui-translation/src/lib/rpx-language.enum';
 
@@ -6,6 +6,7 @@ import { RpxLanguage } from '../../../rpx-xui-translation/src/lib/rpx-language.e
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: false
 })
 export class AppComponent {

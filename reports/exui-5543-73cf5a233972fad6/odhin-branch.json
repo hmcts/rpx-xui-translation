@@ -7,6 +7,18 @@
       "reportType": "functional",
       "rawBranch": "exui-5543",
       "branchSlug": "exui-5543-73cf5a233972fad6",
+      "runKey": "44314124968-attempt-1",
+      "runId": "44314124968",
+      "runAttempt": "1",
+      "sha": "eac3cb781bec56c6fbe7ee3f29c4d114acb9cf1e",
+      "runUrl": "https://github.com/hmcts/rpx-xui-translation/actions/runs/44314124968/attempts/1",
+      "createdAt": "2026-11-18T13:31:20.278Z"
+    },
+    {
+      "schemaVersion": 2,
+      "reportType": "functional",
+      "rawBranch": "exui-5543",
+      "branchSlug": "exui-5543-73cf5a233972fad6",
       "runKey": "44313047011-attempt-1",
       "runId": "44313047011",
       "runAttempt": "1",

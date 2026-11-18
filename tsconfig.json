@@ -13,13 +13,9 @@
     "downlevelIteration": true,
     "experimentalDecorators": true,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "importHelpers": true,
     "target": "es2022",
-    "lib": [
-      "es2022",
-      "dom"
-    ],
     "paths": {
       "rpx-translation": [
         "dist/rpx-xui-translation/rpx-xui-translation",

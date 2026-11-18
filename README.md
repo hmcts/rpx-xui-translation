@@ -75,7 +75,7 @@ Use the pinned toolchain:
 | --- | --- |
 | Node.js | `24.22.2` in `.nvmrc` and CI; root engine requirement `>=24.22.2` |
 | Yarn | `4.5.3` through the root `packageManager` field |
-| Angular / CLI | Angular `20.3.31`, CLI `20.3.32`, installed locally |
+| Angular / CLI | Angular `20.3.35`, CLI `20.3.43`, installed locally |
 | Playwright | `1.64.1`, installed locally |
 
 Select Node **before** running Corepack or Yarn. With an existing nvm installation:

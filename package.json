@@ -47,14 +47,14 @@
     "qs": "^6.17.1"
   },
   "devDependencies": {
-    "@angular-devkit/architect": "0.2003.42",
-    "@angular-devkit/build-angular": "20.3.42",
+    "@angular-devkit/architect": "0.2203.0",
+    "@angular-devkit/build-angular": "20.3.43",
     "@angular-eslint/builder": "20.7.0",
     "@angular-eslint/eslint-plugin": "20.7.0",
     "@angular-eslint/eslint-plugin-template": "20.7.0",
     "@angular-eslint/schematics": "20.7.0",
     "@angular-eslint/template-parser": "20.7.0",
-    "@angular/cli": "20.3.42",
+    "@angular/cli": "20.3.43",
     "@angular/compiler": "20.3.35",
     "@angular/compiler-cli": "20.3.35",
     "@axe-core/playwright": "4.13.0",

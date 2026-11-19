@@ -10,11 +10,9 @@
     "node": ">=24.22.2"
   },
   "scripts": {
-    "ng": "ng",
     "build:library": "ng build rpx-xui-translation --configuration production && yarn merge:dist-package",
     "build:library:watch": "ng build rpx-xui-translation --configuration production --watch",
     "merge:dist-package": "node scripts/sync-library-package.mjs",
-    "package": "cat dist/rpx-xui-translation/{runtime,polyfills,scripts,main}.js | gzip > elements.js.gz",
     "start": "ng serve -o",
     "start:no-open": "ng serve",
     "build": "yarn build:library",

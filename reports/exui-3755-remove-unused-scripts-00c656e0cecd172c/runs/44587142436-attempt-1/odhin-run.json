@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 2,
+  "reportType": "functional",
+  "rawBranch": "exui-3755-remove-unused-scripts",
+  "branchSlug": "exui-3755-remove-unused-scripts-00c656e0cecd172c",
+  "runKey": "44587142436-attempt-1",
+  "runId": "44587142436",
+  "runAttempt": "1",
+  "sha": "972acc40a734f78fb0537dcb5de3117886e9605d",
+  "runUrl": "https://github.com/hmcts/rpx-xui-translation/actions/runs/44587142436/attempts/1",
+  "createdAt": "2026-11-19T18:25:16.956Z"
+}

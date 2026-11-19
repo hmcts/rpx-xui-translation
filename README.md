@@ -161,7 +161,7 @@ yarn ng build rpx-xui-translation-demo --configuration production
 - The separate demo production output is `dist/rpx-xui-translation-demo/`.
 - `yarn build:library:watch` omits that manifest-sync step. Run the full library build before inspecting a final distributable.
 
-Use `--configuration production`; do not copy the obsolete `--prod` flag from older Angular instructions. The legacy `yarn package` script expects application-style bundles and is not the library build or release-validation command.
+Use `--configuration production`; do not copy the obsolete `--prod` flag from older Angular instructions. Use `yarn build:library` to build the publishable library and `yarn test:package` to validate its packed public API.
 
 Run lint and library unit tests:
 

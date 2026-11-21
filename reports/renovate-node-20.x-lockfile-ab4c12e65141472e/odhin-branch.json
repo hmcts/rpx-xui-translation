@@ -7,6 +7,18 @@
       "reportType": "functional",
       "rawBranch": "renovate/node-20.x-lockfile",
       "branchSlug": "renovate-node-20.x-lockfile-ab4c12e65141472e",
+      "runKey": "44943058396-attempt-1",
+      "runId": "44943058396",
+      "runAttempt": "1",
+      "sha": "b7a475ac1cf5c529920bcf0dca83cd8c83916ce4",
+      "runUrl": "https://github.com/hmcts/rpx-xui-translation/actions/runs/44943058396/attempts/1",
+      "createdAt": "2026-11-21T19:52:22.033Z"
+    },
+    {
+      "schemaVersion": 2,
+      "reportType": "functional",
+      "rawBranch": "renovate/node-20.x-lockfile",
+      "branchSlug": "renovate-node-20.x-lockfile-ab4c12e65141472e",
       "runKey": "42428325193-attempt-1",
       "runId": "42428325193",
       "runAttempt": "1",

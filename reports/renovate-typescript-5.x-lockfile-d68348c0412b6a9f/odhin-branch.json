@@ -7,6 +7,18 @@
       "reportType": "functional",
       "rawBranch": "renovate/typescript-5.x-lockfile",
       "branchSlug": "renovate-typescript-5.x-lockfile-d68348c0412b6a9f",
+      "runKey": "44943072363-attempt-1",
+      "runId": "44943072363",
+      "runAttempt": "1",
+      "sha": "60e4e045f04d4f672f8d3c02944a9cfe4166da76",
+      "runUrl": "https://github.com/hmcts/rpx-xui-translation/actions/runs/44943072363/attempts/1",
+      "createdAt": "2026-11-21T19:53:22.007Z"
+    },
+    {
+      "schemaVersion": 2,
+      "reportType": "functional",
+      "rawBranch": "renovate/typescript-5.x-lockfile",
+      "branchSlug": "renovate-typescript-5.x-lockfile-d68348c0412b6a9f",
       "runKey": "44263482122-attempt-1",
       "runId": "44263482122",
       "runAttempt": "1",

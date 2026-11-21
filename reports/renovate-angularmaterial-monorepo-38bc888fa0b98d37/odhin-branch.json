@@ -7,6 +7,18 @@
       "reportType": "functional",
       "rawBranch": "renovate/angularmaterial-monorepo",
       "branchSlug": "renovate-angularmaterial-monorepo-38bc888fa0b98d37",
+      "runKey": "44943022326-attempt-1",
+      "runId": "44943022326",
+      "runAttempt": "1",
+      "sha": "88c1e8c031d8f4e10657049b396c5ad9768c1d6f",
+      "runUrl": "https://github.com/hmcts/rpx-xui-translation/actions/runs/44943022326/attempts/1",
+      "createdAt": "2026-11-21T19:51:52.614Z"
+    },
+    {
+      "schemaVersion": 2,
+      "reportType": "functional",
+      "rawBranch": "renovate/angularmaterial-monorepo",
+      "branchSlug": "renovate-angularmaterial-monorepo-38bc888fa0b98d37",
       "runKey": "42428280965-attempt-1",
       "runId": "42428280965",
       "runAttempt": "1",
